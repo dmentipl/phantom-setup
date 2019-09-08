@@ -2,14 +2,22 @@ from typing import Tuple
 
 import numpy as np
 
+from .defaults import options
+
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
+
+HFACT_DEFAULT = options['hfact']
 
 
 def uniform_distribution(
-    *, box_dimensions: Tuple[float], particle_spacing: float, distribution: str = None
+    *,
+    box_dimensions: Tuple[float],
+    particle_spacing: float,
+    distribution: str = None,
+    hfact: float = None,
 ):
     """
-    Generate a uniform particle distribution.
+    Generate a uniform particle distribution in a Cartesian box.
 
     Parameters
     ----------
@@ -24,11 +32,15 @@ def uniform_distribution(
     distribution : str
         The type of distribution. Options: 'cubic' or 'close packed'.
         Default is 'close packed'.
+    hfact : float
+        The smoothing length factor. Default is 1.2.
 
     Returns
     -------
-    (N, 3) np.ndarray
-        An array of Cartesian particle positions.
+    position : (N, 3) np.ndarray
+        The particle Cartesian positions.
+    smoothing_length :(N,) np.ndarray
+        The particle smoothing length.
     """
 
     if distribution is not None and distribution not in _AVAILABLE_DISTRIBUTIONS:
@@ -36,6 +48,9 @@ def uniform_distribution(
 
     if distribution is None:
         distribution = 'close packed'
+
+    if hfact is None:
+        hfact = HFACT_DEFAULT
 
     xmin, xmax, ymin, ymax, zmin, zmax = box_dimensions
 
@@ -59,7 +74,7 @@ def uniform_distribution(
 
         xx, yy, zz = np.meshgrid(x, y, z)
 
-        return np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T
+        position = np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T
 
     if distribution == 'close packed':
 
@@ -71,17 +86,19 @@ def uniform_distribution(
         ny = int(ywidth / dy)
         nz = int(zwidth / dz)
 
-        pos = _close_packed_lattice(nx, ny, nz) * particle_spacing / 2
+        position = _close_packed_lattice(nx, ny, nz) * particle_spacing / 2
 
-        pos[:, 0] -= pos[:, 0].mean()
-        pos[:, 1] -= pos[:, 1].mean()
-        pos[:, 2] -= pos[:, 2].mean()
+        position[:, 0] -= position[:, 0].mean()
+        position[:, 1] -= position[:, 1].mean()
+        position[:, 2] -= position[:, 2].mean()
 
-        pos[:, 0] += (xmin + xmax) / 2
-        pos[:, 1] += (ymin + ymax) / 2
-        pos[:, 2] += (zmin + zmax) / 2
+        position[:, 0] += (xmin + xmax) / 2
+        position[:, 1] += (ymin + ymax) / 2
+        position[:, 2] += (zmin + zmax) / 2
 
-        return pos
+    smoothing_length = hfact * particle_spacing * np.ones(nx * ny * nz)
+
+    return position, smoothing_length
 
 
 def _close_packed_lattice(nx, ny, nz):
