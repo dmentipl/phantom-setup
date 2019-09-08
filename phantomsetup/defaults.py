@@ -1,5 +1,7 @@
 import datetime
 
+import numpy as np
+
 options = {
     # ------------------------------------------------
     # job name
@@ -64,6 +66,7 @@ options = {
     'ipdv_heating': 1,
     'ishock_heating': 1,
     'iresistive_heating': 1,
+    'isink': 0,
     # ------------------------------------------------
     # options controlling cooling
     'icooling': 0,
@@ -86,6 +89,11 @@ options = {
     'cooltable': 'cooltable.dat',
     'habund': 0.7,
     'temp_floor': 1.0e4,
+    # ------------------------------------------------
+    # options controlling magnetic fields
+    'Bextx': 0.0,
+    'Bexty': 0.0,
+    'Bextz': 0.0,
     # ------------------------------------------------
     # options controlling MCFOST
     'use_mcfost': False,
@@ -116,8 +124,8 @@ options = {
     # options controlling dust
     'idrag': 2,
     'K_code': 1.0,
-    'grainsize': 1.0,
-    'graindens': 1.0,
+    'ndustsmall': 0,
+    'ndustlarge': 0,
     'icut_backreaction': 0,
     'ilimitdustflux': False,
     # ------------------------------------------------
@@ -141,4 +149,58 @@ options = {
     # ------------------------------------------------
     # options controlling non-ideal MHD
     # TODO
+    # ------------------------------------------------
+    # options from initial params
+    'angtot_in': 0.0,
+    'get_conserv': 1.0,
+    'etot_in': 0.0,
+    'totmom_in': 0.0,
+    'mdust_in': 0.0,
+}
+
+header = {
+    'Bextx': options['Bextx'],
+    'Bexty': options['Bexty'],
+    'Bextz': options['Bextz'],
+    'C_cour': options['C_cour'],
+    'C_force': options['C_force'],
+    'RK2': 1.5,
+    'alpha': options['alpha'],
+    'alphaB': options['alphaB'],
+    'alphau': options['alphau'],
+    'angtot_in': options['angtot_in'],
+    'dtmax': options['dtmax'],
+    'etot_in': options['etot_in'],
+    'fileident': b'empty',
+    'gamma': 1.0,
+    'get_conserv': options['get_conserv'],
+    'graindens': np.zeros(100),
+    'grainsize': np.zeros(100),
+    'hfactfile': options['hfact'],
+    'ieos': options['ieos'],
+    'iexternalforce': options['iexternalforce'],
+    'isink': options['isink'],
+    'massoftype': np.zeros(100),
+    'mdust_in': np.zeros(100),
+    'ndustlarge': options['ndustlarge'],
+    'ndustsmall': options['ndustsmall'],
+    'npartoftype': np.zeros(100),
+    'nparttot': 0,
+    'nptmass': 0,
+    'polyk2': 1.0,
+    'qfacdisc': 1.0,
+    'rhozero': 1.0,
+    'tfile': 1.0,
+    'tolh': options['tolh'],
+    'totmom_in': options['totmom_in'],
+    'udist': 1.0,
+    'umass': 1.0,
+    'umagfd': 1.0,
+    'utime': 1.0,
+    'xmax': 0.5,
+    'xmin': -0.5,
+    'ymax': 0.5,
+    'ymin': -0.5,
+    'zmax': 0.5,
+    'zmin': -0.5,
 }
