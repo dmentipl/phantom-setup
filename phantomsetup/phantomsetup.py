@@ -216,6 +216,14 @@ class Setup:
 
         self._units = {'length': length, 'mass': mass, 'time': time}
 
+    @property
+    def fileident(self) -> None:
+        return self._fileident
+
+    @fileident.setter
+    def fileident(self, string: str) -> None:
+        self._fileident = string
+
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
 
@@ -230,6 +238,7 @@ class Setup:
             self._header['massoftype'][key - 1] = val
 
         self._header['nparttot'] = self.total_number_of_particles
+        self._header['fileident'] = self.fileident.encode('ascii')
 
     def write_dump_file(self, filename: Union[str, Path]) -> None:
         """

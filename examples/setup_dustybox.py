@@ -77,6 +77,10 @@ setup.particle_mass.update({itype: particle_mass})
 setup.add_array_to_particles('alpha', np.zeros(setup.total_number_of_particles))
 
 # ------------------------------------------------------------------------------------ #
+# TODO: add other header items...
+setup.fileident = 'fulldump: Phantom 1.3.0 6666c55 (hydro+dust): 28/08/2019 19:21:16.8'
+
+# ------------------------------------------------------------------------------------ #
 # Write dump
 setup.write_dump_file('test_00000.tmp.h5')
 
