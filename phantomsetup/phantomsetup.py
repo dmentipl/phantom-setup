@@ -48,7 +48,7 @@ class Setup:
     @property
     def smoothing_length(self) -> None:
         """Smoothing length of particles."""
-        return self._position
+        return self._smoothing_length
 
     @property
     def velocity(self) -> None:
