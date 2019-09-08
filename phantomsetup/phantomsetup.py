@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple, Union
 
@@ -43,7 +45,7 @@ class Setup:
 
         self._units: Dict[str, float] = None
 
-    def add_array_to_particles(self, name: str, array: np.ndarray) -> None:
+    def add_array_to_particles(self, name: str, array: np.ndarray) -> Setup:
         """
         Add an array to existing particles.
 
@@ -62,6 +64,7 @@ class Setup:
         >>> setup.add_array_to_particles('alpha', alpha)
         """
         self._arrays[name] = array
+        return self
 
     @property
     def position(self) -> None:
@@ -108,32 +111,26 @@ class Setup:
 
     @property
     def particle_mass(self) -> None:
-        """
-        The particle mass per particle type.
-
-        The data structure is Dict[int, float], where the key is the
-        particle integer type, and the value is the mass as a float.
-        """
+        """The particle mass per particle type."""
         return self._particle_mass
-
-    @particle_mass.setter
-    def particle_mass(self, mass: Dict[int, float]) -> None:
-        self._particle_mass = mass
 
     def add_particles(
         self,
-        itype: int,
+        particle_type: int,
+        particle_mass: float,
         positions: np.ndarray,
         velocities: np.ndarray,
         smoothing_length: np.ndarray,
-    ) -> None:
+    ) -> Setup:
         """
         Add particles to initial conditions.
 
         Parameters
         ----------
-        itype : int
+        particle_type : int
             The integer representing the particle type.
+        particle_mass : float
+            The particle mass.
         positions : (N, 3) np.ndarray
             The particle positions as N x 3 array, where the 2nd
             component is the Cartesian position, i.e. x, y, z.
@@ -183,11 +180,17 @@ class Setup:
         if self._particle_type is not None:
             self._particle_type = np.append(
                 self._particle_type,
-                itype * np.ones(positions.shape[0], dtype=np.int),
+                particle_type * np.ones(positions.shape[0], dtype=np.int),
                 axis=0,
             )
         else:
-            self._particle_type = itype * np.ones(positions.shape[0], dtype=np.int)
+            self._particle_type = particle_type * np.ones(
+                positions.shape[0], dtype=np.int
+            )
+
+        self._particle_mass.update({particle_type: particle_mass})
+
+        return self
 
     @property
     def units(self) -> None:
@@ -281,7 +284,7 @@ class Setup:
         filename : str or pathlib.Path
             The name of the file to write to.
         """
-        pc.read_dict(self.infile).write_phantom(filename)
+        pc.read_dict(self._infile).write_phantom(filename)
 
 
 class DustyBox(Setup):

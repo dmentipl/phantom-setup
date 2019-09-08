@@ -29,7 +29,7 @@ vol = (box[1] - box[0]) * (box[3] - box[2]) * (box[5] - box[4])
 
 # ------------------------------------------------------------------------------------ #
 # Setup gas
-itype = IGAS
+particle_type = IGAS
 npartx = 32
 rho = 1.0
 
@@ -43,15 +43,13 @@ particle_mass = rho * vol / npart
 
 # Particle velocities
 velocity = np.zeros((npart, 3))
-velocity[:, 0] = 0.0
 
 # Add particles
-setup.add_particles(itype, position, velocity, smoothing_length)
-setup.particle_mass.update({itype: particle_mass})
+setup.add_particles(particle_type, particle_mass, position, velocity, smoothing_length)
 
 # ------------------------------------------------------------------------------------ #
 # Setup dust
-itype = IDUST
+particle_type = IDUST
 npartx = 16
 rho = 0.01
 
@@ -64,17 +62,15 @@ npart = position.shape[0]
 particle_mass = rho * vol / npart
 
 # Particle velocities
-velocity = np.zeros((npart, 3))
-velocity[:, 0] = 1.0
+velocity = np.hstack((np.ones((npart, 1)), np.zeros((npart, 2))))
 
 # Add particles
-setup.add_particles(itype, position, velocity, smoothing_length)
-setup.particle_mass.update({IGAS: particle_mass})
-setup.particle_mass.update({itype: particle_mass})
+setup.add_particles(particle_type, particle_mass, position, velocity, smoothing_length)
 
 # ------------------------------------------------------------------------------------ #
 # TODO: add other arrays...
-setup.add_array_to_particles('alpha', np.zeros(setup.total_number_of_particles))
+alpha = np.zeros(setup.total_number_of_particles)
+setup.add_array_to_particles('alpha', alpha)
 
 # ------------------------------------------------------------------------------------ #
 # TODO: add other header items...

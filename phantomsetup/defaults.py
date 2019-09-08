@@ -156,7 +156,7 @@ options = {
     # ------------------------------------------------
     # options from initial params
     'angtot_in': 0.0,
-    'get_conserv': 1.0,
+    'get_conserv': -1.0,
     'etot_in': 0.0,
     'totmom_in': 0.0,
     'mdust_in': 0.0,
