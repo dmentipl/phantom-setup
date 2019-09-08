@@ -5,7 +5,7 @@ from typing import Dict, List, Set, Tuple, Union
 import numpy as np
 import phantomconfig as pc
 
-AVAILABLE_SETUPS = 'dustybox'
+_AVAILABLE_SETUPS = ('dustybox',)
 
 
 class Setup:
@@ -20,7 +20,7 @@ class Setup:
 
     def __init__(self, setup: str) -> None:
 
-        if setup not in AVAILABLE_SETUPS:
+        if setup not in _AVAILABLE_SETUPS:
             raise ValueError(f'Setup: {setup} not available')
 
         self.setup = setup
