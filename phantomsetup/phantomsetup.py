@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Union
 
+import h5py
 import numpy as np
 import phantomconfig as pc
 
@@ -191,11 +192,31 @@ class Setup:
 
         self._units = {'length': length, 'mass': mass, 'time': time}
 
-    def write_temporary_dump_file(self, filename: Union[str, Path]) -> None:
+    def write_dump_file(self, filename: Union[str, Path]) -> None:
         """
         Write Phantom temporary ('.tmp') dump file.
+
+        Parameters
+        ----------
+        filename : str or Path
+            The name of the dump file.
         """
-        raise NotImplementedError
+
+        file_handle = h5py.File(filename, 'w')
+
+        group = file_handle.create_group('header')
+        for key, val in self.header.items():
+            group.create_dataset(name=key, data=val)
+
+        group = file_handle.create_group('particles')
+        group.create_dataset(name='xyz', data=self.position)
+        group.create_dataset(name='h', data=self.smoothing_length)
+        group.create_dataset(name='vxyz', data=self.velocity)
+        group.create_dataset(name='itype', data=self.particle_type)
+
+        group = file_handle.create_group('sinks')
+
+        file_handle.close()
 
     def write_in_file(self, filename: Union[str, Path]) -> None:
         """
