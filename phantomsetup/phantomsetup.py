@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Union
+from typing import Any, Dict, List, Set, Tuple, Union
 
 import h5py
 import numpy as np
@@ -26,8 +26,9 @@ class Setup:
             raise ValueError(f'Setup: {setup} not available')
 
         self.setup = setup
-        self.infile = dict()
-        self.header = defaults.header
+
+        self._infile = dict()
+        self._header = defaults.header
 
         self._particle_type: np.ndarray = None
         self._position: np.ndarray = None
@@ -38,7 +39,29 @@ class Setup:
         self._particle_mass: Dict[int, float] = {}
         self._particle_types: Set[int] = None
 
+        self._arrays: Dict[str, Any] = {}
+
         self._units: Dict[str, float] = None
+
+    def add_array_to_particles(self, name: str, array: np.ndarray) -> None:
+        """
+        Add an array to existing particles.
+
+        Parameters
+        ----------
+        name : str
+            The name of the array.
+        array : np.ndarray
+            The array, such that the first index is the particle index.
+
+        Examples
+        --------
+        Adding an array 'alpha' of scalar quantities on the particles.
+        >>> npart = setup.number_of_particles
+        >>> alpha = np.random.rand(npart)
+        >>> setup.add_array_to_particles('alpha', alpha)
+        """
+        self._arrays[name] = array
 
     @property
     def position(self) -> None:
@@ -74,13 +97,14 @@ class Setup:
     def number_of_particles(self) -> None:
         """Number of particles of each type."""
         if self._number_of_particles is None:
-            return list(np.unique(self._particle_type, return_counts=True)[1])
+            types, counts = np.unique(self._particle_type, return_counts=True)
+            return dict(zip(types, counts))
         return self._number_of_particles
 
     @property
     def total_number_of_particles(self) -> None:
         """Total number of particles of each type."""
-        return sum(self.number_of_particles)
+        return sum(self.number_of_particles.values())
 
     @property
     def particle_mass(self) -> None:
@@ -192,6 +216,21 @@ class Setup:
 
         self._units = {'length': length, 'mass': mass, 'time': time}
 
+    def _update_header(self) -> None:
+        """Update dump header for writing to file."""
+
+        max_type = max(self.number_of_particles.keys())
+
+        self._header['npartoftype'] = np.zeros(max_type, dtype=np.int)
+        for key, val in self.number_of_particles.items():
+            self._header['npartoftype'][key - 1] = val
+
+        self._header['massoftype'] = np.zeros(max_type)
+        for key, val in self.particle_mass.items():
+            self._header['massoftype'][key - 1] = val
+
+        self._header['nparttot'] = self.total_number_of_particles
+
     def write_dump_file(self, filename: Union[str, Path]) -> None:
         """
         Write Phantom temporary ('.tmp') dump file.
@@ -202,17 +241,23 @@ class Setup:
             The name of the dump file.
         """
 
+        self._update_header()
+
         file_handle = h5py.File(filename, 'w')
 
         group = file_handle.create_group('header')
-        for key, val in self.header.items():
+        for key, val in self._header.items():
             group.create_dataset(name=key, data=val)
 
         group = file_handle.create_group('particles')
+
         group.create_dataset(name='xyz', data=self.position)
         group.create_dataset(name='h', data=self.smoothing_length)
         group.create_dataset(name='vxyz', data=self.velocity)
-        group.create_dataset(name='itype', data=self.particle_type)
+        group.create_dataset(name='itype', data=self.particle_type, dtype='i1')
+
+        for name, array in self._arrays.items():
+            group.create_dataset(name=name, data=array)
 
         group = file_handle.create_group('sinks')
 

@@ -73,6 +73,10 @@ setup.particle_mass.update({IGAS: particle_mass})
 setup.particle_mass.update({itype: particle_mass})
 
 # ------------------------------------------------------------------------------------ #
+# TODO: add other arrays...
+setup.add_array_to_particles('alpha', np.zeros(setup.total_number_of_particles))
+
+# ------------------------------------------------------------------------------------ #
 # Write dump
 setup.write_dump_file('test_00000.tmp.h5')
 
