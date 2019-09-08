@@ -2,6 +2,10 @@ import datetime
 
 import numpy as np
 
+MAJORV = 0
+MINORV = 0
+MICROV = 0
+
 options = {
     # ------------------------------------------------
     # job name
@@ -170,27 +174,31 @@ header = {
     'alphau': options['alphau'],
     'angtot_in': options['angtot_in'],
     'dtmax': options['dtmax'],
+    'dum': 0.0,
     'etot_in': options['etot_in'],
-    'fileident': b'empty',
     'gamma': 1.0,
     'get_conserv': options['get_conserv'],
     'graindens': np.zeros(100),
     'grainsize': np.zeros(100),
-    'hfactfile': options['hfact'],
+    'hfact': options['hfact'],
     'ieos': options['ieos'],
     'iexternalforce': options['iexternalforce'],
     'isink': options['isink'],
+    'majorv': MAJORV,
     'massoftype': np.zeros(100),
+    'microv': MICROV,
+    'minorv': MINORV,
     'mdust_in': np.zeros(100),
     'ndustlarge': options['ndustlarge'],
     'ndustsmall': options['ndustsmall'],
-    'npartoftype': np.zeros(100),
+    'npartoftype': np.zeros(100, dtype=np.int),
     'nparttot': 0,
     'nptmass': 0,
+    'ntypes': 0,
     'polyk2': 1.0,
     'qfacdisc': 1.0,
     'rhozero': 1.0,
-    'tfile': 1.0,
+    'time': 0.0,
     'tolh': options['tolh'],
     'totmom_in': options['totmom_in'],
     'udist': 1.0,

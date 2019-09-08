@@ -72,6 +72,9 @@ setup.add_particles(itype, position, velocity, smoothing_length)
 setup.particle_mass.update({IGAS: particle_mass})
 setup.particle_mass.update({itype: particle_mass})
 
+# ------------------------------------------------------------------------------------ #
+# Write dump
+setup.write_dump_file('test_00000.tmp.h5')
 
 # ------------------------------------------------------------------------------------ #
 # DEBUGGING
