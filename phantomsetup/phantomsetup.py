@@ -10,6 +10,7 @@ import phantomconfig as pc
 from . import defaults
 
 _AVAILABLE_SETUPS = ('dustybox',)
+FILEIDENT_LEN = 100
 
 
 class Setup:
@@ -241,7 +242,7 @@ class Setup:
             self._header['massoftype'][key - 1] = val
 
         self._header['nparttot'] = self.total_number_of_particles
-        self._header['fileident'] = self.fileident.encode('ascii')
+        self._header['fileident'] = self.fileident.ljust(FILEIDENT_LEN).encode('ascii')
 
     def write_dump_file(self, filename: Union[str, Path]) -> None:
         """
@@ -259,7 +260,11 @@ class Setup:
 
         group = file_handle.create_group('header')
         for key, val in self._header.items():
-            group.create_dataset(name=key, data=val)
+            if isinstance(val, bytes):
+                dset = group.create_dataset(key, (), dtype=f'S{FILEIDENT_LEN}')
+                dset[()] = val
+            else:
+                group.create_dataset(name=key, data=val)
 
         group = file_handle.create_group('particles')
 
