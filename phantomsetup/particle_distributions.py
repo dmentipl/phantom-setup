@@ -6,20 +6,24 @@ _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
 
 
 def uniform_distribution(
-    distribution: str, box_dimensions: Tuple[float], particle_spacing: float
+    *, box_dimensions: Tuple[float], particle_spacing: float, distribution: str = None
 ):
     """
     Generate a uniform particle distribution.
 
     Parameters
     ----------
-    distribution : str
-        The type of distribution. Options: 'cubic'.
     box_dimensions : tuple
-        The box dimensions as a tuple like:
+        The box dimensions as a tuple:
         (xmin, xmax, ymin, ymax, zmin, zmax).
     particle_spacing : float
         The spacing between the particles.
+
+    Optional parameters
+    -------------------
+    distribution : str
+        The type of distribution. Options: 'cubic' or 'close packed'.
+        Default is 'close packed'.
 
     Returns
     -------
@@ -27,8 +31,11 @@ def uniform_distribution(
         An array of Cartesian particle positions.
     """
 
-    if distribution not in _AVAILABLE_DISTRIBUTIONS:
+    if distribution is not None and distribution not in _AVAILABLE_DISTRIBUTIONS:
         raise ValueError('distribution not available')
+
+    if distribution is None:
+        distribution = 'close packed'
 
     xmin, xmax, ymin, ymax, zmin, zmax = box_dimensions
 
@@ -56,11 +63,25 @@ def uniform_distribution(
 
     if distribution == 'close packed':
 
-        nx = int(xwidth / particle_spacing)
-        ny = int(ywidth / particle_spacing)
-        nz = int(zwidth / particle_spacing)
+        dx = particle_spacing
+        dy = dx * np.sqrt(3) / 2
+        dz = dx * (2 / 3 * np.sqrt(6)) / 2
 
-        return _close_packed_lattice(nx, ny, nz)
+        nx = int(xwidth / dx)
+        ny = int(ywidth / dy)
+        nz = int(zwidth / dz)
+
+        pos = _close_packed_lattice(nx, ny, nz) * particle_spacing / 2
+
+        pos[:, 0] -= pos[:, 0].mean()
+        pos[:, 1] -= pos[:, 1].mean()
+        pos[:, 2] -= pos[:, 2].mean()
+
+        pos[:, 0] += (xmin + xmax) / 2
+        pos[:, 1] += (ymin + ymax) / 2
+        pos[:, 2] += (zmin + zmax) / 2
+
+        return pos
 
 
 def _close_packed_lattice(nx, ny, nz):
