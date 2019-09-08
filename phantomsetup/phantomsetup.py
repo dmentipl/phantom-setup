@@ -4,6 +4,8 @@ from typing import Dict, List, Set, Tuple, Union
 import numpy as np
 import phantomconfig as pc
 
+from . import defaults
+
 _AVAILABLE_SETUPS = ('dustybox',)
 
 
@@ -24,10 +26,11 @@ class Setup:
 
         self.setup = setup
         self.infile = dict()
-        self.header = dict.fromkeys(_HEADER_KEYS)
+        self.header = defaults.header
 
         self._particle_type: np.ndarray = None
         self._position: np.ndarray = None
+        self._smoothing_length: np.ndarray = None
         self._velocity: np.ndarray = None
 
         self._number_of_particles: List[int] = None
@@ -39,6 +42,11 @@ class Setup:
     @property
     def position(self) -> None:
         """Cartesian positions of particles."""
+        return self._position
+
+    @property
+    def smoothing_length(self) -> None:
+        """Smoothing length of particles."""
         return self._position
 
     @property
@@ -135,6 +143,13 @@ class Setup:
         else:
             self._position = positions
 
+        if self._smoothing_length is not None:
+            self._smoothing_length = np.append(
+                self._smoothing_length, smoothing_length, axis=0
+            )
+        else:
+            self._smoothing_length = smoothing_length
+
         if self._velocity is not None:
             self._velocity = np.append(self._velocity, velocities, axis=0)
         else:
@@ -211,51 +226,3 @@ class DustyBox(Setup):
     @box.setter
     def box(self, dx: float, dy: float, dz: float) -> None:
         self._box = (dx, dy, dz)
-
-
-_HEADER_KEYS = (
-    'Bextx',
-    'Bexty',
-    'Bextz',
-    'C_cour',
-    'C_force',
-    'alpha',
-    'alphaB',
-    'alphau',
-    'angtot_in',
-    'dtmax',
-    'etot_in',
-    'fileident',
-    'gamma',
-    'get_conserv',
-    'graindens',
-    'grainsize',
-    'hfactfile',
-    'ieos',
-    'iexternalforce',
-    'isink',
-    'massoftype',
-    'mdust_in',
-    'ndustlarge',
-    'ndustsmall',
-    'npartoftype',
-    'nparttot',
-    'nptmass',
-    'polyk',
-    'polyk2',
-    'qfacdisc',
-    'rhozero',
-    'tfile',
-    'tolh',
-    'totmom_in',
-    'udist',
-    'umass',
-    'unit_Bfield',
-    'utime',
-    'xmax',
-    'xmin',
-    'ymax',
-    'ymin',
-    'zmax',
-    'zmin',
-)
