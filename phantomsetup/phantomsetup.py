@@ -10,7 +10,6 @@ import phantomconfig as pc
 from . import defaults
 
 _AVAILABLE_SETUPS = ('dustybox',)
-FILEIDENT_LEN = 100
 
 
 class Setup:
@@ -231,18 +230,18 @@ class Setup:
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
 
-        max_type = max(self.number_of_particles.keys())
-
-        self._header['npartoftype'] = np.zeros(max_type, dtype=np.int)
+        self._header['npartoftype'] = np.zeros(defaults.MAX_TYPES, dtype=np.int)
         for key, val in self.number_of_particles.items():
             self._header['npartoftype'][key - 1] = val
 
-        self._header['massoftype'] = np.zeros(max_type)
+        self._header['massoftype'] = np.zeros(defaults.MAX_TYPES)
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
 
         self._header['nparttot'] = self.total_number_of_particles
-        self._header['fileident'] = self.fileident.ljust(FILEIDENT_LEN).encode('ascii')
+        self._header['fileident'] = self.fileident.ljust(defaults.FILEIDENT_LEN).encode(
+            'ascii'
+        )
 
     def write_dump_file(self, filename: Union[str, Path]) -> None:
         """
@@ -261,7 +260,7 @@ class Setup:
         group = file_handle.create_group('header')
         for key, val in self._header.items():
             if isinstance(val, bytes):
-                dset = group.create_dataset(key, (), dtype=f'S{FILEIDENT_LEN}')
+                dset = group.create_dataset(key, (), dtype=f'S{defaults.FILEIDENT_LEN}')
                 dset[()] = val
             else:
                 group.create_dataset(name=key, data=val)

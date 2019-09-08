@@ -6,6 +6,17 @@ MAJORV = 0
 MINORV = 0
 MICROV = 0
 
+FILEIDENT_LEN = 100
+
+IGAS = 1
+IDUST = 7
+
+MAX_DUST_SMALL = 10
+MAX_DUST_LARGE = 10
+MAX_DUST = MAX_DUST_SMALL + MAX_DUST_LARGE
+
+MAX_TYPES = 7 + MAX_DUST_LARGE - 1
+
 options = {
     # ------------------------------------------------
     # job name
@@ -178,20 +189,20 @@ header = {
     'etot_in': options['etot_in'],
     'gamma': 1.0,
     'get_conserv': options['get_conserv'],
-    'graindens': np.zeros(100),
-    'grainsize': np.zeros(100),
+    'graindens': np.zeros(MAX_DUST),
+    'grainsize': np.zeros(MAX_DUST),
     'hfact': options['hfact'],
     'ieos': options['ieos'],
     'iexternalforce': options['iexternalforce'],
     'isink': options['isink'],
     'majorv': MAJORV,
-    'massoftype': np.zeros(100),
+    'massoftype': np.zeros(MAX_TYPES),
     'microv': MICROV,
     'minorv': MINORV,
-    'mdust_in': np.zeros(100),
+    'mdust_in': np.zeros(MAX_DUST),
     'ndustlarge': options['ndustlarge'],
     'ndustsmall': options['ndustsmall'],
-    'npartoftype': np.zeros(100, dtype=np.int),
+    'npartoftype': np.zeros(MAX_TYPES, dtype=np.int),
     'nparttot': 0,
     'nptmass': 0,
     'ntypes': 0,
