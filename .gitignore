@@ -1,0 +1,6 @@
+build/*
+dist/*
+phantomsetup.egg-info/*
+.coverage
+htmlcov
+.mypy_cache
