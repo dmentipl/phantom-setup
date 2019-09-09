@@ -26,6 +26,7 @@ def main():
     box_boundary = (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5)
 
     hfact = 1.0
+    sound_speed = 1.0
 
     number_of_particles_in_x_gas = 32
     number_of_particles_in_x_dust = 16

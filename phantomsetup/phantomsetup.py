@@ -32,6 +32,7 @@ class Setup:
         self._velocity: np.ndarray = None
         self._arrays: Dict[str, Any] = {}
 
+        self._eos: EquationOfState = None
         self._units: Dict[str, float] = None
         self._box: Box = None
 
@@ -204,6 +205,15 @@ class Setup:
         self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
 
     @property
+    def equation_of_state(self) -> EquationOfState:
+        return self._eos
+
+    # TODO: not implemented
+    @equation_of_state.setter
+    def equation_of_state(self, ieos):
+        self._eos = EquationOfState(ieos)
+
+    @property
     def units(self) -> Dict[str, float]:
         return self._units
 
@@ -306,6 +316,11 @@ class Setup:
             self._header['massoftype'][key - 1] = val
 
         self._header['nparttot'] = self.total_number_of_particles
+        self._header['ntypes'] = defaults.maxtypes
+
+        # TODO: self._header['ndustsmall'] =
+        # TODO: self._header['ndustlarge'] =
+
         self._header['fileident'] = self.fileident.ljust(defaults.FILEIDENT_LEN).encode(
             'ascii'
         )
@@ -414,3 +429,20 @@ class Box:
         self.zwidth = zmax - zmin
 
         self.volume = (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
+
+
+# TODO: not implemented
+class EquationOfState:
+    def __init__(self, ieos: int) -> None:
+        self._ieos = ieos
+
+    @property
+    def polyk(self) -> float:
+        """
+        'polyk' is the square of the sound speed.
+        """
+        return self._polyk
+
+    @polyk.setter
+    def polyk(self, value: float):
+        self._polyk = value

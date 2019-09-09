@@ -189,7 +189,7 @@ header = {
     'Bextz': options['Bextz'],
     'C_cour': options['C_cour'],
     'C_force': options['C_force'],
-    'RK2': 3/2*options['polyk'],
+    'RK2': 3 / 2 * options['polyk'],
     'alpha': options['alpha'],
     'alphaB': options['alphaB'],
     'alphau': options['alphau'],
@@ -261,4 +261,17 @@ compile_options = {
     'STORE_TEMP': False,
     'STS_TIMESTEPS': False,
     'USE_STRAIN_TENSOR': False,
+}
+
+equation_of_state_ieos_label = {
+    1: 'isothermal',
+    2: 'adiabatic/polytropic',
+    3: 'locally isothermal disc',
+    6: 'locally isothermal disc centered on sink particle',
+    7: 'z-dependent locally isothermal eos',
+    8: 'barotropic',
+    9: 'piecewise polytrope',
+    10: 'MESA',
+    11: 'isothermal with zero pressure',
+    14: 'locally isothermal binary disc',
 }
