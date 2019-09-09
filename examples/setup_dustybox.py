@@ -15,15 +15,17 @@ This example instantiates a phantomsetup.Setup object with the name
     - write_dump_file
     - write_in_file
 
-The main features are to set some parameters, add particles, add additional
-arrays, write a 'temporary' dump file, and write a Phantom 'in' file.
+The main features are to set some parameters, add gas and dust
+particles, add additional arrays, write a 'temporary' dump file (the
+Phantom initial condition), and write a Phantom 'in' file.
 """
 
 import numpy as np
 import phantomsetup
 
 # TODO: things to set that are not currently set
-# - ndustlarge
+# - units (if using physical drag, i.e. Epstein/Stokes)
+# - grainsize and graindens (if using physical drag, i.e. Epstein/Stokes)
 
 
 def main():
@@ -88,13 +90,8 @@ def main():
 
     # -------------------------------------------------------------------------------- #
     # Add extra quantities to particles
-    # TODO: add other arrays...
     alpha = np.zeros(dustybox.total_number_of_particles, dtype=np.single)
     dustybox.add_array_to_particles('alpha', alpha)
-
-    # -------------------------------------------------------------------------------- #
-    # Add extra quantities to the header
-    # TODO: add other header items...
 
     # -------------------------------------------------------------------------------- #
     # Write dump and in file
@@ -115,7 +112,7 @@ def add_particle_of_type_to_box(
     hfact: float,
 ) -> None:
     """
-    Add particles of a particular type to the box.
+    Helper function to add particles of a particular type to the box.
 
     Parameters
     ----------
