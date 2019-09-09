@@ -262,16 +262,3 @@ compile_options = {
     'STS_TIMESTEPS': False,
     'USE_STRAIN_TENSOR': False,
 }
-
-equation_of_state_ieos_label = {
-    1: 'isothermal',
-    2: 'adiabatic/polytropic',
-    3: 'locally isothermal disc',
-    6: 'locally isothermal disc centered on sink particle',
-    7: 'z-dependent locally isothermal eos',
-    8: 'barotropic',
-    9: 'piecewise polytrope',
-    10: 'MESA',
-    11: 'isothermal with zero pressure',
-    14: 'locally isothermal binary disc',
-}

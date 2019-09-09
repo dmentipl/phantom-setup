@@ -26,6 +26,7 @@ def main():
     box_boundary = (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5)
 
     hfact = 1.0
+    ieos = 1
     sound_speed = 1.0
 
     number_of_particles_in_x_gas = 32
@@ -41,6 +42,10 @@ def main():
     # Instantiate phantomsetup object
     dustybox = phantomsetup.Setup()
     dustybox.prefix = prefix
+
+    # -------------------------------------------------------------------------------- #
+    # Set equation of state
+    dustybox.set_equation_of_state(ieos=ieos, polyk=sound_speed**2)
 
     # -------------------------------------------------------------------------------- #
     # Setup box
@@ -80,6 +85,10 @@ def main():
     # Write dump and in file
     dustybox.write_dump_file()
     dustybox.write_in_file()
+
+    # -------------------------------------------------------------------------------- #
+    # Return the phantomsetup.Setup object
+    return dustybox
 
 
 def add_particle_of_type_to_box(
@@ -130,4 +139,4 @@ def add_particle_of_type_to_box(
 
 
 if __name__ == '__main__':
-    main()
+    dustybox = main()

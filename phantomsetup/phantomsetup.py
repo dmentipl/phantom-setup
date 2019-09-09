@@ -10,6 +10,7 @@ import numpy as np
 import phantomconfig as pc
 
 from . import defaults
+from .eos import EquationOfState
 
 
 class Setup:
@@ -18,6 +19,7 @@ class Setup:
     """
 
     def __init__(self) -> None:
+        super().__init__()
 
         self._setup: str = None
         self._prefix: str = None
@@ -195,6 +197,28 @@ class Setup:
 
         return self
 
+    def set_equation_of_state(self, ieos: int, **kwargs) -> None:
+        """
+        Set the equation of state.
+
+        Parameters
+        ----------
+        ieos : int
+            The equation of state as represented by the following integers:
+                1: 'isothermal'
+                2: 'adiabatic/polytropic'
+                3: 'locally isothermal disc'
+
+        See Also
+        --------
+        phantomsetup.eos.EquationOfState
+        """
+        self._eos = EquationOfState(ieos, **kwargs)
+
+    @property
+    def eos(self) -> None:
+        return self._eos
+
     @property
     def box(self) -> Box:
         return self._box
@@ -203,15 +227,6 @@ class Setup:
     def box(self, boundary):
         xmin, xmax, ymin, ymax, zmin, zmax = boundary
         self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
-
-    @property
-    def equation_of_state(self) -> EquationOfState:
-        return self._eos
-
-    # TODO: not implemented
-    @equation_of_state.setter
-    def equation_of_state(self, ieos):
-        self._eos = EquationOfState(ieos)
 
     @property
     def units(self) -> Dict[str, float]:
@@ -429,20 +444,3 @@ class Box:
         self.zwidth = zmax - zmin
 
         self.volume = (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
-
-
-# TODO: not implemented
-class EquationOfState:
-    def __init__(self, ieos: int) -> None:
-        self._ieos = ieos
-
-    @property
-    def polyk(self) -> float:
-        """
-        'polyk' is the square of the sound speed.
-        """
-        return self._polyk
-
-    @polyk.setter
-    def polyk(self, value: float):
-        self._polyk = value
