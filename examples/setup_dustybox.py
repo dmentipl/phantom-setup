@@ -1,15 +1,28 @@
 """
-Setup the DUSTYBOX test problem with multiple dust species.
+Setup the DUSTYBOX test problem.
 
-The dust and gas are co-located in a box. The gas is initially
-stationary, and the dust is given a uniform velocity to the right.
+The dust, with possibly multiple species, and gas are co-located in a
+box. The gas is initially stationary, and the dust is given a uniform
+velocity to the right.
+
+This example instantiates a phantomsetup.Setup object with the name
+'dustybox'. It uses the following methods:
+
+    - set_equation_of_state
+    - set_boundary
+    - add_particles
+    - add_array_to_particles
+    - write_dump_file
+    - write_in_file
+
+The main features are to set some parameters, add particles, add additional
+arrays, write a 'temporary' dump file, and write a Phantom 'in' file.
 """
 
 import numpy as np
 import phantomsetup
 
 # TODO: things to set that are not currently set
-# - sound speed
 # - ndustlarge
 
 
@@ -45,11 +58,11 @@ def main():
 
     # -------------------------------------------------------------------------------- #
     # Set equation of state
-    dustybox.set_equation_of_state(ieos=ieos, polyk=sound_speed**2)
+    dustybox.set_equation_of_state(ieos=ieos, polyk=sound_speed ** 2)
 
     # -------------------------------------------------------------------------------- #
     # Setup box
-    dustybox.box = box_boundary
+    dustybox.set_boundary(box_boundary)
 
     # -------------------------------------------------------------------------------- #
     # Setup particles
@@ -74,11 +87,13 @@ def main():
         )
 
     # -------------------------------------------------------------------------------- #
+    # Add extra quantities to particles
     # TODO: add other arrays...
     alpha = np.zeros(dustybox.total_number_of_particles, dtype=np.single)
     dustybox.add_array_to_particles('alpha', alpha)
 
     # -------------------------------------------------------------------------------- #
+    # Add extra quantities to the header
     # TODO: add other header items...
 
     # -------------------------------------------------------------------------------- #

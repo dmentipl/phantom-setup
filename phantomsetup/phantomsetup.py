@@ -16,6 +16,12 @@ from .eos import EquationOfState
 class Setup:
     """
     The initial conditions for a Phantom simulation.
+
+    TODO: add to description
+
+    Examples
+    --------
+    TODO: add examples
     """
 
     def __init__(self) -> None:
@@ -217,14 +223,24 @@ class Setup:
 
     @property
     def eos(self) -> None:
+        """The equation of state."""
         return self._eos
 
     @property
     def box(self) -> Box:
+        """The boundary box."""
         return self._box
 
-    @box.setter
-    def box(self, boundary):
+    def set_boundary(self, boundary: tuple) -> None:
+        """
+        Set the boundary Cartesian box.
+
+        Parameters
+        ----------
+        boundary : tuple
+            The boundary of the box like
+            (xmin, xmax, ymin, ymax, zmin, zmax).
+        """
         xmin, xmax, ymin, ymax, zmin, zmax = boundary
         self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
 
