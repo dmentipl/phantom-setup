@@ -5,13 +5,12 @@ import numpy as np
 from .defaults import options
 
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-
-HFACT_DEFAULT = options['hfact']
+_HFACT_DEFAULT = options['hfact']
 
 
 def uniform_distribution(
     *,
-    box_dimensions: Tuple[float],
+    boundary: Tuple[float],
     particle_spacing: float,
     distribution: str = None,
     hfact: float = None,
@@ -21,9 +20,8 @@ def uniform_distribution(
 
     Parameters
     ----------
-    box_dimensions : tuple
-        The box dimensions as a tuple:
-        (xmin, xmax, ymin, ymax, zmin, zmax).
+    boundary : tuple
+        The boundary as a tuple (xmin, xmax, ymin, ymax, zmin, zmax).
     particle_spacing : float
         The spacing between the particles.
 
@@ -50,9 +48,9 @@ def uniform_distribution(
         distribution = 'close packed'
 
     if hfact is None:
-        hfact = HFACT_DEFAULT
+        hfact = _HFACT_DEFAULT
 
-    xmin, xmax, ymin, ymax, zmin, zmax = box_dimensions
+    xmin, xmax, ymin, ymax, zmin, zmax = boundary
 
     xwidth = xmax - xmin
     ywidth = ymax - ymin
@@ -103,22 +101,22 @@ def uniform_distribution(
 
 def _close_packed_lattice(nx, ny, nz):
 
-    pos = np.zeros((nx * ny * nz, 3))
+    xyz = np.zeros((nx * ny * nz, 3))
 
     for k in range(nz):
 
         k_start = k * nx * ny
         k_end = k * nx * ny + nx * ny
-        pos[k_start:k_end, 2] = 2 * np.sqrt(6) / 3 * k
+        xyz[k_start:k_end, 2] = 2 * np.sqrt(6) / 3 * k
 
         for j in range(ny):
 
             j_start = k_start + j * nx
             j_end = k_start + j * nx + nx
-            pos[j_start:j_end, 1] = np.sqrt(3) * (j + 1 / 3 * np.mod(k, 2))
+            xyz[j_start:j_end, 1] = np.sqrt(3) * (j + 1 / 3 * np.mod(k, 2))
 
             for i in range(nx):
 
-                pos[k * nx * ny + j * nx + i, 0] = 2 * i + np.mod(j + k, 2)
+                xyz[k * nx * ny + j * nx + i, 0] = 2 * i + np.mod(j + k, 2)
 
-    return pos
+    return xyz

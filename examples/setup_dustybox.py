@@ -9,11 +9,11 @@ prefix = 'test'
 # ------------------------------------------------------------------------------------ #
 # Instantiate phantomsetup object
 setup = phantomsetup.Setup()
+setup.prefix = 'test'
 
 # ------------------------------------------------------------------------------------ #
 # Setup box
-box = (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5)
-vol = (box[1] - box[0]) * (box[3] - box[2]) * (box[5] - box[4])
+setup.box = (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5)
 
 # ------------------------------------------------------------------------------------ #
 # Setup gas
@@ -22,12 +22,12 @@ npartx = 32
 rho = 1.0
 
 # Particle positions
-particle_spacing = (box[1] - box[0]) / npartx
+particle_spacing = setup.box.xwidth / npartx
 position, smoothing_length = phantomsetup.dist.uniform_distribution(
-    box_dimensions=box, particle_spacing=particle_spacing, hfact=hfact
+    box_dimensions=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
-particle_mass = rho * vol / npart
+particle_mass = rho * setup.box.volume / npart
 
 # Particle velocities
 velocity = np.zeros((npart, 3))
@@ -42,12 +42,12 @@ npartx = 16
 rho = 0.01
 
 # Particle positions
-particle_spacing = (box[1] - box[0]) / npartx
+particle_spacing = setup.box.xwidth / npartx
 position, smoothing_length = phantomsetup.dist.uniform_distribution(
-    box_dimensions=box, particle_spacing=particle_spacing, hfact=hfact
+    box_dimensions=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
-particle_mass = rho * vol / npart
+particle_mass = rho * setup.box.volume / npart
 
 # Particle velocities
 velocity = np.hstack((np.ones((npart, 1)), np.zeros((npart, 2))))

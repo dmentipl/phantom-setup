@@ -33,6 +33,7 @@ class Setup:
         self._arrays: Dict[str, Any] = {}
 
         self._units: Dict[str, float] = None
+        self._box: Box = None
 
         self._fileident: str = None
         self._compile_time_options: Dict[str, Any] = copy.deepcopy(
@@ -194,7 +195,16 @@ class Setup:
         return self
 
     @property
-    def units(self) -> None:
+    def box(self) -> Box:
+        return self._box
+
+    @box.setter
+    def box(self, boundary):
+        xmin, xmax, ymin, ymax, zmin, zmax = boundary
+        self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
+
+    @property
+    def units(self) -> Dict[str, float]:
         return self._units
 
     @units.setter
@@ -300,6 +310,14 @@ class Setup:
             'ascii'
         )
 
+        if self._box is not None:
+            self._header['xmin'] = self.box.xmin
+            self._header['xmax'] = self.box.xmax
+            self._header['ymin'] = self.box.ymin
+            self._header['ymax'] = self.box.ymax
+            self._header['zmin'] = self.box.zmin
+            self._header['zmax'] = self.box.zmax
+
     def write_dump_file(self, filename: Union[str, Path] = None) -> None:
         """
         Write Phantom temporary ('.tmp') dump file.
@@ -311,7 +329,10 @@ class Setup:
         """
 
         if filename is None:
-            filename = f'{self.prefix}_00000.tmp.h5'
+            if self.prefix is None:
+                raise ValueError('either choose a filename or set prefix value')
+            else:
+                filename = f'{self.prefix}_00000.tmp.h5'
 
         self._update_header()
 
@@ -339,13 +360,57 @@ class Setup:
 
         file_handle.close()
 
-    def write_in_file(self, filename: Union[str, Path]) -> None:
+    def write_in_file(self, filename: Union[str, Path] = None) -> None:
         """
         Write Phantom 'in' file.
 
-        Parameters
-        ----------
-        filename : str or pathlib.Path
-            The name of the file to write to.
+        Optional parameters
+        -------------------
+        filename : str or Path
+            The name of the in file. Default is 'prefix.in'.
         """
+
+        if filename is None:
+            filename = f'{self.prefix}.in'
+
         pc.read_dict(self._infile).write_phantom(filename)
+
+
+class Box:
+    """
+    Cartesian box for simulations.
+
+    Parameters
+    ----------
+    xmin : float
+    xmax : float
+    ymin : float
+    ymax : float
+    zmin : float
+    zmax : float
+    """
+
+    def __init__(
+        self,
+        xmin: float,
+        xmax: float,
+        ymin: float,
+        ymax: float,
+        zmin: float,
+        zmax: float,
+    ) -> None:
+
+        self.boundary = (xmin, xmax, ymin, ymax, zmin, zmax)
+
+        self.xmin = xmin
+        self.xmax = xmax
+        self.ymin = ymin
+        self.ymax = ymax
+        self.zmin = zmin
+        self.zmax = zmax
+
+        self.xwidth = xmax - xmin
+        self.ywidth = ymax - ymin
+        self.zwidth = zmax - zmin
+
+        self.volume = (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
