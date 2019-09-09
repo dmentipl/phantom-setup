@@ -8,6 +8,10 @@ stationary, and the dust is given a uniform velocity to the right.
 import numpy as np
 import phantomsetup
 
+# TODO: things to set that are not currently set
+# - sound speed
+# - ndustlarge
+
 
 def main():
 

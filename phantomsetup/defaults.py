@@ -7,8 +7,8 @@ PHANTOM_GIT_HASH = 'xxxxxxx'
 
 FILEIDENT_LEN = 100
 
-MAXDUSTLARGE = 10
-MAXDUSTSMALL = 10
+MAXDUSTLARGE = 11
+MAXDUSTSMALL = 11
 
 igas = 1
 iboundary = 3
@@ -63,7 +63,15 @@ options = {
     # ------------------------------------------------
     # options controlling equation of state
     'ieos': 1,
+    'polyk': 1.0,
+    'polyk2': 0.0,
+    'gamma': 1.0,
+    'qfacdisc': 0.75,
     'mu': 2.381,
+    'ipdv_heating': 1,
+    'ishock_heating': 1,
+    'iresistive_heating': 1,
+    'isink': 0,
     'drhocrit': 0.50,
     'rhocrit0': 1.0e-18,
     'rhocrit1': 1.0e-14,
@@ -83,10 +91,6 @@ options = {
     'X': 0.74,
     'Z': 0.02,
     'relaxflag': 0,
-    'ipdv_heating': 1,
-    'ishock_heating': 1,
-    'iresistive_heating': 1,
-    'isink': 0,
     # ------------------------------------------------
     # options controlling cooling
     'icooling': 0,
@@ -185,7 +189,7 @@ header = {
     'Bextz': options['Bextz'],
     'C_cour': options['C_cour'],
     'C_force': options['C_force'],
-    'RK2': 1.5,
+    'RK2': 3/2*options['polyk'],
     'alpha': options['alpha'],
     'alphaB': options['alphaB'],
     'alphau': options['alphau'],
@@ -193,11 +197,12 @@ header = {
     'dtmax': options['dtmax'],
     'dum': 0.0,
     'etot_in': options['etot_in'],
-    'gamma': 1.0,
+    'gamma': options['gamma'],
     'get_conserv': options['get_conserv'],
     'graindens': np.zeros(maxdust),
     'grainsize': np.zeros(maxdust),
     'hfact': options['hfact'],
+    'idust': idust,
     'ieos': options['ieos'],
     'iexternalforce': options['iexternalforce'],
     'isink': options['isink'],
@@ -212,8 +217,8 @@ header = {
     'nparttot': 0,
     'nptmass': 0,
     'ntypes': 0,
-    'polyk2': 1.0,
-    'qfacdisc': 1.0,
+    'polyk2': options['polyk2'],
+    'qfacdisc': options['qfacdisc'],
     'rhozero': 1.0,
     'time': 0.0,
     'tolh': options['tolh'],
