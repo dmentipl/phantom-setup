@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import copy
+import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Dict, Set, Union
 
 import h5py
 import numpy as np
@@ -9,41 +11,43 @@ import phantomconfig as pc
 
 from . import defaults
 
-_AVAILABLE_SETUPS = ('dustybox',)
-
 
 class Setup:
     """
     The initial conditions for a Phantom simulation.
-
-    Parameters
-    ----------
-    setup : str
-        The problem to set up.
     """
 
-    def __init__(self, setup: str) -> None:
+    def __init__(self) -> None:
 
-        if setup not in _AVAILABLE_SETUPS:
-            raise ValueError(f'Setup: {setup} not available')
+        self._setup: str = None
+        self._prefix: str = None
 
-        self.setup = setup
+        self._infile: Dict[str, Any] = dict()
+        self._header: Dict[str, Any] = defaults.header
 
-        self._infile = dict()
-        self._header = defaults.header
-
+        self._particle_mass: Dict[int, float] = {}
         self._particle_type: np.ndarray = None
         self._position: np.ndarray = None
         self._smoothing_length: np.ndarray = None
         self._velocity: np.ndarray = None
-
-        self._number_of_particles: List[int] = None
-        self._particle_mass: Dict[int, float] = {}
-        self._particle_types: Set[int] = None
-
         self._arrays: Dict[str, Any] = {}
 
         self._units: Dict[str, float] = None
+
+        self._fileident: str = None
+        self._compile_time_options: Dict[str, Any] = copy.deepcopy(
+            defaults.compile_options
+        )
+        self._run_time_options: Dict[str, Any] = copy.deepcopy(defaults.options)
+
+    @property
+    def prefix(self) -> str:
+        """Prefix for dump file and in file."""
+        return self._prefix
+
+    @prefix.setter
+    def prefix(self, prefix: str) -> None:
+        self._prefix = prefix
 
     def add_array_to_particles(self, name: str, array: np.ndarray) -> Setup:
         """
@@ -67,50 +71,47 @@ class Setup:
         return self
 
     @property
-    def position(self) -> None:
+    def position(self) -> np.ndarray:
         """Cartesian positions of particles."""
         return self._position
 
     @property
-    def smoothing_length(self) -> None:
+    def smoothing_length(self) -> np.ndarray:
         """Smoothing length of particles."""
         return self._smoothing_length
 
     @property
-    def velocity(self) -> None:
+    def velocity(self) -> np.ndarray:
         """Cartesian velocities of particles."""
         return self._velocity
 
     @property
-    def particle_type(self) -> None:
+    def particle_type(self) -> np.ndarray:
         """
         Type of each particle.
         """
         return self._particle_type
 
     @property
-    def particle_types(self) -> None:
+    def particle_types(self) -> Set[int]:
         """
         Particle types.
         """
-        if self._particle_types is None:
-            return set(np.unique(self._particle_type, return_counts=True)[0])
+        return set(np.unique(self._particle_type, return_counts=True)[0])
 
     @property
-    def number_of_particles(self) -> None:
+    def number_of_particles(self) -> Dict[int, int]:
         """Number of particles of each type."""
-        if self._number_of_particles is None:
-            types, counts = np.unique(self._particle_type, return_counts=True)
-            return dict(zip(types, counts))
-        return self._number_of_particles
+        types, counts = np.unique(self._particle_type, return_counts=True)
+        return dict(zip(types, counts))
 
     @property
-    def total_number_of_particles(self) -> None:
+    def total_number_of_particles(self) -> int:
         """Total number of particles of each type."""
         return sum(self.number_of_particles.values())
 
     @property
-    def particle_mass(self) -> None:
+    def particle_mass(self) -> Dict[int, float]:
         """The particle mass per particle type."""
         return self._particle_mass
 
@@ -220,21 +221,77 @@ class Setup:
         self._units = {'length': length, 'mass': mass, 'time': time}
 
     @property
+    def compile_time_options(self) -> None:
+        """Phantom compile time options."""
+        return self._compile_time_options
+
+    @compile_time_options.setter
+    def compile_time_options(self, **kwargs):
+        for key, value in kwargs.items():
+            if key in self._compile_time_options:
+                self._compile_time_options[key] = value
+
+    @property
+    def run_time_options(self) -> None:
+        """Phantom run time options."""
+        return self._run_time_options
+
+    @run_time_options.setter
+    def run_time_options(self, **kwargs):
+        for key, value in kwargs.items():
+            if key in self._run_time_options:
+                self._run_time_options[key] = value
+
+    @property
     def fileident(self) -> None:
+        """File information 'fileident' as defined in Phantom."""
+        if self._fileident is None:
+            self._generate_fileident()
         return self._fileident
 
-    @fileident.setter
-    def fileident(self, string: str) -> None:
-        self._fileident = string
+    def _generate_fileident(self):
+
+        fileident = (
+            f'fulldump: Phantom '
+            f'{defaults.PHANTOM_VERSION.split(".")[0]}.'
+            f'{defaults.PHANTOM_VERSION.split(".")[1]}.'
+            f'{defaults.PHANTOM_VERSION.split(".")[2]} '
+            f'{defaults.PHANTOM_GIT_HASH} '
+        )
+
+        string = ''
+        if self._compile_time_options['GRAVITY']:
+            string += '+grav'
+        if self.number_of_particles[defaults.idust] > 0:
+            string += '+dust'
+        if self._run_time_options['dustfrac']:
+            string += '+1dust'
+        if self._compile_time_options['H2CHEM']:
+            string += '+H2chem'
+        if self._compile_time_options['LIGHTCURVE']:
+            string += '+lightcurve'
+        if self._compile_time_options['DUSTGROWTH']:
+            string += '+dustgrowth'
+
+        if self._compile_time_options['MHD']:
+            fileident += f'(mhd+clean{string}): '
+        else:
+            fileident += f'(hydro{string}): '
+
+        fileident += datetime.datetime.strftime(
+            datetime.datetime.today(), '%d/%m/%Y %H:%M:%S.%f'
+        )[:-5]
+
+        self._fileident = fileident
 
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
 
-        self._header['npartoftype'] = np.zeros(defaults.MAX_TYPES, dtype=np.int)
+        self._header['npartoftype'] = np.zeros(defaults.maxtypes, dtype=np.int)
         for key, val in self.number_of_particles.items():
             self._header['npartoftype'][key - 1] = val
 
-        self._header['massoftype'] = np.zeros(defaults.MAX_TYPES)
+        self._header['massoftype'] = np.zeros(defaults.maxtypes)
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
 
@@ -243,15 +300,18 @@ class Setup:
             'ascii'
         )
 
-    def write_dump_file(self, filename: Union[str, Path]) -> None:
+    def write_dump_file(self, filename: Union[str, Path] = None) -> None:
         """
         Write Phantom temporary ('.tmp') dump file.
 
-        Parameters
-        ----------
+        Optional parameters
+        -------------------
         filename : str or Path
-            The name of the dump file.
+            The name of the dump file. Default is 'prefix_00000.tmp.h5'.
         """
+
+        if filename is None:
+            filename = f'{self.prefix}_00000.tmp.h5'
 
         self._update_header()
 
@@ -289,22 +349,3 @@ class Setup:
             The name of the file to write to.
         """
         pc.read_dict(self._infile).write_phantom(filename)
-
-
-class DustyBox(Setup):
-    """
-    Initial conditions for the DUSTYBOX test.
-    """
-
-    def __init__(self) -> None:
-        super().__init__('dustybox')
-
-        self._box: Tuple[float] = (1.0, 1.0, 1.0)
-
-    @property
-    def box(self) -> None:
-        return self._box
-
-    @box.setter
-    def box(self, dx: float, dy: float, dz: float) -> None:
-        self._box = (dx, dy, dz)

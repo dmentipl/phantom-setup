@@ -2,20 +2,25 @@ import datetime
 
 import numpy as np
 
-MAJORV = 0
-MINORV = 0
-MICROV = 0
+PHANTOM_VERSION = '0.0.0'
+PHANTOM_GIT_HASH = 'xxxxxxx'
 
 FILEIDENT_LEN = 100
 
-IGAS = 1
-IDUST = 7
+MAXDUSTLARGE = 10
+MAXDUSTSMALL = 10
 
-MAX_DUST_SMALL = 10
-MAX_DUST_LARGE = 10
-MAX_DUST = MAX_DUST_SMALL + MAX_DUST_LARGE
+igas = 1
+iboundary = 3
+istar = 4
+idarkmatter = 5
+ibulge = 6
+idust = 7
+idustlast = idust + MAXDUSTLARGE - 1
+iunknown = 0
 
-MAX_TYPES = 7 + MAX_DUST_LARGE - 1
+maxdust = MAXDUSTSMALL + MAXDUSTLARGE
+maxtypes = 7 + MAXDUSTLARGE - 1
 
 options = {
     # ------------------------------------------------
@@ -137,6 +142,7 @@ options = {
     # TODO
     # ------------------------------------------------
     # options controlling dust
+    'dustfrac': False,
     'idrag': 2,
     'K_code': 1.0,
     'ndustsmall': 0,
@@ -189,20 +195,20 @@ header = {
     'etot_in': options['etot_in'],
     'gamma': 1.0,
     'get_conserv': options['get_conserv'],
-    'graindens': np.zeros(MAX_DUST),
-    'grainsize': np.zeros(MAX_DUST),
+    'graindens': np.zeros(maxdust),
+    'grainsize': np.zeros(maxdust),
     'hfact': options['hfact'],
     'ieos': options['ieos'],
     'iexternalforce': options['iexternalforce'],
     'isink': options['isink'],
-    'majorv': MAJORV,
-    'massoftype': np.zeros(MAX_TYPES),
-    'microv': MICROV,
-    'minorv': MINORV,
-    'mdust_in': np.zeros(MAX_DUST),
+    'majorv': PHANTOM_VERSION.split('.')[0],
+    'massoftype': np.zeros(maxtypes),
+    'microv': PHANTOM_VERSION.split('.')[1],
+    'minorv': PHANTOM_VERSION.split('.')[2],
+    'mdust_in': np.zeros(maxdust),
     'ndustlarge': options['ndustlarge'],
     'ndustsmall': options['ndustsmall'],
-    'npartoftype': np.zeros(MAX_TYPES, dtype=np.int),
+    'npartoftype': np.zeros(maxtypes, dtype=np.int),
     'nparttot': 0,
     'nptmass': 0,
     'ntypes': 0,
@@ -222,4 +228,32 @@ header = {
     'ymin': -0.5,
     'zmax': 0.5,
     'zmin': -0.5,
+}
+
+
+compile_options = {
+    'CMACIONIZE': False,
+    'CONST_ARTRES': False,
+    'CONST_AV': False,
+    'CURLV': False,
+    'DISC_VISCOSITY': False,
+    'DRIVING': False,
+    'DUST': False,
+    'DUSTGROWTH': False,
+    'GRAVITY': False,
+    'H2CHEM': False,
+    'IND_TIMESTEPS': False,
+    'INJECT_PARTICLES': False,
+    'ISOTHERMAL': False,
+    'LIGHTCURVE': False,
+    'MAXDUSTSMALL': MAXDUSTSMALL,
+    'MAXDUSTLARGE': MAXDUSTLARGE,
+    'MCFOST': False,
+    'MHD': False,
+    'MORRIS_MONAGHAN': False,
+    'NONIDEALMHD': False,
+    'PERIODIC': False,
+    'STORE_TEMP': False,
+    'STS_TIMESTEPS': False,
+    'USE_STRAIN_TENSOR': False,
 }

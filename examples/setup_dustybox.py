@@ -1,26 +1,14 @@
 import numpy as np
-import phantomsetup.particle_distributions as dist
-import phantomsetup.phantomsetup as ps
-
-# ------------------------------------------------------------------------------------ #
-# Constants
-IGAS = 1
-IDUST = 7
+import phantomsetup
 
 # ------------------------------------------------------------------------------------ #
 # Parameters
 hfact = 1.0
-time = 0.0
-hfact = 1.0
-gamma = 1.0
-tmax = 0.1
-dtmax = 0.001
-cs = 1.0
-polyk = cs ** 2
+prefix = 'test'
 
 # ------------------------------------------------------------------------------------ #
 # Instantiate phantomsetup object
-setup = ps.Setup('dustybox')
+setup = phantomsetup.Setup()
 
 # ------------------------------------------------------------------------------------ #
 # Setup box
@@ -29,13 +17,13 @@ vol = (box[1] - box[0]) * (box[3] - box[2]) * (box[5] - box[4])
 
 # ------------------------------------------------------------------------------------ #
 # Setup gas
-particle_type = IGAS
+particle_type = phantomsetup.defaults.igas
 npartx = 32
 rho = 1.0
 
 # Particle positions
 particle_spacing = (box[1] - box[0]) / npartx
-position, smoothing_length = dist.uniform_distribution(
+position, smoothing_length = phantomsetup.dist.uniform_distribution(
     box_dimensions=box, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
@@ -49,13 +37,13 @@ setup.add_particles(particle_type, particle_mass, position, velocity, smoothing_
 
 # ------------------------------------------------------------------------------------ #
 # Setup dust
-particle_type = IDUST
+particle_type = phantomsetup.defaults.idust
 npartx = 16
 rho = 0.01
 
 # Particle positions
 particle_spacing = (box[1] - box[0]) / npartx
-position, smoothing_length = dist.uniform_distribution(
+position, smoothing_length = phantomsetup.dist.uniform_distribution(
     box_dimensions=box, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
@@ -74,11 +62,10 @@ setup.add_array_to_particles('alpha', alpha)
 
 # ------------------------------------------------------------------------------------ #
 # TODO: add other header items...
-setup.fileident = 'fulldump: Phantom 1.3.0 6666c55 (hydro+dust): 28/08/2019 19:21:16.8'
 
 # ------------------------------------------------------------------------------------ #
 # Write dump
-setup.write_dump_file('test_00000.tmp.h5')
+setup.write_dump_file()
 
 # ------------------------------------------------------------------------------------ #
 # DEBUGGING
