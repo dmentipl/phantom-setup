@@ -288,10 +288,31 @@ class Setup:
         return self._run_time_options
 
     @run_time_options.setter
-    def run_time_options(self, **kwargs):
+    def run_time_options(self, **kwargs) -> None:
         for key, value in kwargs.items():
             if key in self._run_time_options:
                 self._run_time_options[key] = value
+
+    @property
+    def number_of_large_dust_types(self) -> int:
+        """Number of '2-fluid', i.e. large dust species."""
+        return len(
+            [
+                itype
+                for itype, npartoftype in self.number_of_particles.items()
+                if defaults.idust <= itype <= defaults.idustlast and npartoftype > 0
+            ]
+        )
+
+    @property
+    def contains_large_dust(self) -> bool:
+        return any(
+            [
+                npart
+                for itype, npart in self.number_of_particles.items()
+                if itype >= defaults.idust and itype <= defaults.idustlast and npart > 0
+            ]
+        )
 
     @property
     def fileident(self) -> None:
@@ -338,6 +359,14 @@ class Setup:
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
 
+        fileident = self.fileident.ljust(defaults.FILEIDENT_LEN).encode('ascii')
+        self._header['fileident'] = fileident
+
+        # Number and mass of particles
+
+        self._header['nparttot'] = self.total_number_of_particles
+        self._header['ntypes'] = defaults.maxtypes
+
         self._header['npartoftype'] = np.zeros(defaults.maxtypes, dtype=np.int)
         for key, val in self.number_of_particles.items():
             self._header['npartoftype'][key - 1] = val
@@ -346,15 +375,19 @@ class Setup:
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
 
-        self._header['nparttot'] = self.total_number_of_particles
-        self._header['ntypes'] = defaults.maxtypes
+        # Dust
+        # TODO: set self._header['ndustsmall']
 
-        # TODO: self._header['ndustsmall'] =
-        # TODO: self._header['ndustlarge'] =
+        self._header['ndustlarge'] = self.number_of_large_dust_types
 
-        self._header['fileident'] = self.fileident.ljust(defaults.FILEIDENT_LEN).encode(
-            'ascii'
-        )
+        # Equation of state
+
+        if self._eos.polyk is not None:
+            self._header['RK2'] = 3 / 2 * self._eos.polyk
+        if self._eos.gamma is not None:
+            self._header['gamma'] = self._eos.gamma
+        if self._eos.qfacdisc is not None:
+            self._header['qfacdisc'] = self._eos.qfacdisc
 
         if self._box is not None:
             self._header['xmin'] = self.box.xmin
