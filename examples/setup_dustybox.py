@@ -24,7 +24,7 @@ rho = 1.0
 # Particle positions
 particle_spacing = setup.box.xwidth / npartx
 position, smoothing_length = phantomsetup.dist.uniform_distribution(
-    box_dimensions=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
+    boundary=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
 particle_mass = rho * setup.box.volume / npart
@@ -44,7 +44,7 @@ rho = 0.01
 # Particle positions
 particle_spacing = setup.box.xwidth / npartx
 position, smoothing_length = phantomsetup.dist.uniform_distribution(
-    box_dimensions=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
+    boundary=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
 )
 npart = position.shape[0]
 particle_mass = rho * setup.box.volume / npart
