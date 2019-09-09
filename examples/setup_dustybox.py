@@ -65,7 +65,7 @@ def main():
 
     # -------------------------------------------------------------------------------- #
     # TODO: add other arrays...
-    alpha = np.zeros(dustybox.total_number_of_particles)
+    alpha = np.zeros(dustybox.total_number_of_particles, dtype=np.single)
     dustybox.add_array_to_particles('alpha', alpha)
 
     # -------------------------------------------------------------------------------- #
