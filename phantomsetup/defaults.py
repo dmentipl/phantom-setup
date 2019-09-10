@@ -5,238 +5,6 @@ import numpy as np
 PHANTOM_VERSION = '0.0.0'
 PHANTOM_GIT_HASH = 'xxxxxxx'
 
-FILEIDENT_LEN = 100
-
-MAXDUSTLARGE = 11
-MAXDUSTSMALL = 11
-
-igas = 1
-iboundary = 3
-istar = 4
-idarkmatter = 5
-ibulge = 6
-idust = 7
-idustlast = idust + MAXDUSTLARGE - 1
-iunknown = 0
-
-maxdust = MAXDUSTSMALL + MAXDUSTLARGE
-maxtypes = 7 + MAXDUSTLARGE - 1
-
-options = {
-    # ------------------------------------------------
-    # job name
-    'logfile': 'prefix01.log',
-    'dumpfile': 'prefix_00000.tmp',
-    # ------------------------------------------------
-    # options controlling run time and input/output
-    'tmax': 0.1,
-    'dtmax': 0.001,
-    'nmax': -1,
-    'nout': -1,
-    'nmaxdumps': -1,
-    'twallmax': datetime.timedelta(hours=0),
-    'dtwallmax': datetime.timedelta(hours=12),
-    'nfulldump': 1,
-    'iverbose': 0,
-    # ------------------------------------------------
-    # options controlling accuracy
-    'C_cour': 0.3,
-    'C_force': 0.25,
-    'tolv': 1.0e-2,
-    'hfact': 1.0,
-    'tolh': 1.0e-4,
-    # ------------------------------------------------
-    # options controlling hydrodynamics, artificial dissipation
-    'alpha': 1.0,
-    'alphamax': 1.0,
-    'alphau': 1.0,
-    'beta': 2.0,
-    'alphaB': 1.0,
-    'psidecayfac': 1.0,
-    'overcleanfac': 1.0,
-    'avdecayconst': 0.1,
-    # ------------------------------------------------
-    # options controlling damping
-    'idamp': 0,
-    'damp': 0.0,
-    'tdyn_s': 0.0,
-    # ------------------------------------------------
-    # options controlling equation of state
-    'ieos': 1,
-    'polyk': 1.0,
-    'polyk2': 0.0,
-    'gamma': 1.0,
-    'qfacdisc': 0.75,
-    'mu': 2.381,
-    'ipdv_heating': 1,
-    'ishock_heating': 1,
-    'iresistive_heating': 1,
-    'isink': 0,
-    'drhocrit': 0.50,
-    'rhocrit0': 1.0e-18,
-    'rhocrit1': 1.0e-14,
-    'rhocrit2': 1.0e-10,
-    'rhocrit3': 1.0e-3,
-    'gamma1': 1.4,
-    'gamma2': 1.1,
-    'gamma3': 5 / 3,
-    'rhocrit0pwp': 2.62780e12,
-    'rhocrit1pwp': 5.01187e14,
-    'rhocrit2pwp': 1.0e15,
-    'gamma0pwp': 5 / 3,
-    'gamma1pwp': 3.166,
-    'gamma2pwp': 3.573,
-    'gamma3pwp': 3.281,
-    'p1pwp': 2.46604e34,
-    'X': 0.74,
-    'Z': 0.02,
-    'relaxflag': 0,
-    # ------------------------------------------------
-    # options controlling cooling
-    'icooling': 0,
-    'C_cool': 0.05,
-    'beta_cool': 3.0,
-    'dlq': 3.086e19,
-    'dphot': 1.0801e20,
-    'dphotflag': 0,
-    'dchem': 3.086e20,
-    'abundc': 1.4e-4,
-    'abundo': 3.2e-4,
-    'abundsi': 1.5e-5,
-    'abunde': 2.0e-4,
-    'uv_field_strength': 1.0,
-    'dust_to_gas_ratio': 1.0,
-    'AV_conversion_factor': 5.348e-22,
-    'cosmic_ray_ion_rate': 1.0e-17,
-    'iphoto': 1,
-    'iflag_atom': 1,
-    'cooltable': 'cooltable.dat',
-    'habund': 0.7,
-    'temp_floor': 1.0e4,
-    # ------------------------------------------------
-    # options controlling magnetic fields
-    'Bextx': 0.0,
-    'Bexty': 0.0,
-    'Bextz': 0.0,
-    # ------------------------------------------------
-    # options controlling MCFOST
-    'use_mcfost': False,
-    'Voronoi_limits_file': 'limits',
-    'use_mcfost_stars': False,
-    # ------------------------------------------------
-    # options controlling sink particles
-    'icreate_sinks': 0,
-    'rho_crit_cgs': 1.0e-10,
-    'r_crit': 5.0e-3,
-    'h_acc': 1.0e-3,
-    'h_soft_sinkgas': 0.0,
-    'h_soft_sinksink': 0.0,
-    'f_acc': 0.8,
-    # ------------------------------------------------
-    # options relating to external forces
-    # TODO: this is unfinished
-    'iexternalforce': 0,
-    # ------------------------------------------------
-    # options controlling physical viscosity
-    'irealvisc': 0,
-    'shearparam': 0.1,
-    'bulkvisc': 0.0,
-    # ------------------------------------------------
-    # options controlling forcing of turbulence
-    # TODO
-    # ------------------------------------------------
-    # options controlling dust
-    'dustfrac': False,
-    'idrag': 2,
-    'K_code': 1.0,
-    'ndustsmall': 0,
-    'ndustlarge': 0,
-    'icut_backreaction': 0,
-    'ilimitdustflux': False,
-    # ------------------------------------------------
-    # options controlling growth
-    'ifrag': 0,
-    'grainsizemin': 1.0e-3,
-    'isnow': 0,
-    'rsnow': 100.0,
-    'Tsnow': 20.0,
-    'vfrag': 15.0,
-    'vfragin': 5.0,
-    'vfragout': 15.0,
-    # ------------------------------------------------
-    # options controlling photoevaporation
-    'mu_cgs': 1.26,
-    'recombrate_cgs': 2.6e-13,
-    'ionflux_cgs': 1.0e41,
-    # ------------------------------------------------
-    # options for injecting particles
-    # TODO
-    # ------------------------------------------------
-    # options controlling non-ideal MHD
-    # TODO
-    # ------------------------------------------------
-    # options from initial params
-    'angtot_in': 0.0,
-    'get_conserv': -1.0,
-    'etot_in': 0.0,
-    'totmom_in': 0.0,
-    'mdust_in': 0.0,
-}
-
-header = {
-    'Bextx': options['Bextx'],
-    'Bexty': options['Bexty'],
-    'Bextz': options['Bextz'],
-    'C_cour': options['C_cour'],
-    'C_force': options['C_force'],
-    'RK2': 3 / 2 * options['polyk'],
-    'alpha': options['alpha'],
-    'alphaB': options['alphaB'],
-    'alphau': options['alphau'],
-    'angtot_in': options['angtot_in'],
-    'dtmax': options['dtmax'],
-    'dum': 0.0,
-    'etot_in': options['etot_in'],
-    'fileident': '',
-    'gamma': options['gamma'],
-    'get_conserv': options['get_conserv'],
-    'graindens': np.zeros(maxdust),
-    'grainsize': np.zeros(maxdust),
-    'hfact': options['hfact'],
-    'idust': idust,
-    'ieos': options['ieos'],
-    'iexternalforce': options['iexternalforce'],
-    'isink': options['isink'],
-    'majorv': PHANTOM_VERSION.split('.')[0],
-    'massoftype': np.zeros(maxtypes),
-    'microv': PHANTOM_VERSION.split('.')[1],
-    'minorv': PHANTOM_VERSION.split('.')[2],
-    'mdust_in': np.zeros(maxdust),
-    'ndustlarge': options['ndustlarge'],
-    'ndustsmall': options['ndustsmall'],
-    'npartoftype': np.zeros(maxtypes, dtype=np.int),
-    'nparttot': 0,
-    'nptmass': 0,
-    'ntypes': 0,
-    'polyk2': options['polyk2'],
-    'qfacdisc': options['qfacdisc'],
-    'rhozero': 1.0,
-    'time': 0.0,
-    'tolh': options['tolh'],
-    'totmom_in': options['totmom_in'],
-    'udist': 1.0,
-    'umass': 1.0,
-    'umagfd': 1.0,
-    'utime': 1.0,
-    'xmax': 0.5,
-    'xmin': -0.5,
-    'ymax': 0.5,
-    'ymin': -0.5,
-    'zmax': 0.5,
-    'zmin': -0.5,
-}
-
-
 compile_options = {
     'CMACIONIZE': False,
     'CONST_ARTRES': False,
@@ -252,8 +20,8 @@ compile_options = {
     'INJECT_PARTICLES': False,
     'ISOTHERMAL': False,
     'LIGHTCURVE': False,
-    'MAXDUSTSMALL': MAXDUSTSMALL,
-    'MAXDUSTLARGE': MAXDUSTLARGE,
+    'MAXDUSTSMALL': 11,
+    'MAXDUSTLARGE': 11,
     'MCFOST': False,
     'MHD': False,
     'MORRIS_MONAGHAN': False,
@@ -262,4 +30,309 @@ compile_options = {
     'STORE_TEMP': False,
     'STS_TIMESTEPS': False,
     'USE_STRAIN_TENSOR': False,
+}
+
+particle_type = {
+    'igas': 1,
+    'iboundary': 3,
+    'istar': 4,
+    'idarkmatter': 5,
+    'ibulge': 6,
+    'idust': 7,
+    'idustlast': 7 + compile_options['MAXDUSTLARGE'] - 1,
+    'iunknown': 0,
+}
+
+maxtypes = 7 + compile_options['MAXDUSTLARGE'] - 1
+maxdust = compile_options['MAXDUSTSMALL'] + compile_options['MAXDUSTLARGE']
+
+runtime_options = {
+    # ------------------------------------------------
+    # job name
+    'job name': {
+        'logfile': ('prefix01.log', 'file to which output is directed'),
+        'dumpfile': ('prefix_00000.tmp', 'dump file to start from'),
+    },
+    # ------------------------------------------------
+    # options controlling run time and input/output
+    'options controlling run time and input/output': {
+        'tmax': (0.1, 'end time'),
+        'dtmax': (0.001, 'time between dumps'),
+        'nmax': (-1, 'maximum number of timesteps (0=just get derivs and stop)'),
+        'nout': (-1, 'number of steps between dumps (-ve=ignore)'),
+        'nmaxdumps': (-1, 'stop after n full dumps (-ve=ignore)'),
+        'twallmax': (
+            datetime.timedelta(hours=0),
+            'maximum wall time (hhh:mm, 000:00=ignore)',
+        ),
+        'dtwallmax': (
+            datetime.timedelta(hours=12),
+            'maximum wall time between dumps (hhh:mm, 000:00=ignore)',
+        ),
+        'nfulldump': (1, 'full dump every n dumps'),
+        'iverbose': (
+            0,
+            'verboseness of log (-1=quiet 0=default 1=allsteps 2=debug 5=max)',
+        ),
+    },
+    # ------------------------------------------------
+    # options controlling run time and input/output: supplementary features
+    'options controlling run time and input/output: supplementary features': {
+        'rhofinal_cgs': (0.0, 'maximum allowed density (cgs) (<=0 to ignore)'),
+        'dtmax_dratio': (
+            0.0,
+            'dynamic dtmax: density ratio controlling decrease (<=0 to ignore)',
+        ),
+        'dtmax_max': (-1.0, 'dynamic dtmax: maximum allowed dtmax (=dtmax if <= 0)'),
+        'dtmax_min': (0.0, 'dynamic dtmax: minimum allowed dtmax'),
+        'calc_erot': (False, 'include E_rot in the ev_file'),
+    },
+    # ------------------------------------------------
+    # options controlling accuracy
+    'options controlling accuracy': {
+        'C_cour': (0.3, 'Courant number'),
+        'C_force': (0.25, 'dt_force number'),
+        'tolv': (1.0e-2, 'tolerance on v iterations in timestepping'),
+        'hfact': (1.0, 'h in units of particle spacing [h = hfact(m/rho)^(1/3)]'),
+        'tolh': (1.0e-4, 'tolerance on h-rho iterations'),
+        'tree_accuracy': (0.5, 'tree opening criterion (0.0-1.0)'),
+    },
+    # ------------------------------------------------
+    # options controlling hydrodynamics, artificial dissipation
+    'options controlling hydrodynamics, artificial dissipation': {
+        'alpha': (1.0, 'MINIMUM art. viscosity parameter'),
+        'alphamax': (1.0, 'MAXIMUM art. viscosity parameter'),
+        'alphau': (1.0, 'art. conductivity parameter'),
+        'beta': (2.0, 'beta viscosity'),
+        'alphaB': (1.0, 'art. resistivity parameter'),
+        'psidecayfac': (1.0, 'div B diffusion parameter'),
+        'overcleanfac': (
+            1.0,
+            'factor to increase cleaning speed (decreases time step)',
+        ),
+        'avdecayconst': (0.1, 'decay time constant for viscosity switches'),
+    },
+    # ------------------------------------------------
+    # options controlling damping
+    'options controlling damping': {
+        'idamp': (0, 'artificial damping of velocities (0=off, 1=constant, 2=star)'),
+        'damp': (0.0, 'artificial damping of velocities (if on, v=0 initially)'),
+        'tdyn_s': (
+            0.0,
+            'dynamical timescale of star in seconds - damping is dependent on it',
+        ),
+    },
+    # ------------------------------------------------
+    # options controlling equation of state
+    'options controlling equation of state': {
+        'ieos': (1, 'eqn of state (1=isoth;2=adiab;3=locally iso;8=barotropic)'),
+        'mu': (2.381, 'mean molecular weight'),
+        'ipdv_heating': (1, 'heating from PdV work (0=off, 1=on)'),
+        'ishock_heating': (1, 'shock heating (0=off, 1=on)'),
+        'iresistive_heating': (1, 'resistive heating (0=off, 1=on)'),
+        'drhocrit': (
+            0.50,
+            'transition size between rhocrit0 & 1 '
+            '(fraction of rhocrit0; barotropic eos)',
+        ),
+        'rhocrit0': (1.0e-18, 'critical density 0 in g/cm^3 (barotropic eos)'),
+        'rhocrit1': (1.0e-14, 'critical density 1 in g/cm^3 (barotropic eos)'),
+        'rhocrit2': (1.0e-10, 'critical density 2 in g/cm^3 (barotropic eos)'),
+        'rhocrit3': (1.0e-3, 'critical density 3 in g/cm^3 (barotropic eos)'),
+        'gamma1': (1.4, 'adiabatic index 1 (barotropic eos)'),
+        'gamma2': (1.1, 'adiabatic index 2 (barotropic eos)'),
+        'gamma3': (5 / 3, 'adiabatic index 3 (barotropic eos)'),
+        'rhocrit0pwp': (
+            2.62780e12,
+            'critical density 0 in g/cm^3 (piecewise polytropic eos)',
+        ),
+        'rhocrit1pwp': (
+            5.01187e14,
+            'critical density 1 in g/cm^3 (piecewise polytropic eos)',
+        ),
+        'rhocrit2pwp': (
+            1.0e15,
+            'critical density 2 in g/cm^3 (piecewise polytropic eos)',
+        ),
+        'gamma0pwp': (5 / 3, 'adiabatic index 0 (piecewise polytropic eos)'),
+        'gamma1pwp': (3.166, 'adiabatic index 1 (piecewise polytropic eos)'),
+        'gamma2pwp': (3.573, 'adiabatic index 2 (piecewise polytropic eos)'),
+        'gamma3pwp': (3.281, 'adiabatic index 3 (piecewise polytropic eos)'),
+        'p1pwp': (
+            2.46604e34,
+            'pressure at cutoff density rhocrit1pwp (piecewise polytropic eos)',
+        ),
+        'X': (0.74, 'hydrogen mass fraction'),
+        'Z': (0.02, 'metallicity'),
+        'relaxflag': (0, '0=evolve, 1=relaxation on (keep T const)'),
+    },
+    # ------------------------------------------------
+    # options controlling cooling
+    'options controlling cooling': {
+        'icooling': (0, 'cooling function (0=off, 1=on)'),
+        'C_cool': (0.05, 'factor controlling cooling timestep'),
+        'beta_cool': (3.0, 'beta factor in Gammie (2001) cooling'),
+        'dlq': (3.086e19, 'distance for column density in cooling function'),
+        'dphot': (1.0801e20, 'photodissociation distance used for CO/H2'),
+        'dphotflag': (
+            0,
+            'photodissociation distance static or radially adaptive (0/1)',
+        ),
+        'dchem': (3.086e20, 'distance for chemistry of HI'),
+        'abundc': (1.4e-4, 'Carbon abundance'),
+        'abundo': (3.2e-4, 'Oxygen abundance'),
+        'abundsi': (1.5e-5, 'Silicon abundance'),
+        'abunde': (2.0e-4, 'electron abundance'),
+        'uv_field_strength': (1.0, 'Strength of UV field (in Habing units)'),
+        'dust_to_gas_ratio': (1.0, 'dust to gas ratio'),
+        'AV_conversion_factor': (
+            5.348e-22,
+            'Extinction per unit column density (cm^-2)',
+        ),
+        'cosmic_ray_ion_rate': (1.0e-17, 'Cosmic ray ionisation rate of H1 (in s^-1)'),
+        'iphoto': (
+            1,
+            'Photoelectric heating treatment (0=optically thin, 1=w/extinction)',
+        ),
+        'iflag_atom': (1, 'Which atomic cooling (1:Gal ISM, 2:Z=0 gas)'),
+        'cooltable': ('cooltable.dat', 'data file containing cooling function'),
+        'habund': (0.7, 'Hydrogen abundance assumed in cooling function'),
+        'temp_floor': (1.0e4, 'Minimum allowed temperature in K'),
+    },
+    # ------------------------------------------------
+    # options controlling MCFOST
+    'options controlling MCFOST': {
+        'use_mcfost': (False, 'use the mcfost library'),
+        'Voronoi_limits_file': ('limits', 'Limit file for the Voronoi tesselation'),
+        'use_mcfost_stars': (
+            False,
+            'Fix the stellar parameters to mcfost values or update using sink mass',
+        ),
+    },
+    # ------------------------------------------------
+    # options controlling sink particles
+    'options controlling sink particles': {
+        'icreate_sinks': (0, 'allow automatic sink particle creation'),
+        'rho_crit_cgs': (
+            1.0e-10,
+            'density above which sink particles are created (g/cm^3)',
+        ),
+        'r_crit': (
+            5.0e-3,
+            'critical radius for point mass creation (no new sinks < r_crit from '
+            'existing sink)',
+        ),
+        'h_acc': (1.0e-3, 'accretion radius for new sink particles'),
+        'h_soft_sinkgas': (0.0, 'softening length for new sink particles'),
+        'h_soft_sinksink': (0.0, 'softening length between sink particles'),
+        'f_acc': (0.8, 'particles < f_acc*h_acc accreted without checks'),
+    },
+    # ------------------------------------------------
+    # options relating to external forces
+    # TODO: this is unfinished
+    'options relating to external forces': {'iexternalforce': (0,)},
+    # ------------------------------------------------
+    # options controlling physical viscosity
+    'options controlling physical viscosity': {
+        'irealvisc': (0, 'physical viscosity type (0=none,1=const,2=Shakura/Sunyaev)'),
+        'shearparam': (
+            0.1,
+            'magnitude of shear viscosity (irealvisc=1) or alpha_SS (irealvisc=2)',
+        ),
+        'bulkvisc': (0.0, 'magnitude of bulk viscosity'),
+    },
+    # ------------------------------------------------
+    # options controlling forcing of turbulence
+    # TODO
+    'options controlling forcing of turbulence': {},
+    # ------------------------------------------------
+    # options controlling dust
+    'options controlling dust': {
+        'idrag': (2, 'gas/dust drag (0=off,1=Epstein/Stokes,2=const K,3=const ts)'),
+        'K_code': (1.0, 'drag constant when constant drag is used'),
+        'icut_backreaction': (0, 'cut the drag on the gas phase (0=no, 1=yes)'),
+        'ilimitdustflux': (False, 'limit the dust flux using Ballabio et al. (2018)'),
+    },
+    # ------------------------------------------------
+    # options controlling growth
+    'options controlling growth': {
+        'grainsize': (1.0, 'Initial grain size in cm'),
+        'graindens': (1.0, 'Intrinsic grain density in g/cm^3'),
+        'ifrag': (0, 'dust fragmentation (0=off,1=on,2=Kobayashi)'),
+        'grainsizemin': (1.0e-3, 'minimum grain size in cm'),
+        'isnow': (0, 'snow line (0=off,1=position based,2=temperature based)'),
+        'rsnow': (100.0, 'position of the snow line in AU'),
+        'Tsnow': (20.0, 'snow line condensation temperature in K'),
+        'vfrag': (15.0, 'uniform fragmentation threshold in m/s'),
+        'vfragin': (5.0, 'inward fragmentation threshold in m/s'),
+        'vfragout': (15.0, 'outward fragmentation threshold in m/s'),
+    },
+    # ------------------------------------------------
+    # options controlling photoevaporation
+    'options controlling photoevaporation': {
+        'mu_cgs': (1.26, 'Mean molecular weight'),
+        'recombrate_cgs': (2.6e-13, 'Recombination rate (alpha)'),
+        'ionflux_cgs': (1.0e41, 'Stellar EUV flux rate'),
+    },
+    # ------------------------------------------------
+    # options for injecting particles
+    # TODO
+    'options for injecting particles': {},
+    # ------------------------------------------------
+    # options controlling non-ideal MHD
+    # TODO
+    'options controlling non-ideal MHD': {},
+}
+
+header = {
+    'Bextx': 0.0,
+    'Bexty': 0.0,
+    'Bextz': 0.0,
+    'C_cour': runtime_options['C_cour'],
+    'C_force': runtime_options['C_force'],
+    'RK2': 1.5,
+    'alpha': runtime_options['alpha'],
+    'alphaB': runtime_options['alphaB'],
+    'alphau': runtime_options['alphau'],
+    'angtot_in': 0.0,
+    'dtmax': runtime_options['dtmax'],
+    'dum': 0.0,
+    'etot_in': 0.0,
+    'fileident': '',
+    'gamma': 1.0,
+    'get_conserv': -1.0,
+    'graindens': np.zeros(maxdust),
+    'grainsize': np.zeros(maxdust),
+    'hfact': runtime_options['hfact'],
+    'idust': particle_type['idust'],
+    'ieos': runtime_options['ieos'],
+    'iexternalforce': runtime_options['iexternalforce'],
+    'isink': 0,
+    'majorv': PHANTOM_VERSION.split('.')[0],
+    'massoftype': np.zeros(maxtypes),
+    'microv': PHANTOM_VERSION.split('.')[1],
+    'minorv': PHANTOM_VERSION.split('.')[2],
+    'mdust_in': np.zeros(maxdust),
+    'ndustlarge': 0,
+    'ndustsmall': 0,
+    'npartoftype': np.zeros(maxtypes, dtype=np.int),
+    'nparttot': 0,
+    'nptmass': 0,
+    'ntypes': 0,
+    'polyk2': 0.0,
+    'qfacdisc': 0.75,
+    'rhozero': 1.0,
+    'time': 0.0,
+    'tolh': runtime_options['tolh'],
+    'totmom_in': 0.0,
+    'udist': 1.0,
+    'umass': 1.0,
+    'umagfd': 1.0,
+    'utime': 1.0,
+    'xmax': 0.5,
+    'xmin': -0.5,
+    'ymax': 0.5,
+    'ymin': -0.5,
+    'zmax': 0.5,
+    'zmin': -0.5,
 }

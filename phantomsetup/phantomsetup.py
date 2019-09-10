@@ -12,6 +12,8 @@ import phantomconfig as pc
 from . import defaults
 from .eos import EquationOfState
 
+FILEIDENT_LEN = 100
+
 
 class Setup:
     """
@@ -359,7 +361,7 @@ class Setup:
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
 
-        fileident = self.fileident.ljust(defaults.FILEIDENT_LEN).encode('ascii')
+        fileident = self.fileident.ljust(FILEIDENT_LEN).encode('ascii')
         self._header['fileident'] = fileident
 
         # Number and mass of particles
@@ -420,7 +422,7 @@ class Setup:
         group = file_handle.create_group('header')
         for key, val in self._header.items():
             if isinstance(val, bytes):
-                dset = group.create_dataset(key, (), dtype=f'S{defaults.FILEIDENT_LEN}')
+                dset = group.create_dataset(key, (), dtype=f'S{FILEIDENT_LEN}')
                 dset[()] = val
             else:
                 group.create_dataset(name=key, data=val)
