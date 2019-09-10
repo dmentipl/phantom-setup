@@ -14,6 +14,10 @@ from .eos import EquationOfState
 
 FILEIDENT_LEN = 100
 
+IGAS = defaults.particle_type['igas']
+IDUST = defaults.particle_type['idust']
+IDUSTLAST = defaults.particle_type['idustlast']
+
 
 class Setup:
     """
@@ -40,7 +44,12 @@ class Setup:
         self._position: np.ndarray = None
         self._smoothing_length: np.ndarray = None
         self._velocity: np.ndarray = None
-        self._arrays: Dict[str, Any] = {}
+
+        self._extra_arrays: Dict[str, Any] = {}
+
+        self._dust_fraction: np.ndarray = None
+        self._use_dust_fraction = False
+        self.number_of_small_dust_types: int = 0
 
         self._eos: EquationOfState = None
         self._units: Dict[str, float] = None
@@ -50,7 +59,7 @@ class Setup:
         self._compile_time_options: Dict[str, Any] = copy.deepcopy(
             defaults.compile_options
         )
-        self._run_time_options: Dict[str, Any] = copy.deepcopy(defaults.options)
+        self._run_time_options: Dict[str, Any] = copy.deepcopy(defaults.runtime_options)
 
     @property
     def prefix(self) -> str:
@@ -72,6 +81,11 @@ class Setup:
         array : np.ndarray
             The array, such that the first index is the particle index.
 
+        See Also
+        --------
+        add_particles : Add particles to the setup.
+        set_dust_fraction: To set the dust fraction.
+
         Examples
         --------
         Adding an array 'alpha' of scalar quantities on the particles.
@@ -79,7 +93,7 @@ class Setup:
         >>> alpha = np.random.rand(npart)
         >>> setup.add_array_to_particles('alpha', alpha)
         """
-        self._arrays[name] = array
+        self._extra_arrays[name] = array
         return self
 
     @property
@@ -152,6 +166,11 @@ class Setup:
             component is the Cartesian velocity, i.e. vx, vy, vz.
         smoothing_length : (N,) np.ndarray
             The particle smoothing length as N x 1 array.
+
+        See Also
+        --------
+        add_array_to_particles : Add an array to existing particles.
+        set_dust_fraction: To set the dust fraction.
         """
 
         if positions.ndim != 2:
@@ -205,7 +224,40 @@ class Setup:
 
         return self
 
-    def set_equation_of_state(self, ieos: int, **kwargs) -> None:
+    def set_dust_fraction(self, dustfrac: np.ndarray) -> Setup:
+        """
+        Set the dust fraction on existing particles.
+
+        Parameters
+        ----------
+        dustfrac : (N, M) np.ndarray
+            The M dust fractions per dust species on N particles, where
+            M is the number of dust species.
+
+        See Also
+        --------
+        add_particles : Add particles to the setup.
+        add_array_to_particles : Add an array to existing particles.
+        """
+
+        if dustfrac.ndim > 2:
+            raise ValueError('dustfrac has wrong shape')
+        if dustfrac.shape[0] != self.number_of_particles[IGAS]:
+            raise ValueError(
+                'dustfrac must have shape (N, M) where N is number of particles'
+            )
+
+        self._dust_fraction = dustfrac
+        self.number_of_small_dust_types = self._dust_fraction.shape[1]
+        self._use_dust_fraction = True
+
+        return self
+
+    @property
+    def dust_fraction(self) -> np.ndarray:
+        return self._dust_fraction
+
+    def set_equation_of_state(self, ieos: int, **kwargs) -> Setup:
         """
         Set the equation of state.
 
@@ -222,6 +274,7 @@ class Setup:
         phantomsetup.eos.EquationOfState
         """
         self._eos = EquationOfState(ieos, **kwargs)
+        return self
 
     @property
     def eos(self) -> None:
@@ -233,7 +286,7 @@ class Setup:
         """The boundary box."""
         return self._box
 
-    def set_boundary(self, boundary: tuple) -> None:
+    def set_boundary(self, boundary: tuple) -> Setup:
         """
         Set the boundary Cartesian box.
 
@@ -245,6 +298,7 @@ class Setup:
         """
         xmin, xmax, ymin, ymax, zmin, zmax = boundary
         self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
+        return self
 
     @property
     def units(self) -> Dict[str, float]:
@@ -302,7 +356,7 @@ class Setup:
             [
                 itype
                 for itype, npartoftype in self.number_of_particles.items()
-                if defaults.idust <= itype <= defaults.idustlast and npartoftype > 0
+                if IDUST <= itype <= IDUSTLAST and npartoftype > 0
             ]
         )
 
@@ -312,7 +366,7 @@ class Setup:
             [
                 npart
                 for itype, npart in self.number_of_particles.items()
-                if itype >= defaults.idust and itype <= defaults.idustlast and npart > 0
+                if itype >= IDUST and itype <= IDUSTLAST and npart > 0
             ]
         )
 
@@ -336,9 +390,9 @@ class Setup:
         string = ''
         if self._compile_time_options['GRAVITY']:
             string += '+grav'
-        if self.number_of_particles[defaults.idust] > 0:
+        if self.number_of_particles[IDUST] > 0:
             string += '+dust'
-        if self._run_time_options['dustfrac']:
+        if self._use_dust_fraction:
             string += '+1dust'
         if self._compile_time_options['H2CHEM']:
             string += '+H2chem'
@@ -378,8 +432,8 @@ class Setup:
             self._header['massoftype'][key - 1] = val
 
         # Dust
-        # TODO: set self._header['ndustsmall']
 
+        self._header['ndustsmall'] = self.number_of_small_dust_types
         self._header['ndustlarge'] = self.number_of_large_dust_types
 
         # Equation of state
@@ -399,7 +453,7 @@ class Setup:
             self._header['zmin'] = self.box.zmin
             self._header['zmax'] = self.box.zmax
 
-    def write_dump_file(self, filename: Union[str, Path] = None) -> None:
+    def write_dump_file(self, filename: Union[str, Path] = None) -> Setup:
         """
         Write Phantom temporary ('.tmp') dump file.
 
@@ -434,14 +488,19 @@ class Setup:
         group.create_dataset(name='vxyz', data=self.velocity)
         group.create_dataset(name='itype', data=self.particle_type, dtype='i1')
 
-        for name, array in self._arrays.items():
+        if self._dust_fraction is not None:
+            group.create_dataset(name='dustfrac', data=self.dust_fraction)
+
+        for name, array in self._extra_arrays.items():
             group.create_dataset(name=name, data=array)
 
         group = file_handle.create_group('sinks')
 
         file_handle.close()
 
-    def write_in_file(self, filename: Union[str, Path] = None) -> None:
+        return self
+
+    def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
         """
         Write Phantom 'in' file.
 
@@ -455,6 +514,8 @@ class Setup:
             filename = f'{self.prefix}.in'
 
         pc.read_dict(self._infile).write_phantom(filename)
+
+        return self
 
 
 class Box:

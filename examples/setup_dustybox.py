@@ -32,8 +32,8 @@ def main():
 
     # -------------------------------------------------------------------------------- #
     # Constants
-    igas = phantomsetup.defaults.igas
-    idust = phantomsetup.defaults.idust
+    igas = phantomsetup.defaults.particle_type['igas']
+    idust = phantomsetup.defaults.particle_type['idust']
 
     # -------------------------------------------------------------------------------- #
     # Parameters

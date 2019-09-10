@@ -2,10 +2,10 @@ from typing import Tuple
 
 import numpy as np
 
-from .defaults import options
+from .defaults import runtime_options_flat
 
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-_HFACT_DEFAULT = options['hfact']
+_HFACT_DEFAULT = runtime_options_flat['hfact']
 
 
 def uniform_distribution(

@@ -284,18 +284,23 @@ runtime_options = {
     'options controlling non-ideal MHD': {},
 }
 
+runtime_options_flat = {}
+for block, block_dict in runtime_options.items():
+    for key, val in block_dict.items():
+        runtime_options_flat[key] = val[0]
+
 header = {
     'Bextx': 0.0,
     'Bexty': 0.0,
     'Bextz': 0.0,
-    'C_cour': runtime_options['C_cour'],
-    'C_force': runtime_options['C_force'],
+    'C_cour': runtime_options_flat['C_cour'],
+    'C_force': runtime_options_flat['C_force'],
     'RK2': 1.5,
-    'alpha': runtime_options['alpha'],
-    'alphaB': runtime_options['alphaB'],
-    'alphau': runtime_options['alphau'],
+    'alpha': runtime_options_flat['alpha'],
+    'alphaB': runtime_options_flat['alphaB'],
+    'alphau': runtime_options_flat['alphau'],
     'angtot_in': 0.0,
-    'dtmax': runtime_options['dtmax'],
+    'dtmax': runtime_options_flat['dtmax'],
     'dum': 0.0,
     'etot_in': 0.0,
     'fileident': '',
@@ -303,10 +308,10 @@ header = {
     'get_conserv': -1.0,
     'graindens': np.zeros(maxdust),
     'grainsize': np.zeros(maxdust),
-    'hfact': runtime_options['hfact'],
+    'hfact': runtime_options_flat['hfact'],
     'idust': particle_type['idust'],
-    'ieos': runtime_options['ieos'],
-    'iexternalforce': runtime_options['iexternalforce'],
+    'ieos': runtime_options_flat['ieos'],
+    'iexternalforce': runtime_options_flat['iexternalforce'],
     'isink': 0,
     'majorv': PHANTOM_VERSION.split('.')[0],
     'massoftype': np.zeros(maxtypes),
@@ -323,7 +328,7 @@ header = {
     'qfacdisc': 0.75,
     'rhozero': 1.0,
     'time': 0.0,
-    'tolh': runtime_options['tolh'],
+    'tolh': runtime_options_flat['tolh'],
     'totmom_in': 0.0,
     'udist': 1.0,
     'umass': 1.0,

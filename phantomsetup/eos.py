@@ -59,7 +59,10 @@ class EquationOfState:
 
         for parameter in self._parameters:
             if ieos in self.ieos_has[parameter]:
-                self._parameters[parameter] = defaults.options[parameter]
+                if parameter == 'polyk':
+                    self._parameters[parameter] = 2/3*defaults.header['RK2']
+                else:
+                    self._parameters[parameter] = defaults.header[parameter]
 
         for parameter in self._parameters:
             if parameter in kwargs:
