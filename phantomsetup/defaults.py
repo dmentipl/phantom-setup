@@ -197,6 +197,7 @@ header = {
     'dtmax': options['dtmax'],
     'dum': 0.0,
     'etot_in': options['etot_in'],
+    'fileident': '',
     'gamma': options['gamma'],
     'get_conserv': options['get_conserv'],
     'graindens': np.zeros(maxdust),
