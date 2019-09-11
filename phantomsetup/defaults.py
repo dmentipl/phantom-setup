@@ -67,18 +67,18 @@ external_forces = (
 external_forces_comment = ''
 for idx, ext in enumerate(external_forces):
     external_forces_comment += f'{idx}={ext[:4]},'
+external_forces_comment = external_forces_comment[:-1]
 
 maxtypes = 7 + compile_options['MAXDUSTLARGE'] - 1
 maxdust = compile_options['MAXDUSTSMALL'] + compile_options['MAXDUSTLARGE']
 
 run_option_block_label = {
-    'MCFOST': 'options controlling MCFOST',
     'accuracy': 'options controlling accuracy',
     'cooling': 'options controlling cooling',
     'damping': 'options controlling damping',
     'driving': 'options controlling forcing of turbulence',
     'dust': 'options controlling dust',
-    'dustgrowth': 'options controlling growth',
+    'dustgrowth': 'options controlling dust growth',
     'eos': 'options controlling equation of state',
     'external forces': 'options relating to external forces',
     'hydrodynamics': 'options controlling hydrodynamics, artificial dissipation',
@@ -88,6 +88,7 @@ run_option_block_label = {
         'options controlling run time and input/output: supplementary features'
     ),
     'job': 'job name',
+    'MCFOST': 'options controlling MCFOST',
     'non-ideal MHD': 'options controlling non-ideal MHD',
     'photoevaporation': 'options controlling photoevaporation',
     'sinks': 'options controlling sink particles',
@@ -312,12 +313,12 @@ _run_options = {
         'K_code': (1.0, 'drag constant when constant drag is used'),
         'icut_backreaction': (0, 'cut the drag on the gas phase (0=no, 1=yes)'),
         'ilimitdustflux': (False, 'limit the dust flux using Ballabio et al. (2018)'),
+        'grainsize': (1.0, 'Grain size in cm'),
+        'graindens': (3.0, 'Intrinsic grain density in g/cm^3'),
     },
     # ------------------------------------------------
     # options controlling growth
     'options controlling growth': {
-        'grainsize': (1.0, 'Initial grain size in cm'),
-        'graindens': (1.0, 'Intrinsic grain density in g/cm^3'),
         'ifrag': (0, 'dust fragmentation (0=off,1=on,2=Kobayashi)'),
         'grainsizemin': (1.0e-3, 'minimum grain size in cm'),
         'isnow': (0, 'snow line (0=off,1=position based,2=temperature based)'),

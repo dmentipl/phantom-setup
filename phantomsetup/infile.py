@@ -88,7 +88,7 @@ class _InFile:
         if self.compile_options['DRIVING']:
             blocks_to_add.append(block_label['driving'])
 
-        if self.compile_options['DUST']:
+        if self.header['ndustsmall'] > 0 or self.header['ndustlarge'] > 0:
             blocks_to_add.append(block_label['dust'])
 
         if self.compile_options['DUSTGROWTH']:
@@ -189,6 +189,9 @@ class _InFile:
                 block_dict.pop('graindens')
             if self.run_options.config['idrag'].value == 1:
                 block_dict.pop('K_code')
+                if self.header['ndustsmall'] > 1 or self.header['ndustlarge'] > 1:
+                    block_dict.pop('grainsize')
+                    block_dict.pop('graindens')
             if self.header['ndustsmall'] == 0:
                 block_dict.pop('ilimitdustflux')
 
