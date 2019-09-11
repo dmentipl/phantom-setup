@@ -308,10 +308,21 @@ class Setup:
     def units(self) -> Dict[str, float]:
         return self._units
 
-    @units.setter
-    def units(
+    def set_units(
         self, length: float = None, mass: float = None, time: float = None
-    ) -> None:
+    ) -> Setup:
+        """
+        Set code units for simulation.
+
+        Parameters
+        ----------
+        length : float
+            The length unit in cgs. Default is 1.0 cm.
+        mass : float
+            The mass unit in cgs. Default is 1.0 g.
+        time : float
+            The time unit in cgs. Default is 1.0 s.
+        """
 
         if length is None:
             if self._units['length'] is not None:
@@ -329,7 +340,13 @@ class Setup:
             else:
                 time = 1.0
 
-        self._units = {'length': length, 'mass': mass, 'time': time}
+        self._units = {
+            'length': float(length),
+            'mass': float(mass),
+            'time': float(time),
+        }
+
+        return self
 
     @property
     def compile_options(self) -> None:
@@ -438,6 +455,8 @@ class Setup:
         if self._eos.qfacdisc is not None:
             self._header['qfacdisc'] = self._eos.qfacdisc
 
+        # Boundary
+
         if self._box is not None:
             self._header['xmin'] = self.box.xmin
             self._header['xmax'] = self.box.xmax
@@ -445,6 +464,13 @@ class Setup:
             self._header['ymax'] = self.box.ymax
             self._header['zmin'] = self.box.zmin
             self._header['zmax'] = self.box.zmax
+
+        # Units
+
+        if self._units is not None:
+            self._header['udist'] = self._units['length']
+            self._header['umass'] = self._units['mass']
+            self._header['utime'] = self._units['time']
 
     def write_dump_file(self, filename: Union[str, Path] = None) -> Setup:
         """

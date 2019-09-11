@@ -38,6 +38,11 @@ def main():
     # -------------------------------------------------------------------------------- #
     # Parameters
     prefix = 'dustybox'
+
+    au = phantomsetup.constants.au
+    solarm = phantomsetup.constants.solarm
+    year = phantomsetup.constants.year / (2 * np.pi)
+
     box_boundary = (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5)
 
     hfact = 1.0
@@ -56,7 +61,14 @@ def main():
     # -------------------------------------------------------------------------------- #
     # Instantiate phantomsetup object
     dustybox = phantomsetup.Setup()
+
+    # -------------------------------------------------------------------------------- #
+    # File prefix
     dustybox.prefix = prefix
+
+    # -------------------------------------------------------------------------------- #
+    # Set unit
+    dustybox.set_units(au, solarm, year)
 
     # -------------------------------------------------------------------------------- #
     # Set equation of state
@@ -133,7 +145,7 @@ def add_particle_of_type_to_box(
 
     # Particle positions
     particle_spacing = setup.box.xwidth / npartx
-    position, smoothing_length = phantomsetup.dist.uniform_distribution(
+    position, smoothing_length = phantomsetup.distributions.uniform_distribution(
         boundary=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
     )
     npart = position.shape[0]
