@@ -276,6 +276,8 @@ class Setup:
         self._eos = EquationOfState(ieos, **kwargs)
         if ieos in ieos_isothermal:
             self.set_compile_option('ISOTHERMAL', True)
+        else:
+            self.set_compile_option('ISOTHERMAL', False)
         return self
 
     @property

@@ -71,6 +71,29 @@ for idx, ext in enumerate(external_forces):
 maxtypes = 7 + compile_options['MAXDUSTLARGE'] - 1
 maxdust = compile_options['MAXDUSTSMALL'] + compile_options['MAXDUSTLARGE']
 
+run_option_block_label = {
+    'MCFOST': 'options controlling MCFOST',
+    'accuracy': 'options controlling accuracy',
+    'cooling': 'options controlling cooling',
+    'damping': 'options controlling damping',
+    'driving': 'options controlling forcing of turbulence',
+    'dust': 'options controlling dust',
+    'dustgrowth': 'options controlling growth',
+    'eos': 'options controlling equation of state',
+    'external forces': 'options relating to external forces',
+    'hydrodynamics': 'options controlling hydrodynamics, artificial dissipation',
+    'inject': 'options for injecting particles',
+    'io': 'options controlling run time and input/output',
+    'io supplementary': (
+        'options controlling run time and input/output: supplementary features'
+    ),
+    'job': 'job name',
+    'non-ideal MHD': 'options controlling non-ideal MHD',
+    'photoevaporation': 'options controlling photoevaporation',
+    'sinks': 'options controlling sink particles',
+    'viscosity': 'options controlling physical viscosity',
+}
+
 _run_options = {
     # ------------------------------------------------
     # job name
