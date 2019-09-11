@@ -1,6 +1,7 @@
 import datetime
 
 import numpy as np
+import phantomconfig
 
 PHANTOM_VERSION = '0.0.0'
 PHANTOM_GIT_HASH = 'xxxxxxx'
@@ -27,6 +28,7 @@ compile_options = {
     'MORRIS_MONAGHAN': False,
     'NONIDEALMHD': False,
     'PERIODIC': False,
+    'PHOTO': False,
     'STORE_TEMP': False,
     'STS_TIMESTEPS': False,
     'USE_STRAIN_TENSOR': False,
@@ -43,10 +45,33 @@ particle_type = {
     'iunknown': 0,
 }
 
+external_forces = (
+    'star',
+    'corotate',
+    'binary',
+    'prdrag',
+    'torus',
+    'toystar',
+    'external',
+    'spiral',
+    'Lense',
+    'neutronstar',
+    'Einstein',
+    'generalised',
+    'static',
+    'grav',
+    'disc',
+    'corotating',
+)
+
+external_forces_comment = ''
+for idx, ext in enumerate(external_forces):
+    external_forces_comment += f'{idx}={ext[:4]},'
+
 maxtypes = 7 + compile_options['MAXDUSTLARGE'] - 1
 maxdust = compile_options['MAXDUSTSMALL'] + compile_options['MAXDUSTLARGE']
 
-runtime_options = {
+_run_options = {
     # ------------------------------------------------
     # job name
     'job name': {
@@ -230,7 +255,9 @@ runtime_options = {
     # ------------------------------------------------
     # options relating to external forces
     # TODO: this is unfinished
-    'options relating to external forces': {'iexternalforce': (0,)},
+    'options relating to external forces': {
+        'iexternalforce': (0, external_forces_comment)
+    },
     # ------------------------------------------------
     # options controlling physical viscosity
     'options controlling physical viscosity': {
@@ -243,8 +270,18 @@ runtime_options = {
     },
     # ------------------------------------------------
     # options controlling forcing of turbulence
-    # TODO
-    'options controlling forcing of turbulence': {},
+    'options controlling forcing of turbulence': {
+        'istir': (1, 'switch to turn stirring on or off at runtime'),
+        'st_spectform': (1, 'spectral form of stirring'),
+        'st_stirmax': (18.86, 'maximum stirring wavenumber'),
+        'st_stirmin': (6.28, 'minimum stirring wavenumber'),
+        'st_energy': (2.0, 'energy input/mode'),
+        'st_decay': (0.05, 'correlation time for driving'),
+        'st_solweight': (1.0, 'solenoidal weight'),
+        'st_dtfreq': (0.01, 'frequency of stirring'),
+        'st_seed': (1, 'random number generator seed'),
+        'st_amplfac': (1.0, 'amplitude factor for stirring of turbulence'),
+    },
     # ------------------------------------------------
     # options controlling dust
     'options controlling dust': {
@@ -277,30 +314,27 @@ runtime_options = {
     # ------------------------------------------------
     # options for injecting particles
     # TODO
-    'options for injecting particles': {},
     # ------------------------------------------------
     # options controlling non-ideal MHD
     # TODO
-    'options controlling non-ideal MHD': {},
 }
 
-runtime_options_flat = {}
-for block, block_dict in runtime_options.items():
-    for key, val in block_dict.items():
-        runtime_options_flat[key] = val[0]
+run_options = phantomconfig.read_dict(_run_options, 'nested')
+
+_run_options = dict(zip(run_options.variables, run_options.values))
 
 header = {
     'Bextx': 0.0,
     'Bexty': 0.0,
     'Bextz': 0.0,
-    'C_cour': runtime_options_flat['C_cour'],
-    'C_force': runtime_options_flat['C_force'],
+    'C_cour': _run_options['C_cour'],
+    'C_force': _run_options['C_force'],
     'RK2': 1.5,
-    'alpha': runtime_options_flat['alpha'],
-    'alphaB': runtime_options_flat['alphaB'],
-    'alphau': runtime_options_flat['alphau'],
+    'alpha': _run_options['alpha'],
+    'alphaB': _run_options['alphaB'],
+    'alphau': _run_options['alphau'],
     'angtot_in': 0.0,
-    'dtmax': runtime_options_flat['dtmax'],
+    'dtmax': _run_options['dtmax'],
     'dum': 0.0,
     'etot_in': 0.0,
     'fileident': '',
@@ -308,10 +342,10 @@ header = {
     'get_conserv': -1.0,
     'graindens': np.zeros(maxdust),
     'grainsize': np.zeros(maxdust),
-    'hfact': runtime_options_flat['hfact'],
+    'hfact': _run_options['hfact'],
     'idust': particle_type['idust'],
-    'ieos': runtime_options_flat['ieos'],
-    'iexternalforce': runtime_options_flat['iexternalforce'],
+    'ieos': _run_options['ieos'],
+    'iexternalforce': _run_options['iexternalforce'],
     'isink': 0,
     'majorv': PHANTOM_VERSION.split('.')[0],
     'massoftype': np.zeros(maxtypes),
@@ -328,7 +362,7 @@ header = {
     'qfacdisc': 0.75,
     'rhozero': 1.0,
     'time': 0.0,
-    'tolh': runtime_options_flat['tolh'],
+    'tolh': _run_options['tolh'],
     'totmom_in': 0.0,
     'udist': 1.0,
     'umass': 1.0,

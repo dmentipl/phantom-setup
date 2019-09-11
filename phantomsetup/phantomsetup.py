@@ -7,10 +7,11 @@ from typing import Any, Dict, Set, Union
 
 import h5py
 import numpy as np
-import phantomconfig as pc
+import phantomconfig
 
 from . import defaults
 from .eos import EquationOfState
+from .infile import generate_infile
 
 FILEIDENT_LEN = 100
 
@@ -36,7 +37,6 @@ class Setup:
         self._setup: str = None
         self._prefix: str = None
 
-        self._infile: Dict[str, Any] = dict()
         self._header: Dict[str, Any] = defaults.header
 
         self._particle_mass: Dict[int, float] = {}
@@ -56,10 +56,10 @@ class Setup:
         self._box: Box = None
 
         self._fileident: str = None
-        self._compile_time_options: Dict[str, Any] = copy.deepcopy(
-            defaults.compile_options
+        self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.compile_options)
+        self.run_options: phantomconfig.PhantomConfig = copy.deepcopy(
+            defaults.run_options
         )
-        self._run_time_options: Dict[str, Any] = copy.deepcopy(defaults.runtime_options)
 
     @property
     def prefix(self) -> str:
@@ -328,26 +328,15 @@ class Setup:
         self._units = {'length': length, 'mass': mass, 'time': time}
 
     @property
-    def compile_time_options(self) -> None:
+    def compile_options(self) -> None:
         """Phantom compile time options."""
-        return self._compile_time_options
+        return self._compile_options
 
-    @compile_time_options.setter
-    def compile_time_options(self, **kwargs):
+    @compile_options.setter
+    def compile_options(self, **kwargs):
         for key, value in kwargs.items():
-            if key in self._compile_time_options:
-                self._compile_time_options[key] = value
-
-    @property
-    def run_time_options(self) -> None:
-        """Phantom run time options."""
-        return self._run_time_options
-
-    @run_time_options.setter
-    def run_time_options(self, **kwargs) -> None:
-        for key, value in kwargs.items():
-            if key in self._run_time_options:
-                self._run_time_options[key] = value
+            if key in self._compile_options:
+                self._compile_options[key] = value
 
     @property
     def number_of_large_dust_types(self) -> int:
@@ -388,20 +377,20 @@ class Setup:
         )
 
         string = ''
-        if self._compile_time_options['GRAVITY']:
+        if self._compile_options['GRAVITY']:
             string += '+grav'
         if self.number_of_particles[IDUST] > 0:
             string += '+dust'
         if self._use_dust_fraction:
             string += '+1dust'
-        if self._compile_time_options['H2CHEM']:
+        if self._compile_options['H2CHEM']:
             string += '+H2chem'
-        if self._compile_time_options['LIGHTCURVE']:
+        if self._compile_options['LIGHTCURVE']:
             string += '+lightcurve'
-        if self._compile_time_options['DUSTGROWTH']:
+        if self._compile_options['DUSTGROWTH']:
             string += '+dustgrowth'
 
-        if self._compile_time_options['MHD']:
+        if self._compile_options['MHD']:
             fileident += f'(mhd+clean{string}): '
         else:
             fileident += f'(hydro{string}): '
@@ -500,6 +489,10 @@ class Setup:
 
         return self
 
+    @property
+    def infile(self) -> Dict[str, Any]:
+        return generate_infile(self.compile_options, self.run_options, self._header)
+
     def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
         """
         Write Phantom 'in' file.
@@ -513,7 +506,7 @@ class Setup:
         if filename is None:
             filename = f'{self.prefix}.in'
 
-        pc.read_dict(self._infile).write_phantom(filename)
+        phantomconfig.read_dict(self.infile).write_phantom(filename)
 
         return self
 
