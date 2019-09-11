@@ -10,7 +10,7 @@ import numpy as np
 import phantomconfig
 
 from . import defaults
-from .eos import EquationOfState
+from .eos import EquationOfState, ieos_isothermal
 from .infile import generate_infile
 
 FILEIDENT_LEN = 100
@@ -274,6 +274,8 @@ class Setup:
         phantomsetup.eos.EquationOfState
         """
         self._eos = EquationOfState(ieos, **kwargs)
+        if ieos in ieos_isothermal:
+            self.set_compile_option('ISOTHERMAL', True)
         return self
 
     @property
@@ -332,11 +334,11 @@ class Setup:
         """Phantom compile time options."""
         return self._compile_options
 
-    @compile_options.setter
-    def compile_options(self, **kwargs):
-        for key, value in kwargs.items():
-            if key in self._compile_options:
-                self._compile_options[key] = value
+    def set_compile_option(self, key, value):
+        if key in self._compile_options:
+            self._compile_options[key] = value
+        else:
+            raise ValueError(f'key={key} does not exist')
 
     @property
     def number_of_large_dust_types(self) -> int:

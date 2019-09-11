@@ -6,6 +6,8 @@ class _InFile:
     """
     Phantom in file.
 
+    For internal use.
+
     Parameters
     ----------
     compile_options : Dict
@@ -97,6 +99,20 @@ class _InFile:
 
         return blocks_to_add
 
+    def _get_required_values_from_block(self, block: str) -> Dict:
+
+        block_dict = self.run_options.to_dict()[block]
+
+        if block == 'options controlling accuracy':
+            if not self.compile_options['GRAVITY']:
+                block_dict.pop('tree_accuracy')
+
+        if block == 'options controlling hydrodynamics, artificial dissipation':
+            if self.compile_options['ISOTHERMAL']:
+                block_dict.pop('alphau')
+
+        return block_dict
+
     def _make_infile_dictionary(self):
 
         infile_dictionary = dict()
@@ -107,7 +123,8 @@ class _InFile:
 
         blocks_to_add = self._blocks_to_add()
         for block in blocks_to_add:
-            infile_dictionary[block] = self.run_options.to_dict()[block]
+            block_dict = self._get_required_values_from_block(block)
+            infile_dictionary[block] = block_dict
         self.infile_dictionary = infile_dictionary
 
 
