@@ -8,6 +8,7 @@ from typing import Any, Collection, Dict, Set, Union
 import h5py
 import numpy as np
 import phantomconfig
+from phantomconfig import PhantomConfig
 
 from . import defaults
 from .boundary import Box
@@ -35,7 +36,6 @@ class Setup:
     def __init__(self) -> None:
         super().__init__()
 
-        self._setup: str = None
         self._prefix: str = None
 
         self._header: Dict[str, Any] = defaults.header
@@ -53,7 +53,8 @@ class Setup:
         self._dust_fraction: np.ndarray = None
         self._grain_size: np.ndarray = None
         self._grain_density: np.ndarray = None
-        self.number_of_small_dust_types: int = 0
+        self._number_of_small_dust_species: int = 0
+        self._number_of_large_dust_species: int = 0
 
         self._eos: EquationOfState = None
         self._units: Dict[str, float] = None
@@ -61,7 +62,7 @@ class Setup:
 
         self._fileident: str = None
         self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.compile_options)
-        self.run_options: phantomconfig.PhantomConfig = copy.deepcopy(
+        self._run_options: phantomconfig.PhantomConfig = copy.deepcopy(
             defaults.run_options
         )
 
@@ -141,7 +142,25 @@ class Setup:
         return self._grain_density
 
     @property
-    def eos(self) -> None:
+    def number_of_small_dust_species(self) -> int:
+        """Number of 'small' dust species."""
+        return self._number_of_small_dust_species
+
+    @number_of_small_dust_species.setter
+    def number_of_small_dust_species(self, num) -> None:
+        self._number_of_small_dust_species = num
+
+    @property
+    def number_of_large_dust_species(self) -> int:
+        """Number of 'large' dust species."""
+        return self._number_of_large_dust_species
+
+    @number_of_large_dust_species.setter
+    def number_of_large_dust_species(self, num) -> None:
+        self._number_of_large_dust_species = num
+
+    @property
+    def eos(self) -> EquationOfState:
         """The equation of state."""
         return self._eos
 
@@ -155,50 +174,57 @@ class Setup:
         return self._units
 
     @property
-    def fileident(self) -> None:
+    def fileident(self) -> str:
         """File information 'fileident' as defined in Phantom."""
-        if self._fileident is None:
-            self._generate_fileident()
-        return self._fileident
+        return self._generate_fileident()
 
     @property
     def infile(self) -> Dict[str, Any]:
         return generate_infile(self.compile_options, self.run_options, self._header)
 
-########################################################################################
-# TODO: unsure about these
     @property
-    def compile_options(self) -> None:
+    def compile_options(self) -> Dict:
         """Phantom compile time options."""
         return self._compile_options
 
-    def set_compile_option(self, key, value):
-        if key in self._compile_options:
-            self._compile_options[key] = value
-        else:
-            raise ValueError(f'key={key} does not exist')
-
-    # @property
-    # def number_of_large_dust_types(self) -> int:
-    #     """Number of '2-fluid', i.e. large dust species."""
-    #     return len(
-    #         [
-    #             itype
-    #             for itype, npartoftype in self.number_of_particles.items()
-    #             if IDUST <= itype <= IDUSTLAST and npartoftype > 0
-    #         ]
-    #     )
-
     @property
-    def contains_large_dust(self) -> bool:
-        return any(
-            [
-                npart
-                for itype, npart in self.number_of_particles.items()
-                if itype >= IDUST and itype <= IDUSTLAST and npart > 0
-            ]
-        )
-########################################################################################
+    def run_options(self) -> PhantomConfig:
+        """Phantom run time options.
+
+        This is a PhantomConfig object."""
+        return self._run_options
+
+    def set_compile_option(self, option: str, value: Any):
+        """
+        Set a Phantom compile time option.
+
+        Parameters
+        ----------
+        option : str
+            The compile time option to set.
+        value : Any
+            The value to set the option to.
+        """
+        if option in self._compile_options:
+            self._compile_options[option] = value
+        else:
+            raise ValueError(f'Compile time option={option} does not exist')
+
+    def set_run_option(self, option: str, value: Any):
+        """
+        Set a Phantom run time option.
+
+        Parameters
+        ----------
+        option : str
+            The run time option to set.
+        value : Any
+            The value to set the option to.
+        """
+        if option in self._run_options.config:
+            self._run_options.change_value(option, value)
+        else:
+            raise ValueError(f'Run time option={option} does not exist')
 
     def add_particles(
         self,
@@ -255,7 +281,7 @@ class Setup:
                 raise ValueError(
                     'Adding "largegrains" dust without calling set_dust first'
                 )
-            if particle_type - IDUST + 1 > self.number_of_large_dust_types:
+            if particle_type - IDUST + 1 > self.number_of_large_dust_species:
                 raise ValueError(
                     'particle_type is greater than what is available from the call to '
                     'set_dust'
@@ -326,6 +352,7 @@ class Setup:
         drag_method: str,
         grain_size: Union[Collection, np.ndarray] = None,
         grain_density: float = None,
+        drag_constant: float = None,
     ) -> Setup:
         """
         Set the dust method, grain sizes, and intrinsic grain density.
@@ -343,11 +370,11 @@ class Setup:
             The grain sizes of each dust species.
         grain_density : float
             The intrinsic dust grain density.
+        drag_constant : float
+            The drag constant if constant drag is used.
 
         See Also
         --------
-        add_particles : Add particles to the setup.
-        add_array_to_particles : Add an array to existing particles.
         set_dust_fraction : Set the dust fraction.
         """
 
@@ -368,9 +395,9 @@ class Setup:
         self._grain_size = grain_size
 
         if dust_method == 'largegrains':
-            self.number_of_large_dust_types = grain_size.size
+            self.number_of_large_dust_species = grain_size.size
         elif dust_method == 'smallgrains':
-            self.number_of_small_dust_types = grain_size.size
+            self.number_of_small_dust_species = grain_size.size
 
         if grain_density is None:
             grain_density = defaults.run_options['graindens'].value
@@ -401,7 +428,7 @@ class Setup:
             raise ValueError(
                 'dustfrac must have shape (N, M) where N is number of gas particles'
             )
-        if dustfrac.shape[1] != self.number_of_small_dust_types:
+        if dustfrac.shape[1] != self.number_of_small_dust_species:
             raise ValueError(
                 'dustfrac shape does not match the number of small grains set by '
                 'set_dust'
@@ -430,7 +457,7 @@ class Setup:
 
         See Also
         --------
-        phantomsetup.eos.EquationOfState
+        phantomsetup.eos.EquationOfState : The equation of state class.
         """
         self._eos = EquationOfState(ieos, **kwargs)
         if ieos in ieos_isothermal:
@@ -613,8 +640,8 @@ class Setup:
 
         # Dust
 
-        self._header['ndustsmall'] = self.number_of_small_dust_types
-        self._header['ndustlarge'] = self.number_of_large_dust_types
+        self._header['ndustsmall'] = self.number_of_small_dust_species
+        self._header['ndustlarge'] = self.number_of_large_dust_species
         self._header['grainsize'] = self.grain_size
         self._header['graindens'] = self.grain_density
 
@@ -643,3 +670,6 @@ class Setup:
             self._header['udist'] = self._units['length']
             self._header['umass'] = self._units['mass']
             self._header['utime'] = self._units['time']
+
+    def __repr__(self) -> str:
+        return f"PhantomSetup('{self.prefix}')"
