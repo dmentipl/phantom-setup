@@ -1,3 +1,6 @@
+# The type ignore comments are due to the following bug:
+# https://github.com/python/mypy/issues/4975
+
 from typing import Any, Dict
 
 from . import defaults
@@ -59,8 +62,8 @@ class EquationOfState:
             key: None for key in ('polyk', 'gamma', 'qfacdisc')
         }
 
-        for parameter in self._parameters:
-            if ieos in ieos_has[parameter]:
+        for parameter in self._parameters.keys():
+            if ieos in ieos_has[parameter]:  # type: ignore
                 if parameter == 'polyk':
                     self._parameters[parameter] = 2 / 3 * defaults.header['RK2']
                 else:
@@ -68,7 +71,7 @@ class EquationOfState:
 
         for parameter in self._parameters:
             if parameter in kwargs:
-                if ieos not in ieos_has[parameter]:
+                if ieos not in ieos_has[parameter]:  # type: ignore
                     raise ValueError(f'Cannot set {parameter} for ieos={ieos}')
                 else:
                     self._parameters[parameter] = kwargs[parameter]
@@ -98,7 +101,7 @@ class EquationOfState:
 
     @gamma.setter
     def gamma(self, value: float) -> None:
-        if self.ieos not in ieos_has['gamma']:
+        if self.ieos not in ieos_has['gamma']:  # type: ignore
             raise ValueError(f'ieos={self.ieos} not compatible with setting gamma')
         self._gamma = value
 
@@ -113,6 +116,6 @@ class EquationOfState:
 
     @qfacdisc.setter
     def qfacdisc(self, value: float) -> None:
-        if self.ieos not in ieos_has['qfacdisc']:
+        if self.ieos not in ieos_has['qfacdisc']:  # type: ignore
             raise ValueError(f'ieos={self.ieos} not compatible with setting qfacdisc')
         self._qfacdisc = value
