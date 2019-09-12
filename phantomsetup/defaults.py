@@ -142,7 +142,7 @@ _run_options = {
         'C_cour': (0.3, 'Courant number'),
         'C_force': (0.25, 'dt_force number'),
         'tolv': (1.0e-2, 'tolerance on v iterations in timestepping'),
-        'hfact': (1.0, 'h in units of particle spacing [h = hfact(m/rho)^(1/3)]'),
+        'hfact': (1.2, 'h in units of particle spacing [h = hfact(m/rho)^(1/3)]'),
         'tolh': (1.0e-4, 'tolerance on h-rho iterations'),
         'tree_accuracy': (0.5, 'tree opening criterion (0.0-1.0)'),
     },
