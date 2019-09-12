@@ -71,6 +71,8 @@ class Setup:
     @prefix.setter
     def prefix(self, prefix: str) -> None:
         self._prefix = prefix
+        self.run_options.change_value('logfile', f'{prefix}01.log')
+        self.run_options.change_value('dumpfile', f'{prefix}_00000.tmp')
 
     @property
     def position(self) -> np.ndarray:
