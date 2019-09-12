@@ -1,0 +1,39 @@
+# DUSTYBOX setup
+
+# prefix: sets in file and dump file names.
+prefix = "dustybox"
+
+# box_boundary: the periodic box boundary.
+box_boundary = [ -0.5, 0.5, -0.5, 0.5, -0.5, 0.5,]
+
+# sound_speed: is the isothermal sound speed.
+sound_speed = 1.0
+
+# number_of_particles_in_x_{}: sets the total number of particles.
+number_of_particles_in_x_gas = 32
+number_of_particles_in_x_dust = 16
+
+# density_gas: intial gas density.
+density_gas = 1.0
+
+# dust_to_gas_ratio: an array of values corresponding to the dust-to-gas
+# ratio for each dust species.
+dust_to_gas_ratio = [ 0.01, 0.02, 0.03, 0.04, 0.05,]
+
+# drag_method: options are "Epstein/Stokes", "K_const", "ts_const".
+drag_method = "K_const"
+
+# K_code: the constant drag coefficient.
+K_code = 1.0
+
+# grain_size: an array of grain sizes. Only required for Epstein/Stokes
+# drag.
+grain_size = []
+
+# grain_density: the intrinsic grain density. Only required for
+# Epstein/Stokes drag.
+grain_density = 0.0
+
+# velocity_x_{}: the initial uniform velocity of gas and dust, resp.
+velocity_x_gas = 0.0
+velocity_x_dust = 1.0
