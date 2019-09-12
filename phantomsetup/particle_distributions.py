@@ -10,7 +10,7 @@ _HFACT_DEFAULT = run_options.config['hfact'].value
 
 def uniform_distribution(
     *,
-    boundary: Tuple[float],
+    boundary: Tuple[float, ...],
     particle_spacing: float,
     distribution: str = None,
     hfact: float = None,
