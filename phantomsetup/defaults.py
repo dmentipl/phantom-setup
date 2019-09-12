@@ -363,7 +363,7 @@ header = {
     'etot_in': 0.0,
     'fileident': '',
     'gamma': 1.0,
-    'get_conserv': -1.0,
+    'get_conserv': 1.0,
     'graindens': np.zeros(maxdust),
     'grainsize': np.zeros(maxdust),
     'hfact': _run_options['hfact'],
