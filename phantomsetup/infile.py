@@ -28,7 +28,7 @@ class _InFile:
         self.infile_dictionary: Dict[str, tuple] = None
         self._make_infile_dictionary()
 
-    def _make_header_and_datetime(self) -> Tuple[str]:
+    def _make_header_and_datetime(self) -> Tuple[Tuple[str, ...], str]:
 
         now = datetime.datetime.strftime(
             datetime.datetime.today(), '%d/%m/%Y %H:%M:%S.%f'
