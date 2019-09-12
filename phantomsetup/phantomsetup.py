@@ -53,7 +53,6 @@ class Setup:
         self._extra_arrays: Dict[str, Any] = {}
 
         self._dust_method: str = None
-        self._drag_method: str = None
         self._dust_fraction: np.ndarray = None
         self._grain_size: np.ndarray = None
         self._grain_density: np.ndarray = None
@@ -123,11 +122,6 @@ class Setup:
     def dust_method(self) -> str:
         """The dust method: either 'largegrains' or 'smallgrains'."""
         return self._dust_method
-
-    @property
-    def drag_method(self) -> str:
-        """The drag method: 'K_const', 'ts_const', or 'Epstein/Stokes'"""
-        return self._drag_method
 
     @property
     def grain_size(self) -> np.array:
@@ -351,6 +345,8 @@ class Setup:
         grain_size: Union[Collection, np.ndarray] = None,
         grain_density: float = None,
         drag_constant: float = None,
+        number_of_dust_species: int = None,
+        cut_back_reaction: bool = None,
     ) -> Setup:
         """
         Set the dust method, grain sizes, and intrinsic grain density.
@@ -370,6 +366,10 @@ class Setup:
             The intrinsic dust grain density.
         drag_constant : float
             The drag constant if constant drag is used.
+        number_of_dust_species : int
+            If constant drag, the number of dust species must be set.
+        cut_back_reaction : bool
+            Cut the drag on the gas phase from the dust.
 
         See Also
         --------
@@ -378,28 +378,52 @@ class Setup:
 
         if dust_method not in ('largegrains', 'smallgrains'):
             raise ValueError('dust_method must be "largegrains" or "smallgrains"')
-        self._dust_method = dust_method
-
-        if drag_method not in ('K_const', 'ts_const', 'Epstein/Stokes'):
+        if drag_method not in ('off', 'Epstein/Stokes', 'K_const', 'ts_const'):
             raise ValueError(
-                'drag_method must be "K_const", "ts_const", "Epstein/Stokes"'
+                'drag_method must be "off", "Epstein/Stokes", "K_const", "ts_const"'
             )
-        self._drag_method = drag_method
-
         if drag_method != 'Epstein/Stokes' and grain_size is not None:
             raise ValueError('No need to set grain_size if using constant drag')
+        if drag_method != 'Epstein/Stokes' and number_of_dust_species is None:
+            raise ValueError('Need to set number_of_dust_species for constant drag')
 
-        grain_size = np.array(grain_size)
-        self._grain_size = grain_size
+        self._dust_method = dust_method
 
-        if dust_method == 'largegrains':
-            self.number_of_large_dust_species = grain_size.size
-        elif dust_method == 'smallgrains':
-            self.number_of_small_dust_species = grain_size.size
+        if drag_method == 'off':
+            self.run_options.change_value('idrag', 0)
+        elif drag_method == 'Epstein/Stokes':
+            self.run_options.change_value('idrag', 1)
+        elif drag_method == 'K_const':
+            self.run_options.change_value('idrag', 2)
+        elif drag_method == 'ts_const':
+            self.run_options.change_value('idrag', 3)
 
-        if grain_density is None:
-            grain_density = defaults.run_options['graindens'].value
-        self._grain_density = grain_density * np.ones_like(grain_size)
+        if drag_constant is not None:
+            self.run_options.change_value('K_code', drag_constant)
+
+        if cut_back_reaction:
+            self.run_options.change_value('icut_backreaction', 1)
+
+        if grain_size is not None:
+            grain_size = np.array(grain_size)
+            self._grain_size = grain_size
+
+            if dust_method == 'largegrains':
+                self.number_of_large_dust_species = grain_size.size
+            elif dust_method == 'smallgrains':
+                self.number_of_small_dust_species = grain_size.size
+
+            if grain_density is None:
+                grain_density = defaults.run_options.config['graindens'].value
+            self._grain_density = grain_density * np.ones_like(grain_size)
+
+        else:
+            self._grain_size = np.zeros(number_of_dust_species)
+            self._grain_density = np.zeros(number_of_dust_species)
+            if dust_method == 'largegrains':
+                self.number_of_large_dust_species = number_of_dust_species
+            elif dust_method == 'smallgrains':
+                self.number_of_small_dust_species = number_of_dust_species
 
         return self
 
