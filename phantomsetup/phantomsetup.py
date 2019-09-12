@@ -38,7 +38,11 @@ class Setup:
 
         self._prefix: str = None
 
-        self._header: Dict[str, Any] = defaults.header
+        self._header: Dict[str, Any] = copy.deepcopy(defaults.header)
+        self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.compile_options)
+        self._run_options: phantomconfig.PhantomConfig = copy.deepcopy(
+            defaults.run_options
+        )
 
         self._particle_mass: Dict[int, float] = {}
         self._particle_type: np.ndarray = None
@@ -59,12 +63,6 @@ class Setup:
         self._eos: EquationOfState = None
         self._units: Dict[str, float] = None
         self._box: Box = None
-
-        self._fileident: str = None
-        self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.compile_options)
-        self._run_options: phantomconfig.PhantomConfig = copy.deepcopy(
-            defaults.run_options
-        )
 
     @property
     def prefix(self) -> str:
@@ -617,7 +615,7 @@ class Setup:
             datetime.datetime.today(), '%d/%m/%Y %H:%M:%S.%f'
         )[:-5]
 
-        self._fileident = fileident
+        return fileident
 
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
