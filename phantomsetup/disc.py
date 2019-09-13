@@ -1,6 +1,7 @@
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
 
 import numpy as np
+from scipy import spatial
 
 
 class Disc:
@@ -31,6 +32,8 @@ class Disc:
         aspect_ratio: float,
         reference_radius: float,
         centre_of_mass: Tuple[float, float, float] = None,
+        rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
+        rotation_angle: float = None,
         args: tuple = None,
     ) -> None:
         """
@@ -51,9 +54,16 @@ class Disc:
             The aspect ratio at the reference radius.
         reference_radius
             The radius at which the aspect ratio is given.
+
+        Optional Parameters
+        -------------------
         centre_of_mass
             The centre of mass of the disc, i.e. around which position
             is it rotating.
+        rotation_axis
+            An axis around which to rotate the disc.
+        rotation_angle
+            The angle to rotate around the rotation_axis.
         args
             Extra arguments to pass to density_distribution.
         """
@@ -62,6 +72,17 @@ class Disc:
         # - change orientation
         # - add warps
         # - support for external forces
+
+        if (rotation_axis is not None) ^ (rotation_angle is not None):
+            raise ValueError(
+                'Must specify rotation_angle and rotation_axis to perform rotation'
+            )
+
+        if rotation_axis is not None:
+            rotation_axis /= np.linalg.norm(rotation_axis)
+            rotation = spatial.transform.Rotation.from_rotvec(
+                rotation_angle * rotation_axis
+            )
 
         if centre_of_mass is None:
             centre_of_mass = (0.0, 0.0, 0.0)
@@ -83,8 +104,14 @@ class Disc:
         )
         z = np.random.normal(scale=H)
 
-        self._positions = np.array([r * np.cos(phi), r * np.sin(phi), z]).T
-        self._positions += centre_of_mass
+        xyz = np.array([r * np.cos(phi), r * np.sin(phi), z]).T
+
+        if rotation_axis is not None:
+            xyz = rotation.apply(xyz)
+
+        xyz += centre_of_mass
+
+        self._positions = xyz
 
     def set_velocities(self):
         raise NotImplementedError
