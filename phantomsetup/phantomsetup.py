@@ -361,6 +361,21 @@ class Setup:
         position: tuple = None,
         velocity: tuple = None,
     ):
+        """
+        Add a sink particle.
+
+        Parameters
+        ----------
+        mass : float
+            The sink particle mass.
+        accretion_radius : float
+            The sink particle accretion radius.
+        position : tuple
+            The sink particle position.
+        velocity : tuple
+            The sink particle velocity.
+        """
+
         if self._sinks is None:
             self._sinks = list()
         self._sinks.append(
