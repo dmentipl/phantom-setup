@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import pathlib
 import textwrap
@@ -64,6 +66,24 @@ class ParametersBase:
             fp.write(tomlkit.dumps(document))
 
         return
+
+    @classmethod
+    def get_parameters(cls, filename: Union[str, Path] = None) -> ParametersBase:
+        """Get parameters from file or from defaults.
+
+        Parameters
+        ----------
+        filename : str or Path
+            Read parameters from file, or get defaults if filename is None.
+
+        Returns
+        -------
+        Parameters
+            The parameters as a Parameters dataclass object.
+        """
+        if filename is not None:
+            return cls(**read_parameter_file(filename))
+        return cls()
 
 
 def read_parameter_file(filename: Union[str, Path]) -> dict:

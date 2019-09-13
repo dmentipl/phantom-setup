@@ -6,7 +6,6 @@ an initial uniform differential velocity between the dust and gas.
 """
 
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Collection, Union
 
 import numpy as np
@@ -14,7 +13,7 @@ import numpy as np
 from .. import constants
 from ..defaults import particle_type
 from ..distributions import uniform_distribution
-from ..parameters import ParametersBase, read_parameter_file
+from ..parameters import ParametersBase
 from ..phantomsetup import Setup
 
 # ------------------------------------------------------------------------------------ #
@@ -141,24 +140,6 @@ class Parameters(ParametersBase):
         return
 
 
-def get_parameters(filename: Union[str, Path] = None) -> Parameters:
-    """Get parameters from file or from defaults.
-
-    Parameters
-    ----------
-    filename : str or Path
-        Read parameters from file, or get defaults if filename is None.
-
-    Returns
-    -------
-    Parameters
-        The parameters as a Parameters dataclass object.
-    """
-    if filename is not None:
-        return Parameters(**read_parameter_file(filename))
-    return Parameters()
-
-
 # ------------------------------------------------------------------------------------ #
 # Setup function for DUSTYBOX
 
@@ -191,11 +172,6 @@ def setup(parameters: Parameters) -> Setup:
     # Instantiate phantomsetup object
 
     setup = Setup()
-
-    # -------------------------------------------------------------------------------- #
-    # Add parameters data class
-
-    setup.parameters = parameters
 
     # -------------------------------------------------------------------------------- #
     # File prefix

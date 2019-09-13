@@ -11,7 +11,7 @@ import phantomsetup.setups.dustybox as dustybox
 
 # ------------------------------------------------------------------------------------ #
 # Get the default parameters
-parameters = dustybox.get_parameters()
+parameters = dustybox.Parameters()
 
 # ------------------------------------------------------------------------------------ #
 # See what parameters are available
@@ -43,7 +43,7 @@ parameters.write_to_file(filename=filename, overwrite=True, header=header)
 
 # ------------------------------------------------------------------------------------ #
 # Read parameter file
-parameters_from_file = dustybox.get_parameters(filename=filename)
+parameters_from_file = parameters.get_parameters(filename=filename)
 
 # ------------------------------------------------------------------------------------ #
 # Check they are the same
