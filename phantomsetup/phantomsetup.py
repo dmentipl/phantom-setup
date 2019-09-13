@@ -592,6 +592,9 @@ class Setup:
 
         return self
 
+    def add_disc(self) -> Setup:
+        raise NotImplementedError
+
     def write_dump_file(self, filename: Union[str, Path] = None) -> Setup:
         """
         Write Phantom temporary ('.tmp') dump file.
