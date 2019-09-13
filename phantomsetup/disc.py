@@ -69,7 +69,6 @@ class Disc:
         """
 
         # TODO:
-        # - change orientation
         # - add warps
         # - support for external forces
 
@@ -113,5 +112,76 @@ class Disc:
 
         self._positions = xyz
 
-    def set_velocities(self):
-        raise NotImplementedError
+    def set_velocities(
+        self,
+        stellar_mass: float,
+        gravitational_constant: float,
+        q_index: float,
+        aspect_ratio: float,
+        reference_radius: float,
+        rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
+        rotation_angle: float = None,
+        pressureless: bool = False,
+    ) -> None:
+        """
+        Set the disc velocities.
+
+        Parameters
+        ----------
+        stellar_mass
+            The mass of the central object the disc is orbiting.
+        gravitational_constant
+            The gravitational constant.
+        q_index
+            The index in the sound speed power law such that
+                H ~ (R / R_reference) ^ (3/2 - q).
+        aspect_ratio
+            The aspect ratio at the reference radius.
+        reference_radius
+            The radius at which the aspect ratio is given.
+
+        Optional Parameters
+        -------------------
+        rotation_axis
+            An axis around which to rotate the disc.
+        rotation_angle
+            The angle to rotate around the rotation_axis.
+        pressureless
+            Set to True if the particles are pressureless, i.e. dust.
+        """
+
+        if self._positions is None:
+            raise ValueError('Set positions first')
+
+        if (rotation_axis is not None) ^ (rotation_angle is not None):
+            raise ValueError(
+                'Must specify rotation_angle and rotation_axis to perform rotation'
+            )
+
+        if rotation_axis is not None:
+            rotation_axis /= np.linalg.norm(rotation_axis)
+            rotation = spatial.transform.Rotation.from_rotvec(
+                rotation_angle * rotation_axis
+            )
+
+        radius = np.sqrt(self._positions[:, 0] ** 2 + self._positions[:, 1] ** 2)
+        phi = np.arctan2(self._positions[:, 1], self._positions[:, 0])
+
+        omega = np.sqrt(
+            gravitational_constant * stellar_mass / radius
+        )
+
+        if not pressureless:
+            h_over_r = aspect_ratio * (radius / reference_radius) ** (3 / 2 - q_index)
+            v_phi = omega * np.sqrt(1 - h_over_r ** 2)
+        else:
+            v_phi = omega
+
+        v_z = np.zeros_like(radius)
+
+        vxyz = np.array([-v_phi * np.sin(phi), v_phi * np.cos(phi), v_z]).T
+
+        if rotation_axis is not None:
+            vxyz = rotation.apply(vxyz)
+
+        self._velocities = vxyz
