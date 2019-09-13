@@ -161,6 +161,7 @@ def setup(parameters: Parameters) -> Setup:
 
     # -------------------------------------------------------------------------------- #
     # Add the star
+
     setup.add_sink(
         mass=parameters.stellar_mass,
         accretion_radius=parameters.stellar_accretion_radius,
@@ -181,12 +182,6 @@ def setup(parameters: Parameters) -> Setup:
     # Add particles to disc
 
     setup.add_disc()
-
-    # -------------------------------------------------------------------------------- #
-    # Add extra quantities to particles
-
-    alpha = np.zeros(setup.total_number_of_particles, dtype=np.single)
-    setup.add_array_to_particles('alpha', alpha)
 
     # -------------------------------------------------------------------------------- #
     # Return the phantomsetup.Setup object

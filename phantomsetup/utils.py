@@ -23,4 +23,4 @@ def keplerian_angular_velocity(
     """
     if gravitational_constant is None:
         gravitational_constant = constants.gravitational_constant
-    return np.sqrt(gravitational_constant * mass / radius)
+    return np.sqrt(gravitational_constant * mass / radius ** 3)

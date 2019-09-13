@@ -26,20 +26,19 @@ parameters.grain_size = (0.01, 0.1, 1.0, 10.0)
 parameters.grain_density = 3.0
 
 # ------------------------------------------------------------------------------------ #
+# Write parameter file to use later, if required
+filename = parameters.prefix + '.toml'
+header = 'DUSTYBOX setup with Epstein drag'
+parameters.write_to_file(filename=filename, overwrite=True, header=header)
+
+# ------------------------------------------------------------------------------------ #
 # Generate the setup
 setup = dustybox.setup(parameters)
 
 # ------------------------------------------------------------------------------------ #
 # Write dump and in file
-setup = dustybox.setup(parameters)
 setup.write_dump_file()
 setup.write_in_file()
-
-# ------------------------------------------------------------------------------------ #
-# Write parameter file to use later, if required
-filename = parameters.prefix + '.toml'
-header = 'DUSTYBOX setup with Epstein drag'
-parameters.write_to_file(filename=filename, overwrite=True, header=header)
 
 # ------------------------------------------------------------------------------------ #
 # Read parameter file
