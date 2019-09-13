@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import datetime
 from pathlib import Path
-from typing import Any, Collection, Dict, Set, Union
+from typing import Any, Collection, Dict, List, Set, Union
 
 import h5py
 import numpy as np
@@ -14,6 +14,7 @@ from . import defaults
 from .boundary import Box
 from .eos import EquationOfState, ieos_isothermal
 from .infile import generate_infile
+from .sinks import Sink
 
 FILEIDENT_LEN = 100
 
@@ -51,6 +52,8 @@ class Setup:
         self._velocity: np.ndarray = None
 
         self._extra_arrays: Dict[str, Any] = {}
+
+        self._sinks: List[Sink] = None
 
         self._dust_method: str = None
         self._dust_fraction: np.ndarray = None
@@ -152,6 +155,17 @@ class Setup:
     @number_of_large_dust_species.setter
     def number_of_large_dust_species(self, num) -> None:
         self._number_of_large_dust_species = num
+
+    @property
+    def sinks(self) -> List[Sink]:
+        """Sink particles."""
+        return self._sinks
+
+    @property
+    def number_of_sinks(self) -> int:
+        if self._sinks is not None:
+            return len(self._sinks)
+        return 0
 
     @property
     def eos(self) -> EquationOfState:
@@ -338,6 +352,25 @@ class Setup:
         """
         self._extra_arrays[name] = array
         return self
+
+    def add_sink(
+        self,
+        *,
+        mass: float,
+        accretion_radius: float,
+        position: tuple = None,
+        velocity: tuple = None,
+    ):
+        if self._sinks is None:
+            self._sinks = list()
+        self._sinks.append(
+            Sink(
+                mass=mass,
+                accretion_radius=accretion_radius,
+                position=position,
+                velocity=velocity,
+            )
+        )
 
     def set_dust(
         self,
@@ -560,9 +593,19 @@ class Setup:
             else:
                 filename = f'{self.prefix}_00000.tmp.h5'
 
-        self._update_header()
-
         file_handle = h5py.File(filename, 'w')
+
+        self._write_header(file_handle)
+        self._write_particle_arrays(file_handle)
+        self._write_sink_arrays(file_handle)
+
+        file_handle.close()
+
+        return self
+
+    def _write_header(self, file_handle: h5py.File):
+
+        self._update_header()
 
         group = file_handle.create_group('header')
         for key, val in self._header.items():
@@ -571,6 +614,8 @@ class Setup:
                 dset[()] = val
             else:
                 group.create_dataset(name=key, data=val)
+
+    def _write_particle_arrays(self, file_handle: h5py.File):
 
         group = file_handle.create_group('particles')
 
@@ -585,11 +630,32 @@ class Setup:
         for name, array in self._extra_arrays.items():
             group.create_dataset(name=name, data=array)
 
+    def _write_sink_arrays(self, file_handle: h5py.File):
+
         group = file_handle.create_group('sinks')
 
-        file_handle.close()
+        if self.number_of_sinks > 0:
 
-        return self
+            n = self.number_of_sinks
+            m = np.zeros((1, n))
+            h = np.zeros((1, n))
+            xyz = np.zeros((3, n))
+            vxyz = np.zeros((3, n))
+
+            for idx, sink in enumerate(self.sinks):
+                m[:, idx] = sink.mass
+                h[:, idx] = sink.accretion_radius
+                xyz[:, idx] = sink.position
+                vxyz[:, idx] = sink.velocity
+
+            group.create_dataset(name='xyz', data=xyz)
+            group.create_dataset(name='m', data=m)
+            group.create_dataset(name='h', data=h)
+            group.create_dataset(name='hsoft', data=np.zeros((1, n)))
+            group.create_dataset(name='maccreted', data=np.zeros((1, n)))
+            group.create_dataset(name='spinxyz', data=np.zeros((3, n)))
+            group.create_dataset(name='tlast', data=np.zeros((1, n)))
+            group.create_dataset(name='vxyz', data=vxyz)
 
     def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
         """
@@ -661,6 +727,10 @@ class Setup:
         self._header['massoftype'] = np.zeros(defaults.maxtypes)
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
+
+        # Sink particles
+
+        self._header['nptmass'] = self.number_of_sinks
 
         # Dust
 
