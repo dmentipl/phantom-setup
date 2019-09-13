@@ -8,6 +8,36 @@ from typing import Union
 import tomlkit
 
 
+def read_parameter_file(filename: Union[str, Path]) -> dict:
+    """
+    Read parameters from TOML file.
+
+    Parameters
+    ----------
+    filename : str or Path
+        The name of the file to read. Should have extension '.toml'.
+
+    Returns
+    -------
+    dict
+        A dictionary representation of the parameters file.
+    """
+
+    if not pathlib.Path(filename).exists():
+        raise ValueError('parameter file does not exist')
+
+    with open(filename, 'r') as fp:
+        t = tomlkit.loads(fp.read())
+
+    d = dict()
+    for key, val in t.items():
+        if isinstance(val, list):
+            val = tuple(val)
+        d[key] = val
+
+    return d
+
+
 def write_parameter_file(
     parameters: dataclass,
     filename: Union[str, Path],

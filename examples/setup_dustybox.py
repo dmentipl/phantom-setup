@@ -31,5 +31,19 @@ setup = dustybox.setup(parameters)
 
 # ------------------------------------------------------------------------------------ #
 # Write dump and in file
+setup = dustybox.setup(parameters)
 setup.write_dump_file()
 setup.write_in_file()
+
+# ------------------------------------------------------------------------------------ #
+# Write parameter file to use later, if required
+filename = parameters.prefix + '.toml'
+parameters.write_to_file(filename=filename, overwrite=True)
+
+# ------------------------------------------------------------------------------------ #
+# Read parameter file
+parameters_from_file = dustybox.get_parameters(filename=filename)
+
+# ------------------------------------------------------------------------------------ #
+# Check they are the same
+print(parameters == parameters_from_file)

@@ -5,6 +5,7 @@ The dust and gas are co-located in a box with uniform density. There is
 an initial uniform differential velocity between the dust and gas.
 """
 
+import pathlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Collection, Union
@@ -14,7 +15,7 @@ import numpy as np
 from .. import constants
 from ..defaults import particle_type
 from ..distributions import uniform_distribution
-from ..files import write_parameter_file
+from ..files import read_parameter_file, write_parameter_file
 from ..phantomsetup import Setup
 
 # ------------------------------------------------------------------------------------ #
@@ -155,16 +156,24 @@ class Parameters:
         write_parameter_file(
             self, filename, header='DUSTYBOX setup', overwrite=overwrite
         )
+        return
 
 
-def get_parameters() -> Parameters:
-    """Get the default parameters.
+def get_parameters(filename: Union[str, Path] = None) -> Parameters:
+    """Get parameters from file or from defaults.
+
+    Parameters
+    ----------
+    filename : str or Path
+        Read parameters from file, or get defaults if filename is None.
 
     Returns
     -------
     Parameters
-        The default parameters as a Parameters dataclass object.
+        The parameters as a Parameters dataclass object.
     """
+    if filename is not None:
+        return Parameters(**read_parameter_file(filename))
     return Parameters()
 
 
