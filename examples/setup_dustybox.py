@@ -38,7 +38,8 @@ setup.write_in_file()
 # ------------------------------------------------------------------------------------ #
 # Write parameter file to use later, if required
 filename = parameters.prefix + '.toml'
-parameters.write_to_file(filename=filename, overwrite=True)
+header = 'DUSTYBOX setup with Epstein drag'
+parameters.write_to_file(filename=filename, overwrite=True, header=header)
 
 # ------------------------------------------------------------------------------------ #
 # Read parameter file

@@ -5,7 +5,6 @@ The dust and gas are co-located in a box with uniform density. There is
 an initial uniform differential velocity between the dust and gas.
 """
 
-import pathlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Collection, Union
@@ -15,7 +14,7 @@ import numpy as np
 from .. import constants
 from ..defaults import particle_type
 from ..distributions import uniform_distribution
-from ..files import read_parameter_file, write_parameter_file
+from ..parameters import ParametersBase, read_parameter_file
 from ..phantomsetup import Setup
 
 # ------------------------------------------------------------------------------------ #
@@ -43,7 +42,7 @@ ieos = 1
 
 
 @dataclass
-class Parameters:
+class Parameters(ParametersBase):
     """DUSTYBOX setup parameters."""
 
     # prefix
@@ -139,23 +138,6 @@ class Parameters:
                 raise ValueError(
                     'grain_size and dust_to_gas_ratio must have same length'
                 )
-        return
-
-    def write_to_file(self, filename: Union[str, Path], *, overwrite: bool = False):
-        """
-        Write the parameters to TOML file.
-
-        Parameters
-        ----------
-        filename : str or Path
-            The name of the file to write. Should have extension
-            '.toml'.
-        overwrite : bool, default=False
-            Whether to overwrite if the file exists.
-        """
-        write_parameter_file(
-            self, filename, header='DUSTYBOX setup', overwrite=overwrite
-        )
         return
 
 
