@@ -2,6 +2,8 @@
 Constants in cgs.
 """
 
+G = gravitational_constant = 6.67408e-8
+
 # Time units
 second = 1.0
 minute = 60.0

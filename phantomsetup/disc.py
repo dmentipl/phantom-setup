@@ -27,6 +27,8 @@ class Disc:
         number_of_particles: float,
         density_distribution: Callable[float],
         radius_range: Tuple[float, float],
+        sound_speed: Callable[float],
+        omega: Callable[float],
         centre_of_mass: Tuple[float, float, float] = None,
     ) -> None:
         """
@@ -40,15 +42,19 @@ class Disc:
             The surface density as a function of radius.
         radius_range
             The range of radii as (R_min, R_max).
+        sound_speed
+            The sound speed as a function of radius.
+        omega
+            The Keplerian angular velocity as a function of radius.
         centre_of_mass
-            The centre of mass of the disc. I.e. around which position
+            The centre of mass of the disc, i.e. around which position
             is it rotating.
         """
 
-        cs_0 = 1.0
-        G = 1.0
-        M_star = 1.0
-        q = 0.5
+        # TODO:
+        # - change orientation
+        # - add warps
+        # - support for external forces
 
         if centre_of_mass is None:
             centre_of_mass = (0.0, 0.0, 0.0)
@@ -63,10 +69,11 @@ class Disc:
 
         r = np.random.choice(xi, size=size, p=p)
         phi = np.random.rand(size) * 2 * np.pi
-        H = cs_0 / np.sqrt(G * M_star) * r ** (3 / 2 - q)
+        H = sound_speed(r) / omega(r)
         z = np.random.normal(scale=H)
 
         self._particle_positions = np.array([r * np.cos(phi), r * np.sin(phi), z]).T
+        self._particle_positions += centre_of_mass
 
     def set_velocities(self):
         raise NotImplementedError
