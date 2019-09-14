@@ -3,10 +3,23 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from phantomsetup.disc import Disc
+from phantomsetup import defaults
+
+# ------------------------------------------------------------------------------------ #
+# Constants
+
+igas = defaults.particle_type['igas']
+
+# ------------------------------------------------------------------------------------ #
+# Parameters
+
+number_of_particles = 1_000_000
+particle_type = igas
 
 radius_min = 10.0
 radius_max = 200.0
-n_particles = int(1e6)
+
+disc_mass = 0.01
 
 q_index = 0.75
 aspect_ratio = 0.05
@@ -24,33 +37,35 @@ gravitational_constant = 1.0
 
 def density_distribution(radius, radius_critical, gamma):
     rc, y = radius_critical, gamma
-    return (radius / rc) * (-y) * np.exp(-(radius / rc) ** (2 - y))
+    return (radius / rc) ** (-y) * np.exp(-(radius / rc) ** (2 - y))
 
+
+# ------------------------------------------------------------------------------------ #
+# Instantiate Disc object
 
 disc = Disc()
 
-disc.set_positions(
-    number_of_particles=n_particles,
-    density_distribution=density_distribution,
-    radius_range=(radius_min, radius_max),
-    q_index=q_index,
-    aspect_ratio=aspect_ratio,
-    reference_radius=reference_radius,
-    # rotation_axis=rotation_axis,
-    # rotation_angle=rotation_angle,
-    args=(radius_critical, gamma),
-)
+# ------------------------------------------------------------------------------------ #
+# Set add particles to disc
 
-disc.set_velocities(
-    stellar_mass=stellar_mass,
-    gravitational_constant=gravitational_constant,
-    q_index=q_index,
-    aspect_ratio=aspect_ratio,
-    reference_radius=reference_radius,
-    # rotation_axis=rotation_axis,
-    # rotation_angle=rotation_angle,
-    pressureless=True,
-)
+disc.add_particles(
+        particle_type=particle_type,
+        number_of_particles=number_of_particles,
+        disc_mass=disc_mass,
+        density_distribution=density_distribution,
+        radius_range=(radius_min, radius_max),
+        q_index=q_index,
+        aspect_ratio=aspect_ratio,
+        reference_radius=reference_radius,
+        stellar_mass=stellar_mass,
+        gravitational_constant=gravitational_constant,
+        rotation_axis=rotation_axis,
+        rotation_angle=rotation_angle,
+        args=(radius_critical, gamma),
+        )
+
+# ------------------------------------------------------------------------------------ #
+# Plot some quantities
 
 x, y, z = disc.positions[:, 0], disc.positions[:, 1], disc.positions[:, 2]
 R = np.sqrt(x ** 2 + y ** 2)
