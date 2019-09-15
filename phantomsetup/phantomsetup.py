@@ -10,7 +10,7 @@ import numpy as np
 import phantomconfig
 from phantomconfig import PhantomConfig
 
-from . import defaults
+from . import constants, defaults
 from .boundary import Box
 from .eos import EquationOfState, ieos_isothermal
 from .infile import generate_infile
@@ -57,8 +57,8 @@ class Setup:
 
         self._dust_method: str = None
         self._dust_fraction: np.ndarray = None
-        self._grain_size: np.ndarray = None
-        self._grain_density: np.ndarray = None
+        self._grain_size: np.ndarray = np.array([])
+        self._grain_density: np.ndarray = np.array([])
         self._number_of_small_dust_species: int = 0
         self._number_of_large_dust_species: int = 0
 
@@ -553,7 +553,11 @@ class Setup:
         return self
 
     def set_units(
-        self, length: float = None, mass: float = None, time: float = None
+        self,
+        length: float = None,
+        mass: float = None,
+        time: float = None,
+        gravitational_constant_is_unity: bool = False,
     ) -> Setup:
         """
         Set code units for simulation.
@@ -566,23 +570,50 @@ class Setup:
             The mass unit in cgs. Default is 1.0 g.
         time : float
             The time unit in cgs. Default is 1.0 s.
+        gravitational_constant_is_unity
+            Only specify two units, and the third is set by the
+            constraint that the gravitational constant is unity.
         """
 
-        if length is None:
-            if self._units['length'] is not None:
-                length = self._units['length']
+        if gravitational_constant_is_unity:
+
+            if length is not None and mass is not None and time is not None:
+                raise ValueError(
+                    'Cannot set length, mass, and time units together if requiring '
+                    'gravitational constant to be 1.0.'
+                )
+
+            if mass is not None and length is not None:
+                time = np.sqrt(length ** 3 / (constants.G * mass))
+            elif length is not None and time is not None:
+                mass = length ** 2 / (constants.G * time ** 2)
+            elif mass is not None and time is not None:
+                length = (time ** 2 * constants.G * mass) ** (1 / 3)
+            elif time is not None:
+                length = 1.0
+                mass = length ** 2 / (constants.G * time ** 2)
             else:
                 length = 1.0
-        if mass is None:
-            if self._units['mass'] is not None:
-                mass = self._units['mass']
-            else:
                 mass = 1.0
-        if time is None:
-            if self._units['time'] is not None:
-                time = self._units['time']
-            else:
-                time = 1.0
+                time = np.sqrt(length ** 3 / (constants.G * mass))
+
+        else:
+
+            if length is None:
+                if self._units['length'] is not None:
+                    length = self._units['length']
+                else:
+                    length = 1.0
+            if mass is None:
+                if self._units['mass'] is not None:
+                    mass = self._units['mass']
+                else:
+                    mass = 1.0
+            if time is None:
+                if self._units['time'] is not None:
+                    time = self._units['time']
+                else:
+                    time = 1.0
 
         self._units = {
             'length': float(length),

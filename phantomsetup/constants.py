@@ -2,7 +2,7 @@
 Constants in cgs.
 """
 
-G = gravitational_constant = 6.67408e-8
+G = gravitational_constant = 6.672041e-8  # This is the value from Phantom
 
 # Time units
 second = 1.0
