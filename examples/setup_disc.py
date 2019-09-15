@@ -25,6 +25,8 @@ prefix = 'disc'
 number_of_particles = 1_000_000
 particle_type = igas
 
+alpha_artificial = 0.1
+
 length_unit = unit_string_to_cgs('au')
 mass_unit = unit_string_to_cgs('solarm')
 
@@ -94,6 +96,11 @@ polyk = polyk_for_locally_isothermal_disc(
 )
 
 setup.set_equation_of_state(ieos=ieos, polyk=polyk)
+
+# ------------------------------------------------------------------------------------ #
+# Set viscosity to disc viscosity
+
+setup.set_dissipation(disc_viscosity=True, alpha=alpha_artificial)
 
 # ------------------------------------------------------------------------------------ #
 # Add star

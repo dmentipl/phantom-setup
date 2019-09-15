@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from .defaults import run_option_block_label as block_label
 
@@ -27,6 +27,42 @@ class _InFile:
         self.header = header
         self.infile_dictionary: Dict[str, tuple] = None
         self._make_infile_dictionary()
+
+    def get_compile_option(self, option: str) -> Any:
+        """
+        Get the value of a Phantom compile time option.
+
+        Parameters
+        ----------
+        option
+            The compile time option to get.
+
+        Returns
+        -------
+        The value of the option.
+        """
+        if option in self.compile_options:
+            return self.compile_options[option]
+        else:
+            raise ValueError(f'Compile time option={option} does not exist')
+
+    def get_run_option(self, option: str) -> Any:
+        """
+        Get the value of a Phantom run time option.
+
+        Parameters
+        ----------
+        option
+            The run time option to get.
+
+        Returns
+        -------
+        The value of the option.
+        """
+        if option in self.run_options.config:
+            return self.run_options.config[option].value
+        else:
+            raise ValueError(f'Run time option={option} does not exist')
 
     def _make_header_and_datetime(self) -> Tuple[Tuple[str, ...], str]:
 
@@ -62,9 +98,9 @@ class _InFile:
         blocks_to_add.append(block_label['io'])
 
         if (
-            self.run_options.config['rhofinal_cgs'].value > 0.0
-            or self.run_options.config['dtmax_dratio'].value > 1.0
-            or self.run_options.config['calc_erot'].value
+            self.get_run_option('rhofinal_cgs') > 0.0
+            or self.get_run_option('dtmax_dratio') > 1.0
+            or self.get_run_option('calc_erot')
         ):
             blocks_to_add.append(block_label[('io supplementary')])
 
@@ -73,34 +109,34 @@ class _InFile:
         blocks_to_add.append(block_label['damping'])
         blocks_to_add.append(block_label['eos'])
 
-        if not self.compile_options['ISOTHERMAL']:
+        if not self.get_compile_option('ISOTHERMAL'):
             blocks_to_add.append(block_label['cooling'])
 
-        if self.compile_options['MCFOST']:
+        if self.get_compile_option('MCFOST'):
             blocks_to_add.append(block_label['MCFOST'])
 
-        if self.header['nptmass'] > 0 or self.compile_options['GRAVITY']:
+        if self.header['nptmass'] > 0 or self.get_compile_option('GRAVITY'):
             blocks_to_add.append(block_label['sinks'])
 
         blocks_to_add.append(block_label['external forces'])
         blocks_to_add.append(block_label['viscosity'])
 
-        if self.compile_options['DRIVING']:
+        if self.get_compile_option('DRIVING'):
             blocks_to_add.append(block_label['driving'])
 
         if self.header['ndustsmall'] > 0 or self.header['ndustlarge'] > 0:
             blocks_to_add.append(block_label['dust'])
 
-        if self.compile_options['DUSTGROWTH']:
+        if self.get_compile_option('DUSTGROWTH'):
             blocks_to_add.append(block_label['dustgrowth'])
 
-        if self.compile_options['PHOTO']:
+        if self.get_compile_option('PHOTO'):
             blocks_to_add.append(block_label['photoevaporation'])
 
-        if self.compile_options['INJECT_PARTICLES']:
+        if self.get_compile_option('INJECT_PARTICLES'):
             blocks_to_add.append(block_label['inject'])
 
-        if self.compile_options['NONIDEALMHD']:
+        if self.get_compile_option('NONIDEALMHD'):
             blocks_to_add.append(block_label['non-ideal MHD'])
 
         return blocks_to_add
@@ -127,25 +163,29 @@ class _InFile:
         block_dict = self.run_options.to_dict()[block]
 
         if block == block_label['accuracy']:
-            if not self.compile_options['GRAVITY']:
+            if not self.get_compile_option('GRAVITY'):
                 block_dict.pop('tree_accuracy')
 
         if block == block_label['hydrodynamics']:
-            if self.compile_options['ISOTHERMAL']:
+            if self.get_compile_option('ISOTHERMAL'):
                 block_dict.pop('alphau')
-            if not (self.compile_options['MHD'] or self.compile_options['NONIDEALMHD']):
+            if not (
+                self.get_compile_option('MHD') or self.get_compile_option('NONIDEALMHD')
+            ):
                 block_dict.pop('alphaB')
                 block_dict.pop('psidecayfac')
                 block_dict.pop('overcleanfac')
+            if self.get_compile_option('DISC_VISCOSITY'):
+                block_dict.pop('alphamax')
 
         if block == block_label['damping']:
-            if self.run_options.config['idamp'].value != 1:
+            if self.get_run_option('idamp') != 1:
                 block_dict.pop('damp')
-            if self.run_options.config['idamp'].value != 2:
+            if self.get_run_option('idamp') != 2:
                 block_dict.pop('tdyn_s')
 
         if block == block_label['eos']:
-            if self.compile_options['ISOTHERMAL']:
+            if self.get_compile_option('ISOTHERMAL'):
                 block_dict.pop('ipdv_heating')
                 block_dict.pop('ishock_heating')
                 block_dict.pop('iresistive_heating')
@@ -170,8 +210,8 @@ class _InFile:
                 block_dict.pop('relaxflag')
 
         if block == block_label['sinks']:
-            if self.compile_options['GRAVITY']:
-                if not (self.run_options.config['icreate_sinks'].value > 0):
+            if self.get_compile_option('GRAVITY'):
+                if not (self.get_run_option('icreate_sinks') > 0):
                     block_dict.pop('rho_crit_cgs')
                     block_dict.pop('r_crit')
                     block_dict.pop('h_acc')
@@ -184,10 +224,10 @@ class _InFile:
                 block_dict.pop('h_soft_sinkgas')
 
         if block == block_label['dust']:
-            if self.run_options.config['idrag'].value != 1:
+            if self.get_run_option('idrag') != 1:
                 block_dict.pop('grainsize')
                 block_dict.pop('graindens')
-            if self.run_options.config['idrag'].value == 1:
+            if self.get_run_option('idrag') == 1:
                 block_dict.pop('K_code')
                 if self.header['ndustsmall'] > 1 or self.header['ndustlarge'] > 1:
                     block_dict.pop('grainsize')
@@ -196,17 +236,17 @@ class _InFile:
                 block_dict.pop('ilimitdustflux')
 
         if block == block_label['dustgrowth']:
-            if self.run_options.config['ifrag'].value == 0:
+            if self.get_run_option('ifrag') == 0:
                 block_dict.pop('grainsizemin')
                 block_dict.pop('isnow')
-            if self.run_options.config['isnow'].value == 0:
+            if self.get_run_option('isnow') == 0:
                 block_dict.pop('vfragin')
                 block_dict.pop('vfragout')
-            if self.run_options.config['isnow'].value != 0:
+            if self.get_run_option('isnow') != 0:
                 block_dict.pop('vfrag')
-            if self.run_options.config['isnow'].value != 1:
+            if self.get_run_option('isnow') != 1:
                 block_dict.pop('rsnow')
-            if self.run_options.config['isnow'].value != 2:
+            if self.get_run_option('isnow') != 2:
                 block_dict.pop('Tsnow')
 
         return block_dict

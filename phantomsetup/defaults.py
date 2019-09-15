@@ -7,17 +7,12 @@ PHANTOM_VERSION = '0.0.0'
 PHANTOM_GIT_HASH = 'xxxxxxx'
 
 compile_options = {
-    'CMACIONIZE': False,
-    'CONST_ARTRES': False,
-    'CONST_AV': False,
-    'CURLV': False,
     'DISC_VISCOSITY': False,
     'DRIVING': False,
     'DUST': False,
     'DUSTGROWTH': False,
     'GRAVITY': False,
     'H2CHEM': False,
-    'IND_TIMESTEPS': False,
     'INJECT_PARTICLES': False,
     'ISOTHERMAL': False,
     'LIGHTCURVE': False,
@@ -25,13 +20,8 @@ compile_options = {
     'MAXDUSTLARGE': 11,
     'MCFOST': False,
     'MHD': False,
-    'MORRIS_MONAGHAN': False,
     'NONIDEALMHD': False,
-    'PERIODIC': False,
     'PHOTO': False,
-    'STORE_TEMP': False,
-    'STS_TIMESTEPS': False,
-    'USE_STRAIN_TENSOR': False,
 }
 
 particle_type = {

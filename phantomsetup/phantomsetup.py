@@ -74,8 +74,8 @@ class Setup:
     @prefix.setter
     def prefix(self, prefix: str) -> None:
         self._prefix = prefix
-        self.run_options.change_value('logfile', f'{prefix}01.log')
-        self.run_options.change_value('dumpfile', f'{prefix}_00000.tmp')
+        self.set_run_option('logfile', f'{prefix}01.log')
+        self.set_run_option('dumpfile', f'{prefix}_00000.tmp')
 
     @property
     def position(self) -> np.ndarray:
@@ -202,7 +202,7 @@ class Setup:
         This is a PhantomConfig object."""
         return self._run_options
 
-    def set_compile_option(self, option: str, value: Any):
+    def set_compile_option(self, option: str, value: Any) -> None:
         """
         Set a Phantom compile time option.
 
@@ -218,7 +218,25 @@ class Setup:
         else:
             raise ValueError(f'Compile time option={option} does not exist')
 
-    def set_run_option(self, option: str, value: Any):
+    def get_compile_option(self, option: str) -> Any:
+        """
+        Get the value of a Phantom compile time option.
+
+        Parameters
+        ----------
+        option
+            The compile time option to get.
+
+        Returns
+        -------
+        The value of the option.
+        """
+        if option in self._compile_options:
+            return self._compile_options[option]
+        else:
+            raise ValueError(f'Compile time option={option} does not exist')
+
+    def set_run_option(self, option: str, value: Any) -> None:
         """
         Set a Phantom run time option.
 
@@ -231,6 +249,24 @@ class Setup:
         """
         if option in self._run_options.config:
             self._run_options.change_value(option, value)
+        else:
+            raise ValueError(f'Run time option={option} does not exist')
+
+    def get_run_option(self, option: str) -> Any:
+        """
+        Get the value of a Phantom run time option.
+
+        Parameters
+        ----------
+        option
+            The run time option to get.
+
+        Returns
+        -------
+        The value of the option.
+        """
+        if option in self._run_options.config:
+            return self._run_options.config[option].value
         else:
             raise ValueError(f'Run time option={option} does not exist')
 
@@ -440,19 +476,19 @@ class Setup:
         self._dust_method = dust_method
 
         if drag_method == 'off':
-            self.run_options.change_value('idrag', 0)
+            self.set_run_option('idrag', 0)
         elif drag_method == 'Epstein/Stokes':
-            self.run_options.change_value('idrag', 1)
+            self.set_run_option('idrag', 1)
         elif drag_method == 'K_const':
-            self.run_options.change_value('idrag', 2)
+            self.set_run_option('idrag', 2)
         elif drag_method == 'ts_const':
-            self.run_options.change_value('idrag', 3)
+            self.set_run_option('idrag', 3)
 
         if drag_constant is not None:
-            self.run_options.change_value('K_code', drag_constant)
+            self.set_run_option('K_code', drag_constant)
 
         if cut_back_reaction:
-            self.run_options.change_value('icut_backreaction', 1)
+            self.set_run_option('icut_backreaction', 1)
 
         if grain_size is not None:
             grain_size = np.array(grain_size)
@@ -464,7 +500,7 @@ class Setup:
                 self.number_of_small_dust_species = grain_size.size
 
             if grain_density is None:
-                grain_density = defaults.run_options.config['graindens'].value
+                grain_density = defaults.get_run_option('graindens')
             self._grain_density = grain_density * np.ones_like(grain_size)
 
         else:
@@ -626,6 +662,55 @@ class Setup:
     def add_disc(self) -> Setup:
         raise NotImplementedError
 
+    def set_dissipation(
+        self,
+        *,
+        alpha: float = None,
+        alphamax: float = None,
+        alphau: float = None,
+        alphaB: float = None,
+        beta: float = None,
+        avdecayconst: float = None,
+        disc_viscosity: bool = False,
+    ) -> Setup:
+        """
+        Set the numerical dissipation parameters.
+
+        Parameters
+        ----------
+        alpha
+            Minimum artificial viscosity parameter.
+        alphamax
+            Maximum artificial viscosity parameter.
+        alphau
+            Artificial conductivity parameter.
+        beta
+            Beta viscosity.
+        alphaB
+            Artificial resistivity parameter.
+        avdecayconst
+            Decay time constant for viscosity switches.
+        disc_viscosity
+            Whether or not to use disc viscosity.
+        """
+
+        if alpha is not None:
+            self.set_run_option('alpha', alpha)
+        if alphamax is not None:
+            self.set_run_option('alphamax', alphamax)
+        if alphau is not None:
+            self.set_run_option('alphau', alphau)
+        if beta is not None:
+            self.set_run_option('beta', beta)
+        if alphaB is not None:
+            self.set_run_option('alphaB', alphaB)
+        if avdecayconst is not None:
+            self.set_run_option('avdecayconst', avdecayconst)
+        if disc_viscosity is not None:
+            self.set_compile_option('DISC_VISCOSITY', disc_viscosity)
+
+        return self
+
     def write_dump_file(self, filename: Union[str, Path] = None) -> Setup:
         """
         Write Phantom temporary ('.tmp') dump file.
@@ -649,6 +734,23 @@ class Setup:
         self._write_sink_arrays(file_handle)
 
         file_handle.close()
+
+        return self
+
+    def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
+        """
+        Write Phantom 'in' file.
+
+        Optional parameters
+        -------------------
+        filename : str or Path
+            The name of the in file. Default is 'prefix.in'.
+        """
+
+        if filename is None:
+            filename = f'{self.prefix}.in'
+
+        phantomconfig.read_dict(self.infile).write_phantom(filename)
 
         return self
 
@@ -706,23 +808,6 @@ class Setup:
             group.create_dataset(name='tlast', data=np.zeros((1, n)))
             group.create_dataset(name='vxyz', data=vxyz)
 
-    def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
-        """
-        Write Phantom 'in' file.
-
-        Optional parameters
-        -------------------
-        filename : str or Path
-            The name of the in file. Default is 'prefix.in'.
-        """
-
-        if filename is None:
-            filename = f'{self.prefix}.in'
-
-        phantomconfig.read_dict(self.infile).write_phantom(filename)
-
-        return self
-
     def _generate_fileident(self):
 
         fileident = (
@@ -734,20 +819,20 @@ class Setup:
         )
 
         string = ''
-        if self._compile_options['GRAVITY']:
+        if self.get_compile_option('GRAVITY'):
             string += '+grav'
         if self._dust_method == 'largegrains':
             string += '+dust'
         if self._dust_method == 'smallgrains':
             string += '+1dust'
-        if self._compile_options['H2CHEM']:
+        if self.get_compile_option('H2CHEM'):
             string += '+H2chem'
-        if self._compile_options['LIGHTCURVE']:
+        if self.get_compile_option('LIGHTCURVE'):
             string += '+lightcurve'
-        if self._compile_options['DUSTGROWTH']:
+        if self.get_compile_option('DUSTGROWTH'):
             string += '+dustgrowth'
 
-        if self._compile_options['MHD']:
+        if self.get_compile_option('MHD'):
             fileident += f'(mhd+clean{string}): '
         else:
             fileident += f'(hydro{string}): '
@@ -776,6 +861,12 @@ class Setup:
         self._header['massoftype'] = np.zeros(defaults.maxtypes)
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
+
+        # Artificial dissipation
+
+        self._header['alpha'] = self.get_run_option('alpha')
+        self._header['alphaB'] = self.get_run_option('alphaB')
+        self._header['alphau'] = self.get_run_option('alphau')
 
         # Sink particles
 
