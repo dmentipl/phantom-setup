@@ -10,7 +10,7 @@ def keplerian_angular_velocity(
     radius: Union[float, np.ndarray],
     mass: Union[float, np.ndarray],
     gravitational_constant: float = None,
-):
+) -> Union[float, np.ndarray]:
     """
     Keplerian angular velocity Omega.
 
@@ -28,7 +28,7 @@ def keplerian_angular_velocity(
     return np.sqrt(gravitational_constant * mass / radius ** 3)
 
 
-def add_gap(radius_planet: float, gap_width: float):
+def add_gap(radius_planet: float, gap_width: float) -> callable:
     """
     Decorator to add a gap in a density distribution.
 
@@ -70,8 +70,8 @@ def add_gap(radius_planet: float, gap_width: float):
 
 
 def accretion_disc_self_similar(
-    radius: np.ndarray, radius_critical: float, gamma: float
-):
+    radius: Union[float, np.ndarray], radius_critical: float, gamma: float
+) -> Union[float, np.ndarray]:
     """
     Lynden-Bell and Pringle (1974) self-similar solution.
 
@@ -93,3 +93,34 @@ def accretion_disc_self_similar(
     """
     rc, y = radius_critical, gamma
     return (radius / rc) ** (-y) * np.exp(-(radius / rc) ** (2 - y))
+
+
+def polyk_for_locally_isothermal_disc(
+    q_index: float,
+    reference_radius: float,
+    aspect_ratio: float,
+    stellar_mass: float,
+    gravitational_constant: float,
+) -> float:
+    """
+    Get polyk for a locally isothermal disc.
+
+    Parameters
+    ----------
+    q_index
+        The index in the sound speed power law such that
+            H ~ (R / R_reference) ^ (3/2 - q).
+    aspect_ratio
+        The aspect ratio (H/R) at the reference radius.
+    reference_radius
+        The radius at which the aspect ratio is given.
+    stellar_mass
+        The mass of the central object the disc is orbiting.
+    gravitational_constant
+        The gravitational constant.
+    """
+    return (
+        aspect_ratio
+        * np.sqrt(gravitational_constant * stellar_mass / reference_radius)
+        * reference_radius ** q_index
+    ) ** 2
