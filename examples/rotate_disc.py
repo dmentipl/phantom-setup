@@ -2,8 +2,9 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from phantomsetup.disc import Disc
 from phantomsetup import defaults
+from phantomsetup.disc import Disc
+from phantomsetup.utils import accretion_disc_self_similar, add_gap
 
 # ------------------------------------------------------------------------------------ #
 # Constants
@@ -34,10 +35,20 @@ rotation_axis = (1, 1, 0)
 stellar_mass = 1.0
 gravitational_constant = 1.0
 
+radius_planet = 100.0
+gap_width = 10.0
 
+
+# ------------------------------------------------------------------------------------ #
+# Surface density distribution
+
+@add_gap(radius_planet=radius_planet, gap_width=gap_width)
 def density_distribution(radius, radius_critical, gamma):
-    rc, y = radius_critical, gamma
-    return (radius / rc) ** (-y) * np.exp(-(radius / rc) ** (2 - y))
+    """Surface density distribution.
+
+    Self-similar disc solution with a gap added.
+    """
+    return accretion_disc_self_similar(radius, radius_critical, gamma)
 
 
 # ------------------------------------------------------------------------------------ #
@@ -49,20 +60,20 @@ disc = Disc()
 # Set add particles to disc
 
 disc.add_particles(
-        particle_type=particle_type,
-        number_of_particles=number_of_particles,
-        disc_mass=disc_mass,
-        density_distribution=density_distribution,
-        radius_range=(radius_min, radius_max),
-        q_index=q_index,
-        aspect_ratio=aspect_ratio,
-        reference_radius=reference_radius,
-        stellar_mass=stellar_mass,
-        gravitational_constant=gravitational_constant,
-        rotation_axis=rotation_axis,
-        rotation_angle=rotation_angle,
-        args=(radius_critical, gamma),
-        )
+    particle_type=particle_type,
+    number_of_particles=number_of_particles,
+    disc_mass=disc_mass,
+    density_distribution=density_distribution,
+    radius_range=(radius_min, radius_max),
+    q_index=q_index,
+    aspect_ratio=aspect_ratio,
+    reference_radius=reference_radius,
+    stellar_mass=stellar_mass,
+    gravitational_constant=gravitational_constant,
+    rotation_axis=rotation_axis,
+    rotation_angle=rotation_angle,
+    args=(radius_critical, gamma),
+)
 
 # ------------------------------------------------------------------------------------ #
 # Plot some quantities
