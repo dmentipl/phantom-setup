@@ -5,6 +5,8 @@ from typing import Callable, Tuple, Union
 import numpy as np
 from scipy import integrate, spatial
 
+from . import defaults
+
 
 class Disc:
     """
@@ -20,6 +22,7 @@ class Disc:
         self._disc_mass: float = None
         self._positions: np.ndarray = None
         self._velocities: np.ndarray = None
+        self._smoothing_length: np.ndarray = None
 
     @property
     def particle_type(self) -> int:
@@ -51,8 +54,14 @@ class Disc:
         """Particle velocities."""
         return self._velocities
 
+    @property
+    def smoothing_length(self) -> np.ndarray:
+        """Particle velocities."""
+        return self._smoothing_length
+
     def add_particles(
         self,
+        *,
         particle_type: int,
         number_of_particles: float,
         disc_mass: float,
@@ -115,45 +124,39 @@ class Disc:
         """
 
         self.set_positions(
-            number_of_particles,
-            density_distribution,
-            radius_range,
-            q_index,
-            aspect_ratio,
-            reference_radius,
-            centre_of_mass,
-            rotation_axis,
-            rotation_angle,
-            args,
+            number_of_particles=number_of_particles,
+            disc_mass=disc_mass,
+            density_distribution=density_distribution,
+            radius_range=radius_range,
+            q_index=q_index,
+            aspect_ratio=aspect_ratio,
+            reference_radius=reference_radius,
+            centre_of_mass=centre_of_mass,
+            rotation_axis=rotation_axis,
+            rotation_angle=rotation_angle,
+            args=args,
         )
 
         self.set_velocities(
-            stellar_mass,
-            gravitational_constant,
-            q_index,
-            aspect_ratio,
-            reference_radius,
-            rotation_axis,
-            rotation_angle,
-            pressureless,
+            stellar_mass=stellar_mass,
+            gravitational_constant=gravitational_constant,
+            q_index=q_index,
+            aspect_ratio=aspect_ratio,
+            reference_radius=reference_radius,
+            rotation_axis=rotation_axis,
+            rotation_angle=rotation_angle,
+            pressureless=pressureless,
         )
 
         self._particle_type = particle_type
-
-        integrated_mass = integrate.quad(
-            lambda x: 2 * np.pi * x * density_distribution(x, *args),
-            radius_range[0],
-            radius_range[1],
-        )[0]
-
-        self._particle_mass = (disc_mass / integrated_mass) / number_of_particles
-        self._disc_mass = disc_mass
 
         return self
 
     def set_positions(
         self,
+        *,
         number_of_particles: float,
+        disc_mass: float,
         density_distribution: Callable[[float], float],
         radius_range: Tuple[float, float],
         q_index: float,
@@ -162,6 +165,7 @@ class Disc:
         centre_of_mass: Tuple[float, float, float] = None,
         rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
         rotation_angle: float = None,
+        hfact: float = None,
         args: tuple = None,
     ) -> Disc:
         """
@@ -171,6 +175,8 @@ class Disc:
         ----------
         number_of_particles
             The number of particles.
+        disc_mass
+            The total disc mass.
         density_distribution
             The surface density as a function of radius.
         radius_range
@@ -192,6 +198,8 @@ class Disc:
             An axis around which to rotate the disc.
         rotation_angle
             The angle to rotate around the rotation_axis.
+        hfact
+            The smoothing length factor.
         args
             Extra arguments to pass to density_distribution.
         """
@@ -206,6 +214,13 @@ class Disc:
             raise ValueError(
                 'Must specify rotation_angle and rotation_axis to perform rotation'
             )
+
+        if hfact is None:
+            hfact = defaults.run_options.config['hfact'].value
+
+        particle_mass = disc_mass / number_of_particles
+        self._particle_mass = particle_mass
+        self._disc_mass = disc_mass
 
         self._number_of_particles = number_of_particles
 
@@ -240,6 +255,18 @@ class Disc:
 
         xyz = np.array([r * np.cos(phi), r * np.sin(phi), z]).T
 
+        integrated_mass = integrate.quad(
+            lambda x: 2 * np.pi * x * density_distribution(x, *args),
+            radius_range[0],
+            radius_range[1],
+        )[0]
+
+        normalization = disc_mass / integrated_mass
+        sigma = normalization * density_distribution(r, *args)
+
+        density = sigma * np.exp(-0.5 * (z / H) ** 2) / (H * np.sqrt(2 * np.pi))
+        self._smoothing_length = hfact * (particle_mass / density) ** (1 / 3)
+
         if rotation_axis is not None:
             xyz = rotation.apply(xyz)
 
@@ -251,6 +278,7 @@ class Disc:
 
     def set_velocities(
         self,
+        *,
         stellar_mass: float,
         gravitational_constant: float,
         q_index: float,
