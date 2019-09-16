@@ -1,12 +1,18 @@
-"""Demonstrate use phantomsetup.disc.Disc."""
+"""
+Setup an accretion disc around a sink particle.
+"""
 
 import matplotlib.pyplot as plt
-import numpy as np
 import phantomsetup
 from phantomsetup import defaults
-from phantomsetup.disc import Disc, accretion_disc_self_similar, add_gap
+from phantomsetup.disc import accretion_disc_self_similar, add_gap
 from phantomsetup.eos import polyk_for_locally_isothermal_disc
 from phantomsetup.units import unit_string_to_cgs
+
+# ------------------------------------------------------------------------------------ #
+# Script options
+
+plot_setup = True
 
 # ------------------------------------------------------------------------------------ #
 # Constants
@@ -44,9 +50,6 @@ reference_radius = 10.0
 
 radius_critical = 100.0
 gamma = 1.0
-
-rotation_angle = np.pi / 3
-rotation_axis = (1, 1, 0)
 
 radius_planet = 100.0
 gap_width = 10.0
@@ -109,14 +112,9 @@ setup.add_sink(
 )
 
 # ------------------------------------------------------------------------------------ #
-# Instantiate Disc object
+# Add disc
 
-disc = Disc()
-
-# ------------------------------------------------------------------------------------ #
-# Add particles to disc
-
-disc.add_particles(
+setup.add_disc(
     particle_type=particle_type,
     number_of_particles=number_of_particles,
     disc_mass=disc_mass,
@@ -127,20 +125,7 @@ disc.add_particles(
     reference_radius=reference_radius,
     stellar_mass=stellar_mass,
     gravitational_constant=gravitational_constant,
-    rotation_axis=rotation_axis,
-    rotation_angle=rotation_angle,
     args=(radius_critical, gamma),
-)
-
-# ------------------------------------------------------------------------------------ #
-# Add particles from disc to setup
-
-setup.add_particles(
-    particle_type=disc.particle_type,
-    particle_mass=disc.particle_mass,
-    positions=disc.positions,
-    velocities=disc.velocities,
-    smoothing_length=disc.smoothing_length,
 )
 
 # ------------------------------------------------------------------------------------ #
@@ -151,19 +136,24 @@ setup.write_in_file()
 # ------------------------------------------------------------------------------------ #
 # Plot some quantities
 
-x, y, z = disc.positions[:, 0], disc.positions[:, 1], disc.positions[:, 2]
-R = np.sqrt(x ** 2 + y ** 2)
+if plot_setup:
 
-vx, vy, vz = disc.velocities[:, 0], disc.velocities[:, 1], disc.velocities[:, 2]
-vphi = np.sqrt(vx ** 2 + vy ** 2)
+    fig, ax = plt.subplots()
+    ax.plot(setup.x[::10], setup.y[::10], '.', ms=1)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$y$')
+    ax.set_aspect('equal')
 
-fig, ax = plt.subplots(1, 2)
-ax[0].plot(x[::10], y[::10], '.')
-ax[0].set_aspect('equal')
-ax[1].plot(R[::10], z[::10], '.')
-ax[1].set_aspect('equal')
+    fig, ax = plt.subplots()
+    ax.plot(setup.R[::10], setup.z[::10], '.', ms=1)
+    ax.set_xlabel('$R$')
+    ax.set_ylabel('$z$')
+    ax.set_aspect('equal')
+    ax.set_ylim(bottom=2 * setup.z.min(), top=2 * setup.z.max())
 
-fig, ax = plt.subplots()
-ax.plot(R[::10], vphi[::10], '.')
+    fig, ax = plt.subplots()
+    ax.plot(setup.R[::10], setup.vphi[::10], '.', ms=1)
+    ax.set_xlabel('$R$')
+    ax.set_ylabel('$v_{phi}$')
 
-plt.show()
+    plt.show()

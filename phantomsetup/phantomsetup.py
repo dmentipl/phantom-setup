@@ -85,6 +85,31 @@ class Setup:
         return self._position
 
     @property
+    def x(self) -> np.ndarray:
+        """Cartesian x position of particles."""
+        return self._position[:, 0]
+
+    @property
+    def y(self) -> np.ndarray:
+        """Cartesian y position of particles."""
+        return self._position[:, 1]
+
+    @property
+    def z(self) -> np.ndarray:
+        """Cartesian z position of particles."""
+        return self._position[:, 2]
+
+    @property
+    def R(self) -> np.ndarray:
+        """Cylindrical R position of particles."""
+        return np.sqrt(self._position[:, 0] ** 2 + self._position[:, 1] ** 2)
+
+    @property
+    def phi(self) -> np.ndarray:
+        """Cylindrical phi position of particles."""
+        return np.arctan2(self._position[:, 1], self._position[:, 0])
+
+    @property
     def smoothing_length(self) -> np.ndarray:
         """Smoothing length of particles."""
         return self._smoothing_length
@@ -93,6 +118,37 @@ class Setup:
     def velocity(self) -> np.ndarray:
         """Cartesian velocities of particles."""
         return self._velocity
+
+    @property
+    def vx(self) -> np.ndarray:
+        """Cartesian x velocity of particles."""
+        return self._velocity[:, 0]
+
+    @property
+    def vy(self) -> np.ndarray:
+        """Cartesian y velocity of particles."""
+        return self._velocity[:, 1]
+
+    @property
+    def vz(self) -> np.ndarray:
+        """Cartesian z velocity of particles."""
+        return self._velocity[:, 2]
+
+    @property
+    def vR(self) -> np.ndarray:
+        """Cylindrical R velocity of particles."""
+        return (
+            self._position[:, 0] * self._velocity[:, 0]
+            + self._position[:, 1] * self._velocity[:, 1]
+        ) / np.sqrt(self._position[:, 0] ** 2 + self._position[:, 1] ** 2)
+
+    @property
+    def vphi(self) -> np.ndarray:
+        """Cylindrical phi position of particles."""
+        return (
+            self._position[:, 0] * self._velocity[:, 1]
+            - self._position[:, 1] * self._velocity[:, 0]
+        ) / np.sqrt(self._position[:, 0] ** 2 + self._position[:, 1] ** 2)
 
     @property
     def particle_type(self) -> np.ndarray:
