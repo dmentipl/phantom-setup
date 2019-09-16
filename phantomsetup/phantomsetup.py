@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import datetime
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Set, Union
+from typing import Any, Callable, Collection, Dict, List, Set, Tuple, Union
 
 import h5py
 import numpy as np
@@ -12,6 +12,7 @@ from phantomconfig import PhantomConfig
 
 from . import constants, defaults
 from .boundary import Box
+from .disc import Disc
 from .eos import EquationOfState, ieos_isothermal
 from .infile import generate_infile
 from .sinks import Sink
@@ -54,6 +55,7 @@ class Setup:
         self._extra_arrays: Dict[str, Any] = {}
 
         self._sinks: List[Sink] = None
+        self._discs: List[Disc] = None
 
         self._dust_method: str = None
         self._dust_fraction: np.ndarray = None
@@ -165,6 +167,17 @@ class Setup:
     def number_of_sinks(self) -> int:
         if self._sinks is not None:
             return len(self._sinks)
+        return 0
+
+    @property
+    def discs(self) -> List[Sink]:
+        """Accretion discs."""
+        return self._discs
+
+    @property
+    def number_of_discs(self) -> int:
+        if self._discs is not None:
+            return len(self._discs)
         return 0
 
     @property
@@ -396,7 +409,7 @@ class Setup:
         accretion_radius: float,
         position: tuple = None,
         velocity: tuple = None,
-    ):
+    ) -> Setup:
         """
         Add a sink particle.
 
@@ -422,6 +435,102 @@ class Setup:
                 velocity=velocity,
             )
         )
+
+        return self
+
+    def add_disc(
+        self,
+        *,
+        particle_type: int,
+        number_of_particles: float,
+        disc_mass: float,
+        density_distribution: Callable[[float], float],
+        radius_range: Tuple[float, float],
+        q_index: float,
+        aspect_ratio: float,
+        reference_radius: float,
+        stellar_mass: float,
+        gravitational_constant: float,
+        centre_of_mass: Tuple[float, float, float] = None,
+        rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
+        rotation_angle: float = None,
+        args: tuple = None,
+        pressureless: bool = False,
+    ) -> Setup:
+        """
+        Add a disc to the setup.
+
+        Parameters
+        ----------
+        particle_type
+            The integer particle type.
+        number_of_particles
+            The number of particles.
+        disc_mass
+            The total disc mass.
+        density_distribution
+            The surface density as a function of radius.
+        radius_range
+            The range of radii as (R_min, R_max).
+        q_index
+            The index in the sound speed power law such that
+                H ~ (R / R_reference) ^ (3/2 - q).
+        aspect_ratio
+            The aspect ratio at the reference radius.
+        reference_radius
+            The radius at which the aspect ratio is given.
+        stellar_mass
+            The mass of the central object the disc is orbiting.
+        gravitational_constant
+            The gravitational constant.
+
+        Optional Parameters
+        -------------------
+        centre_of_mass
+            The centre of mass of the disc, i.e. around which position
+            is it rotating.
+        rotation_axis
+            An axis around which to rotate the disc.
+        rotation_angle
+            The angle to rotate around the rotation_axis.
+        args
+            Extra arguments to pass to density_distribution.
+        pressureless
+            Set to True if the particles are pressureless, i.e. dust.
+        """
+
+        if self._discs is None:
+            self._discs = list()
+
+        disc = Disc()
+
+        disc.add_particles(
+            particle_type=particle_type,
+            number_of_particles=number_of_particles,
+            disc_mass=disc_mass,
+            density_distribution=density_distribution,
+            radius_range=radius_range,
+            q_index=q_index,
+            aspect_ratio=aspect_ratio,
+            reference_radius=reference_radius,
+            stellar_mass=stellar_mass,
+            gravitational_constant=gravitational_constant,
+            rotation_axis=rotation_axis,
+            rotation_angle=rotation_angle,
+            args=args,
+        )
+
+        self.add_particles(
+            particle_type=disc.particle_type,
+            particle_mass=disc.particle_mass,
+            positions=disc.positions,
+            velocities=disc.velocities,
+            smoothing_length=disc.smoothing_length,
+        )
+
+        self._discs.append(disc)
+
+        return self
 
     def set_dust(
         self,
@@ -658,9 +767,6 @@ class Setup:
         }
 
         return self
-
-    def add_disc(self) -> Setup:
-        raise NotImplementedError
 
     def set_dissipation(
         self,
