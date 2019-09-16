@@ -4,13 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import phantomsetup
 from phantomsetup import defaults
-from phantomsetup.disc import Disc
+from phantomsetup.disc import Disc, accretion_disc_self_similar, add_gap
+from phantomsetup.eos import polyk_for_locally_isothermal_disc
 from phantomsetup.units import unit_string_to_cgs
-from phantomsetup.utils import (
-    accretion_disc_self_similar,
-    add_gap,
-    polyk_for_locally_isothermal_disc,
-)
 
 # ------------------------------------------------------------------------------------ #
 # Constants

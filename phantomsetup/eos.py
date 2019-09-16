@@ -3,6 +3,8 @@
 
 from typing import Any, Dict
 
+import numpy as np
+
 from . import defaults
 
 ieos_label = {
@@ -119,3 +121,34 @@ class EquationOfState:
         if self.ieos not in ieos_has['qfacdisc']:  # type: ignore
             raise ValueError(f'ieos={self.ieos} not compatible with setting qfacdisc')
         self._qfacdisc = value
+
+
+def polyk_for_locally_isothermal_disc(
+    q_index: float,
+    reference_radius: float,
+    aspect_ratio: float,
+    stellar_mass: float,
+    gravitational_constant: float,
+) -> float:
+    """
+    Get polyk for a locally isothermal disc.
+
+    Parameters
+    ----------
+    q_index
+        The index in the sound speed power law such that
+            H ~ (R / R_reference) ^ (3/2 - q).
+    aspect_ratio
+        The aspect ratio (H/R) at the reference radius.
+    reference_radius
+        The radius at which the aspect ratio is given.
+    stellar_mass
+        The mass of the central object the disc is orbiting.
+    gravitational_constant
+        The gravitational constant.
+    """
+    return (
+        aspect_ratio
+        * np.sqrt(gravitational_constant * stellar_mass / reference_radius)
+        * reference_radius ** q_index
+    ) ** 2
