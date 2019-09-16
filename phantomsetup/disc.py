@@ -4,7 +4,7 @@ import functools
 from typing import Callable, Tuple, Union
 
 import numpy as np
-from scipy import integrate, spatial
+from scipy import integrate, spatial, stats
 
 from . import constants, defaults
 
@@ -351,6 +351,41 @@ class Disc:
         self._velocities = vxyz
 
         return self
+
+
+def smoothing_length_on_scale_height(
+    radius: np.ndarray,
+    smoothing_length: np.ndarray,
+    reference_radius: float,
+    aspect_ratio: float,
+    q_index: float,
+    sample_number: float = None,
+):
+    """
+    Calculate the average smoothing length on scale height.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+
+    if sample_number is None:
+        bins = 10
+    else:
+        bins = sample_number
+
+    binned_rh = stats.binned_statistic(radius, smoothing_length, bins=bins)
+
+    r = binned_rh.bin_edges
+    r = r[:-1] + (r[1:] - r[:-1]) / 2
+
+    h = binned_rh.statistic
+
+    H = reference_radius ** (q_index - 1 / 2) * aspect_ratio * r ** (3 / 2 - q_index)
+
+    return h / H
 
 
 def keplerian_angular_velocity(

@@ -115,6 +115,11 @@ class Setup:
         return self._smoothing_length
 
     @property
+    def h(self) -> np.ndarray:
+        """Smoothing length of particles."""
+        return self._smoothing_length
+
+    @property
     def velocity(self) -> np.ndarray:
         """Cartesian velocities of particles."""
         return self._velocity
