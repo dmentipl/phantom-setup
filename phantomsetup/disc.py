@@ -375,7 +375,7 @@ def keplerian_angular_velocity(
     return np.sqrt(gravitational_constant * mass / radius ** 3)
 
 
-def add_gap(radius_planet: float, gap_width: float) -> callable:
+def add_gap(orbital_radius: float, gap_width: float) -> callable:
     """
     Decorator to add a gap in a density distribution.
 
@@ -400,8 +400,8 @@ def add_gap(radius_planet: float, gap_width: float) -> callable:
 
             result = distribution(radius, *args)
             gap_radii = np.logical_and(
-                radius_planet - 0.5 * gap_width < radius,
-                radius < radius_planet + 0.5 * gap_width,
+                orbital_radius - 0.5 * gap_width < radius,
+                radius < orbital_radius + 0.5 * gap_width,
             )
 
             if isinstance(result, np.ndarray):
