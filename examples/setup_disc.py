@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import phantomsetup
 from phantomsetup import defaults
-from phantomsetup.disc import accretion_disc_self_similar, add_gap
+from phantomsetup.disc import add_gap, self_similar_accretion_disc
 from phantomsetup.eos import polyk_for_locally_isothermal_disc
 from phantomsetup.orbits import hill_sphere_radius
 from phantomsetup.units import unit_string_to_cgs
@@ -80,7 +80,7 @@ def density_distribution(radius, radius_critical, gamma):
 
     Self-similar disc solution with a gap added.
     """
-    return accretion_disc_self_similar(radius, radius_critical, gamma)
+    return self_similar_accretion_disc(radius, radius_critical, gamma)
 
 
 args = (radius_critical, gamma)

@@ -416,13 +416,70 @@ def add_gap(orbital_radius: float, gap_width: float) -> callable:
     return wrapper_outer
 
 
-def accretion_disc_self_similar(
+def power_law(
+    radius: Union[float, np.ndarray], reference_radius: float, p_index: float
+) -> Union[float, np.ndarray]:
+    """
+    Power law distribution.
+
+    (R / R_ref)^(-p)
+
+    Parameters
+    ----------
+    radius
+        The radius at which to evaulate the function.
+    reference_radius
+        The reference radius
+    p_index
+        The exponent in the power law.
+
+    Returns
+    -------
+    float
+        The surface density at the specified radius.
+    """
+    ref, p = reference_radius, p_index
+    return (radius / ref) ** (-p)
+
+
+def power_law_with_zero_inner_boundary(
+    radius: Union[float, np.ndarray],
+    inner_radius: float,
+    reference_radius: float,
+    p_index: float,
+) -> Union[float, np.ndarray]:
+    """
+    Power law distribution with zero inner boundary condition.
+
+    (R / R_ref)^(-p) * [1 - sqrt(R_inner / R)]
+
+    Parameters
+    ----------
+    radius
+        The radius at which to evaulate the function.
+    inner_radius
+        The inner radius.
+    reference_radius
+        The reference radius.
+    p_index
+        The exponent in the power law.
+
+    Returns
+    -------
+    float
+        The surface density at the specified radius.
+    """
+    ref, inner, p = reference_radius, inner_radius, p_index
+    return (radius / ref) ** (-p) * (1 - np.sqrt(inner / radius))
+
+
+def self_similar_accretion_disc(
     radius: Union[float, np.ndarray], radius_critical: float, gamma: float
 ) -> Union[float, np.ndarray]:
     """
     Lynden-Bell and Pringle (1974) self-similar solution.
 
-    (R / R_crit) ^ (-y) * exp[ - (R / R_crit) ^ (2 - y)
+    (R / R_crit)^(-y) * exp[-(R / R_crit) ^ (2 - y)]
 
     Parameters
     ----------
@@ -440,3 +497,39 @@ def accretion_disc_self_similar(
     """
     rc, y = radius_critical, gamma
     return (radius / rc) ** (-y) * np.exp(-(radius / rc) ** (2 - y))
+
+
+def self_similar_accretion_disc_with_zero_inner_boundary(
+    radius: Union[float, np.ndarray],
+    radius_inner: float,
+    radius_critical: float,
+    gamma: float,
+) -> Union[float, np.ndarray]:
+    """
+    Lynden-Bell and Pringle (1974) self-similar solution with a zero
+    innner boundary condition.
+
+    (R / R_crit)^(-y) * exp[-(R / R_crit) ^ (2 - y)]
+
+    Parameters
+    ----------
+    radius
+        The radius at which to evaulate the function.
+    inner_radius
+        The inner radius.
+    radius_critical
+        The critical radius for the exponential taper.
+    gamma
+        The exponent in the power law.
+
+    Returns
+    -------
+    float
+        The surface density at the specified radius.
+    """
+    inner, rc, y = radius_inner, radius_critical, gamma
+    return (
+        (radius / rc) ** (-y)
+        * np.exp(-(radius / rc) ** (2 - y))
+        * (1 - np.sqrt(inner / radius))
+    )
