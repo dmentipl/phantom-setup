@@ -366,10 +366,14 @@ def smoothing_length_on_scale_height(
 
     Parameters
     ----------
+    TODO
 
     Returns
     -------
+    TODO
     """
+
+    # TODO: docstring
 
     if sample_number is None:
         bins = 10
