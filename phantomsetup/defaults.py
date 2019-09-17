@@ -13,6 +13,7 @@ compile_options = {
     'DUSTGROWTH': False,
     'GRAVITY': False,
     'H2CHEM': False,
+    'IND_TIMESTEPS': True,
     'INJECT_PARTICLES': False,
     'ISOTHERMAL': False,
     'LIGHTCURVE': False,

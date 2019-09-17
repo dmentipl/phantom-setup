@@ -212,6 +212,52 @@ class Setup(Particles):
         else:
             raise ValueError(f'Compile time option={option} does not exist')
 
+    def generate_compile_command(
+        self, SYSTEM: str = None, HDF5ROOT: str = None
+    ) -> List[str]:
+        """
+        Generate the Phantom Makefile command for this setup.
+
+        Optional Parameters
+        -------------------
+        SYSTEM
+            The Phantom SYSTEM Makefile variable. Default is 'gfortran'.
+        HDF5ROOT
+            The root directory of your HDF5 library installation.
+            Default is '/usr/local/opt/hdf5'.
+
+        Returns
+        -------
+        list of str
+            A list of strings when joined together produce the Makefile
+            command to compile Phantom corresponding to this setup. E.g.
+            >>> ' '.join(setup.generate_compile_command())
+        """
+
+        if SYSTEM is None:
+            SYSTEM = 'gfortran'
+        if HDF5ROOT is None:
+            HDF5ROOT = '/usr/local/opt/hdf5'
+
+        phantom_compile_command = [
+            'make',
+            'SETUP=empty',
+            f'SYSTEM={SYSTEM}',
+            'HDF5=yes',
+            f'HDF5ROOT={HDF5ROOT}',
+        ]
+
+        for option, value in self.compile_options.items():
+            if isinstance(value, bool):
+                if value:
+                    phantom_compile_command.append(f'{option}=yes')
+                else:
+                    continue
+            elif isinstance(value, int):
+                phantom_compile_command.append(f'{option}={value}')
+
+        return phantom_compile_command
+
     def set_run_option(self, option: str, value: Any) -> None:
         """
         Set a Phantom run time option.
@@ -307,9 +353,7 @@ class Setup(Particles):
 
         return self
 
-    def add_disc(
-        self, disc
-    ) -> Setup:
+    def add_disc(self, disc) -> Setup:
         """
         Add a disc to the setup.
 
@@ -422,6 +466,8 @@ class Setup(Particles):
             elif dust_method == 'smallgrains':
                 self.number_of_small_dust_species = number_of_dust_species
 
+        self.set_compile_option('DUST', True)
+
         return self
 
     def set_dust_fraction(self, dustfrac: np.ndarray) -> Setup:
@@ -459,6 +505,8 @@ class Setup(Particles):
             )
 
         self._dust_fraction = dustfrac
+
+        self.set_compile_option('DUST', True)
 
         return self
 
