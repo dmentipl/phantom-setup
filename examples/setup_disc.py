@@ -1,15 +1,10 @@
 """
-Setup an accretion disc around a sink particle.
+Set up a protoplanetary disc around a star, and add a planet.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import phantomsetup
-from phantomsetup import defaults
-from phantomsetup.disc import Disc, add_gap, self_similar_accretion_disc
-from phantomsetup.eos import polyk_for_locally_isothermal_disc
-from phantomsetup.orbits import hill_sphere_radius
-from phantomsetup.units import unit_string_to_cgs
 
 # ------------------------------------------------------------------------------------ #
 # Script options
@@ -19,7 +14,7 @@ plot_setup = True
 # ------------------------------------------------------------------------------------ #
 # Constants
 
-igas = defaults.particle_type['igas']
+igas = phantomsetup.defaults.particle_type['igas']
 
 # ------------------------------------------------------------------------------------ #
 # Parameters
@@ -31,8 +26,8 @@ particle_type = igas
 
 alpha_artificial = 0.1
 
-length_unit = unit_string_to_cgs('au')
-mass_unit = unit_string_to_cgs('solarm')
+length_unit = phantomsetup.units.unit_string_to_cgs('au')
+mass_unit = phantomsetup.units.unit_string_to_cgs('solarm')
 
 radius_min = 10.0
 radius_max = 200.0
@@ -58,29 +53,25 @@ planet_position = (100.0, 0.0, 0.0)
 planet_accretion_radius_fraction_hill_radius = 0.25
 
 orbital_radius = np.sqrt(planet_position[0] ** 2 + planet_position[1] ** 2)
-planet_hill_radius = hill_sphere_radius(orbital_radius, planet_mass, stellar_mass)
+planet_hill_radius = phantomsetup.orbits.hill_sphere_radius(
+    orbital_radius, planet_mass, stellar_mass
+)
 planet_accretion_radius = (
     planet_accretion_radius_fraction_hill_radius * planet_hill_radius
 )
-gap_width = planet_hill_radius
 planet_velocity = np.sqrt(gravitational_constant * stellar_mass / orbital_radius)
-
 
 # ------------------------------------------------------------------------------------ #
 # Surface density distribution
 
-# We use the Lynden-Bell and Pringle (1974) self-similar solution, i.e.
-# a power law with an exponential taper. Plus we add a gap, as a step
-# function at the planet location.
 
-
-@add_gap(orbital_radius=orbital_radius, gap_width=gap_width)
 def density_distribution(radius, radius_critical, gamma):
-    """Surface density distribution.
+    """Self-similar disc surface density distribution.
 
-    Self-similar disc solution with a gap added.
+    This is the Lyden-Bell and Pringle (1974) solution, i.e. a power law
+    with an exponential taper.
     """
-    return self_similar_accretion_disc(radius, radius_critical, gamma)
+    return phantomsetup.disc.self_similar_accretion_disc(radius, radius_critical, gamma)
 
 
 args = (radius_critical, gamma)
@@ -101,7 +92,7 @@ setup.set_units(
 # ------------------------------------------------------------------------------------ #
 # Set equation of state
 
-polyk = polyk_for_locally_isothermal_disc(
+polyk = phantomsetup.eos.polyk_for_locally_isothermal_disc(
     q_index, reference_radius, aspect_ratio, stellar_mass, gravitational_constant
 )
 
@@ -125,7 +116,7 @@ setup.add_sink(
 # ------------------------------------------------------------------------------------ #
 # Add disc
 
-disc = Disc()
+disc = phantomsetup.Disc()
 disc.add_particles(
     particle_type=particle_type,
     number_of_particles=number_of_particles,
