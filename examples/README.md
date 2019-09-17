@@ -10,3 +10,9 @@ There is a Makefile to facilitate this. To see what the Makefile can to type the
 ```
 make help
 ```
+
+To execute the markdown files directly without converting first, do
+
+```
+jupytext --execute the_name_of_the_file.md
+```
