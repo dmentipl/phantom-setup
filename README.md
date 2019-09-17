@@ -21,11 +21,13 @@ Usage
 To generate initial conditions for a Phantom simulation via a Python script with phantom-setup:
 
 1. Instantiate a `phantomsetup.Setup` object.
-2. Add particles, set arrays, units, equation of state, and other parameters.
+2. Add particles, set arrays, units, equation of state, sinks, dust, and other parameters.
 3. Write a Phantom HDF5 dump file containing the particle arrays.
 4. Write a Phantom in file containing the run time parameters.
+
+Then take these files and use them as input to Phantom.
 
 Examples
 --------
 
-See `examples/setup_dustybox.py` to setup a Phantom simulation to perform the DUSTYBOX test.
+The `examples` folder contains examples that you can run as a Python script or Jupyter notebook.
