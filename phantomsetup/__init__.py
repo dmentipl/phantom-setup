@@ -8,10 +8,9 @@ with Python and HDF5.
 Daniel Mentiplay, 2019.
 """
 
-from . import distributions, setups
 from .phantomsetup import Setup
 
-__all__ = ('Setup', 'distributions', 'setups')
+__all__ = ('Setup',)
 
 # Canonical version number
 __version__ = '0.0.1'

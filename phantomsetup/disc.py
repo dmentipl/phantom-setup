@@ -7,58 +7,31 @@ import numpy as np
 from scipy import integrate, spatial, stats
 
 from . import constants, defaults
+from .particles import Particles
 
 
-class Disc:
+class Disc(Particles):
     """
     Accretion disc.
+
+    TODO: add to description
+
+    Examples
+    --------
+    TODO: add examples
     """
 
     def __init__(self):
+        super().__init__()
 
-        self._particle_type: int = None
+        self._particle_type: float = None
         self._particle_mass: float = None
-        self._number_of_particles: int = None
-
         self._disc_mass: float = None
-        self._positions: np.ndarray = None
-        self._velocities: np.ndarray = None
-        self._smoothing_length: np.ndarray = None
-
-    @property
-    def particle_type(self) -> int:
-        """Particle type."""
-        return self._particle_type
-
-    @property
-    def particle_mass(self) -> int:
-        """Particle mass."""
-        return self._particle_mass
-
-    @property
-    def number_of_particles(self) -> int:
-        """Number of particles in disc."""
-        return self._number_of_particles
 
     @property
     def disc_mass(self) -> float:
         """Total disc mass."""
         return self._disc_mass
-
-    @property
-    def positions(self) -> np.ndarray:
-        """Particle positions."""
-        return self._positions
-
-    @property
-    def velocities(self) -> np.ndarray:
-        """Particle velocities."""
-        return self._velocities
-
-    @property
-    def smoothing_length(self) -> np.ndarray:
-        """Particle velocities."""
-        return self._smoothing_length
 
     def add_particles(
         self,
@@ -124,7 +97,9 @@ class Disc:
             Set to True if the particles are pressureless, i.e. dust.
         """
 
-        self.set_positions(
+        self._particle_type = particle_type
+
+        self._set_positions(
             number_of_particles=number_of_particles,
             disc_mass=disc_mass,
             density_distribution=density_distribution,
@@ -138,7 +113,7 @@ class Disc:
             args=args,
         )
 
-        self.set_velocities(
+        self._set_velocities(
             stellar_mass=stellar_mass,
             gravitational_constant=gravitational_constant,
             q_index=q_index,
@@ -149,11 +124,9 @@ class Disc:
             pressureless=pressureless,
         )
 
-        self._particle_type = particle_type
-
         return self
 
-    def set_positions(
+    def _set_positions(
         self,
         *,
         number_of_particles: float,
@@ -221,6 +194,7 @@ class Disc:
 
         particle_mass = disc_mass / number_of_particles
         self._particle_mass = particle_mass
+
         self._disc_mass = disc_mass
 
         self._number_of_particles = number_of_particles
@@ -273,11 +247,11 @@ class Disc:
 
         xyz += centre_of_mass
 
-        self._positions = xyz
+        self._position = xyz
 
         return self
 
-    def set_velocities(
+    def _set_velocities(
         self,
         *,
         stellar_mass: float,
@@ -316,7 +290,7 @@ class Disc:
             Set to True if the particles are pressureless, i.e. dust.
         """
 
-        if self._positions is None:
+        if self._position is None:
             raise ValueError('Set positions first')
 
         if (rotation_axis is not None) ^ (rotation_angle is not None):
@@ -330,8 +304,8 @@ class Disc:
                 rotation_angle * rotation_axis
             )
 
-        radius = np.sqrt(self._positions[:, 0] ** 2 + self._positions[:, 1] ** 2)
-        phi = np.arctan2(self._positions[:, 1], self._positions[:, 0])
+        radius = np.sqrt(self._position[:, 0] ** 2 + self._position[:, 1] ** 2)
+        phi = np.arctan2(self._position[:, 1], self._position[:, 0])
 
         omega = np.sqrt(gravitational_constant * stellar_mass / radius)
 
@@ -348,7 +322,7 @@ class Disc:
         if rotation_axis is not None:
             vxyz = rotation.apply(vxyz)
 
-        self._velocities = vxyz
+        self._velocity = vxyz
 
         return self
 
