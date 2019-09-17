@@ -485,18 +485,25 @@ class Setup(Particles):
             self.set_compile_option('ISOTHERMAL', False)
         return self
 
-    def set_boundary(self, boundary: tuple) -> Setup:
+    def set_boundary(self, boundary: tuple, periodic: bool = False) -> Setup:
         """
         Set the boundary as a Cartesian box.
 
         Parameters
         ----------
-        boundary : tuple
+        boundary
             The boundary of the box like
             (xmin, xmax, ymin, ymax, zmin, zmax).
+
+        Optional Parameters
+        -------------------
+        periodic
+            Set to True for periodic boundary conditions.
         """
         xmin, xmax, ymin, ymax, zmin, zmax = boundary
         self._boundary = Boundary(*boundary)
+        if periodic:
+            self.set_compile_option('PERIODIC', True)
         return self
 
     def set_units(

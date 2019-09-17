@@ -21,6 +21,7 @@ compile_options = {
     'MCFOST': False,
     'MHD': False,
     'NONIDEALMHD': False,
+    'PERIODIC': False,
     'PHOTO': False,
 }
 
