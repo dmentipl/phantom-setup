@@ -5,15 +5,16 @@ from typing import Callable, Tuple
 import numpy as np
 
 from . import defaults
+from .boundary import Boundary
 from .particles import Particles
 
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
 _HFACT_DEFAULT = defaults.run_options.config['hfact'].value
 
 
-class Box(Particles):
+class Box(Boundary, Particles):
     """
-    Cartesian box for simulations.
+    A uniformly distributed box of particles.
 
     Parameters
     ----------
@@ -40,74 +41,10 @@ class Box(Particles):
         zmin: float,
         zmax: float,
     ) -> None:
-        super().__init__()
-
-        self._boundary = (xmin, xmax, ymin, ymax, zmin, zmax)
-
-        self._xmin = xmin
-        self._xmax = xmax
-        self._ymin = ymin
-        self._ymax = ymax
-        self._zmin = zmin
-        self._zmax = zmax
-
-        self._xwidth = xmax - xmin
-        self._ywidth = ymax - ymin
-        self._zwidth = zmax - zmin
-
-        self._volume = (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
+        super().__init__(xmin, xmax, ymin, ymax, zmin, zmax)
 
         self._particle_type: float = None
         self._particle_mass: float = None
-
-    @property
-    def boundary(self) -> Tuple[float, float, float, float, float, float]:
-        """Box boundary (xmin, xmax, ymin, ymax, zmin, zmax)."""
-        return self._boundary
-
-    @property
-    def volume(self) -> float:
-        """Box volume."""
-        return self._volume
-
-    @property
-    def xmin(self) -> float:
-        return self._xmin
-
-    @property
-    def xmax(self) -> float:
-        return self._xmax
-
-    @property
-    def ymin(self) -> float:
-        return self._ymin
-
-    @property
-    def ymax(self) -> float:
-        return self._ymax
-
-    @property
-    def zmin(self) -> float:
-        return self._zmin
-
-    @property
-    def zmax(self) -> float:
-        return self._zmax
-
-    @property
-    def xwidth(self) -> float:
-        """Box width in x-direction."""
-        return self._xwidth
-
-    @property
-    def ywidth(self) -> float:
-        """Box width in y-direction."""
-        return self._ywidth
-
-    @property
-    def zwidth(self) -> float:
-        """Box width in z-direction."""
-        return self._zwidth
 
     def add_particles(
         self,
@@ -160,7 +97,7 @@ class Box(Particles):
         self._velocity = velocity
         self._smoothing_length = smoothing_length
 
-        return
+        return self
 
 
 def uniform_distribution(

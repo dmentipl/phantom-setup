@@ -57,7 +57,7 @@ class Setup(Particles):
 
         self._eos: EquationOfState = None
         self._units: Dict[str, float] = None
-        self._box: Box = None
+        self._boundary = None
 
     @property
     def prefix(self) -> str:
@@ -136,9 +136,9 @@ class Setup(Particles):
         return self._eos
 
     @property
-    def box(self) -> Box:
-        """The boundary box."""
-        return self._box
+    def boundary(self) -> Tuple[float, float, float, float, float, float]:
+        """Simulation boundary (xmin, xmax, ymin, ymax, zmin, zmax)."""
+        return self._boundary
 
     @property
     def units(self) -> Dict[str, float]:
@@ -516,7 +516,7 @@ class Setup(Particles):
 
     def set_boundary(self, boundary: tuple) -> Setup:
         """
-        Set the boundary Cartesian box.
+        Set the boundary as a Cartesian box.
 
         Parameters
         ----------
@@ -525,7 +525,7 @@ class Setup(Particles):
             (xmin, xmax, ymin, ymax, zmin, zmax).
         """
         xmin, xmax, ymin, ymax, zmin, zmax = boundary
-        self._box = Box(xmin, xmax, ymin, ymax, zmin, zmax)
+        self._boundary = (xmin, xmax, ymin, ymax, zmin, zmax)
         return self
 
     def set_units(
@@ -827,13 +827,13 @@ class Setup(Particles):
 
         # Boundary
 
-        if self._box is not None:
-            self._header['xmin'] = self.box.xmin
-            self._header['xmax'] = self.box.xmax
-            self._header['ymin'] = self.box.ymin
-            self._header['ymax'] = self.box.ymax
-            self._header['zmin'] = self.box.zmin
-            self._header['zmax'] = self.box.zmax
+        if self._boundary is not None:
+            self._header['xmin'] = self.boundary.xmin
+            self._header['xmax'] = self.boundary.xmax
+            self._header['ymin'] = self.boundary.ymin
+            self._header['ymax'] = self.boundary.ymax
+            self._header['zmin'] = self.boundary.zmin
+            self._header['zmax'] = self.boundary.zmax
 
         # Units
 
