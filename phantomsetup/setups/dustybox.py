@@ -6,13 +6,12 @@ an initial uniform differential velocity between the dust and gas.
 """
 
 from dataclasses import dataclass, field
-from typing import Collection, Union
 
 import numpy as np
 
 from .. import constants
+from ..box import Box
 from ..defaults import particle_type
-from ..distributions import uniform_distribution
 from ..parameters import ParametersBase
 from ..phantomsetup import Setup
 
@@ -62,23 +61,17 @@ class Parameters(ParametersBase):
     description = 'The isothermal sound speed.'
     sound_speed: float = field(default=default, metadata={'description': description})
 
-    # number_of_particles_in_x_gas
-    default = 32
-    description = (
-        'The number of particles in the x direction. For a cube this is '
-        'roughly the cubed root of the total number of particles.'
-    )
-    number_of_particles_in_x_gas: int = field(
+    # number_of_particles_gas
+    default = 50_000
+    description = 'The number of gas particles.'
+    number_of_particles_gas: int = field(
         default=default, metadata={'description': description}
     )
 
-    # number_of_particles_in_x_dust
-    default = 16
-    description = (
-        'The number of particles in the x direction. For a cube this is roughly the '
-        'cubed root of the total number of particles.'
-    )
-    number_of_particles_in_x_dust: int = field(
+    # number_of_particles_dust
+    default = 10_000
+    description = 'The number of dust particles in each species.'
+    number_of_particles_dust: int = field(
         default=default, metadata={'description': description}
     )
 
@@ -112,21 +105,14 @@ class Parameters(ParametersBase):
     grain_size: tuple = field(default=default, metadata={'description': description})
 
     # grain_density
-    default = 0.0
+    default = 3.0
     description = 'The intrinsic grain density.'
     grain_density: float = field(default=default, metadata={'description': description})
 
-    # velocity_x_gas
-    default = 0.0
-    description = 'The initial uniform velocity of gas.'
-    velocity_x_gas: float = field(
-        default=default, metadata={'description': description}
-    )
-
-    # velocity_x_dust
+    # velocity_delta
     default = 1.0
-    description = 'The initial uniform velocity of dust.'
-    velocity_x_dust: float = field(
+    description = 'The initial delta in uniform velocity between gas and dust.'
+    velocity_delta: float = field(
         default=default, metadata={'description': description}
     )
 
@@ -179,7 +165,7 @@ def setup(parameters: Parameters) -> Setup:
     setup.prefix = parameters.prefix
 
     # -------------------------------------------------------------------------------- #
-    # Set unit
+    # Set units
 
     setup.set_units(au, solarm, year)
 
@@ -189,7 +175,13 @@ def setup(parameters: Parameters) -> Setup:
     setup.set_equation_of_state(ieos=ieos, polyk=parameters.sound_speed ** 2)
 
     # -------------------------------------------------------------------------------- #
-    # Set dust grain size distribution
+    # Set dust
+
+    number_of_dust_species = len(parameters.dust_to_gas_ratio)
+
+    density_dust = [
+        eps * parameters.density_gas for eps in parameters.dust_to_gas_ratio
+    ]
 
     if parameters.drag_method == 'Epstein/Stokes':
         setup.set_dust(
@@ -204,26 +196,51 @@ def setup(parameters: Parameters) -> Setup:
             dust_method='largegrains',
             drag_method=parameters.drag_method,
             drag_constant=parameters.K_code,
-            number_of_dust_species=len(parameters.dust_to_gas_ratio),
+            number_of_dust_species=number_of_dust_species,
         )
 
     # -------------------------------------------------------------------------------- #
-    # Setup box
+    # Set boundary
 
     setup.set_boundary(parameters.box_boundary)
 
     # -------------------------------------------------------------------------------- #
-    # Add dust and gas particles to box
+    # Add gas particles to box
 
-    _add_particles_to_box(
-        setup,
-        parameters.number_of_particles_in_x_gas,
-        parameters.number_of_particles_in_x_dust,
-        parameters.density_gas,
-        parameters.dust_to_gas_ratio,
-        parameters.velocity_x_gas,
-        parameters.velocity_x_dust,
+    def velocity_distribution(xyz: np.ndarray) -> np.ndarray:
+        """Gas has zero initial velocity."""
+        vxyz = np.zeros_like(xyz)
+        return vxyz
+
+    box = Box(*parameters.box_boundary)
+    box.add_particles(
+        particle_type=igas,
+        number_of_particles=parameters.number_of_particles_gas,
+        density=parameters.density_gas,
+        velocity_distribution=velocity_distribution,
+        hfact=hfact,
     )
+    setup.add_box(box)
+
+    # -------------------------------------------------------------------------------- #
+    # Add dust particles to box
+
+    def velocity_distribution(xyz: np.ndarray) -> np.ndarray:
+        """Dust has uniform initial velocity."""
+        vxyz = np.zeros_like(xyz)
+        vxyz[:, 0] = parameters.velocity_delta
+        return vxyz
+
+    for idx in range(number_of_dust_species):
+        box = Box(*parameters.box_boundary)
+        box.add_particles(
+            particle_type=idust + idx,
+            number_of_particles=parameters.number_of_particles_dust,
+            density=density_dust[idx],
+            velocity_distribution=velocity_distribution,
+            hfact=hfact,
+        )
+        setup.add_box(box)
 
     # -------------------------------------------------------------------------------- #
     # Add extra quantities to particles
@@ -235,104 +252,3 @@ def setup(parameters: Parameters) -> Setup:
     # Return the phantomsetup.Setup object
 
     return setup
-
-
-# ------------------------------------------------------------------------------------ #
-# Helper functions
-
-
-def _add_particles_to_box(
-    setup: Setup,
-    number_of_particles_in_x_gas: int,
-    number_of_particles_in_x_dust: int,
-    density_gas: float,
-    dust_to_gas_ratio: Union[Collection, np.ndarray],
-    velocity_x_gas: float,
-    velocity_x_dust: float,
-) -> None:
-    """
-    Helper function to add particles to the box.
-
-    Parameters
-    ----------
-    setup : phantomsetup.Setup
-        The phantomsetup object representing the simulation.
-    number_of_particles_in_x_gas: int
-        The number of gas particles in the x-direction. Thus the total
-        number of particles for a cube box would be roughly npartx**3.
-    number_of_particles_in_x_dust: int
-        The number of dust particles in the x-direction. Thus the total
-        number of particles for a cube box would be roughly npartx**3.
-    density_gas: float
-        The initial gas density.
-    dust_to_gas_ratio : float
-        The dust-to-gas ratio.
-    velocity_x_gas: float
-        The initial uniform gas velocity in the x-direction.
-    velocity_x_gas: float
-        The initial uniform dust velocity in the x-direction.
-    """
-
-    number_of_dust_species = len(dust_to_gas_ratio)
-    dust_types = tuple(range(idust, idust + number_of_dust_species))
-
-    particle_types = (igas, *dust_types)
-
-    npartx = {igas: number_of_particles_in_x_gas}
-    npartx.update({idx: number_of_particles_in_x_dust for idx in dust_types})
-
-    density_dust = [eps * density_gas for eps in dust_to_gas_ratio]
-    rho = {igas: density_gas}
-    rho.update(dict(zip(dust_types, density_dust)))
-
-    velx = {igas: velocity_x_gas}
-    velx.update({idx: velocity_x_dust for idx in dust_types})
-
-    for itype in particle_types:
-        _add_particle_of_type_to_box(
-            setup, itype, npartx[itype], rho[itype], velx[itype]
-        )
-
-    return
-
-
-def _add_particle_of_type_to_box(
-    setup: Setup, particle_type: int, npartx: int, rho: float, velx: float
-) -> None:
-    """
-    Helper function to add particles of a particular type to the box.
-
-    Parameters
-    ----------
-    setup : phantomsetup.Setup
-        The phantomsetup object representing the simulation.
-    particle_type: int
-        The particle type to add.
-    npartx: int
-        The number of particles in the x-direction. Thus the total
-        number of particles for a cube box would be roughly npartx**3.
-    rho: float
-        The initial density.
-    velx: float
-        The initial uniform velocity in the x-direction.
-    """
-
-    # Particle positions
-    particle_spacing = setup.box.xwidth / npartx
-    position, smoothing_length = uniform_distribution(
-        boundary=setup.box.boundary, particle_spacing=particle_spacing, hfact=hfact
-    )
-    npart = position.shape[0]
-
-    # Particle mass
-    particle_mass = rho * setup.box.volume / npart
-
-    # Particle velocities
-    velocity = np.hstack((velx * np.ones((npart, 1)), np.zeros((npart, 2))))
-
-    # Add particles
-    setup.add_particles(
-        particle_type, particle_mass, position, velocity, smoothing_length
-    )
-
-    return

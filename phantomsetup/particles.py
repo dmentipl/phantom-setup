@@ -183,16 +183,16 @@ class Particles:
                 'positions, velocities, and smoothing_length must have the same'
                 ' number of particles'
             )
-        if particle_type in range(IDUST, IDUSTLAST + 1):
-            if self.dust_method != 'largegrains':
-                raise ValueError(
-                    'Adding "largegrains" dust without calling set_dust first'
-                )
-            if particle_type - IDUST + 1 > self.number_of_large_dust_species:
-                raise ValueError(
-                    'particle_type is greater than what is available from the call to '
-                    'set_dust'
-                )
+        # if particle_type in range(IDUST, IDUSTLAST + 1):
+        #     if self.dust_method != 'largegrains':
+        #         raise ValueError(
+        #             'Adding "largegrains" dust without calling set_dust first'
+        #         )
+        #     if particle_type - IDUST + 1 > self.number_of_large_dust_species:
+        #         raise ValueError(
+        #             'particle_type is greater than what is available from the call to '
+        #             'set_dust'
+        #         )
 
         if self._position is not None:
             self._position = np.append(self._position, positions, axis=0)

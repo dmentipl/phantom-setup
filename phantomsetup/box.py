@@ -91,8 +91,8 @@ class Box(Boundary, Particles):
 
         velocity = velocity_distribution(position)
 
-        self._particle_type = particle_type
         self._particle_mass = particle_mass
+        self._particle_type = particle_type
         self._position = position
         self._velocity = velocity
         self._smoothing_length = smoothing_length

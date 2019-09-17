@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import phantomsetup
 from phantomsetup import defaults
-from phantomsetup.disc import add_gap, self_similar_accretion_disc
+from phantomsetup.disc import Disc, add_gap, self_similar_accretion_disc
 from phantomsetup.eos import polyk_for_locally_isothermal_disc
 from phantomsetup.orbits import hill_sphere_radius
 from phantomsetup.units import unit_string_to_cgs
@@ -125,7 +125,8 @@ setup.add_sink(
 # ------------------------------------------------------------------------------------ #
 # Add disc
 
-setup.add_disc(
+disc = Disc()
+disc.add_particles(
     particle_type=particle_type,
     number_of_particles=number_of_particles,
     disc_mass=disc_mass,
@@ -138,6 +139,7 @@ setup.add_disc(
     gravitational_constant=gravitational_constant,
     args=(radius_critical, gamma),
 )
+setup.add_disc(disc)
 
 # ------------------------------------------------------------------------------------ #
 # Add planet
