@@ -17,7 +17,7 @@ import phantomsetup
 # Here we set some constants for convenience.
 
 #%%
-igas = phantomsetup.defaults.particle_type['igas']
+igas = phantomsetup.defaults.PARTICLE_TYPE['igas']
 
 #%% [markdown]
 # ## Parameters

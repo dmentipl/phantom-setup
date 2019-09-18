@@ -9,6 +9,8 @@ from scipy import integrate, spatial, stats
 from . import constants, defaults
 from .particles import Particles
 
+_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
+
 
 class Disc(Particles):
     """
@@ -190,7 +192,7 @@ class Disc(Particles):
             )
 
         if hfact is None:
-            hfact = defaults.run_options.config['hfact'].value
+            hfact = _HFACT_DEFAULT
 
         particle_mass = disc_mass / number_of_particles
         self._particle_mass = particle_mass

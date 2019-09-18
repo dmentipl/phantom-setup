@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Dict, Tuple
 
-from .defaults import run_option_block_label as block_label
+from .defaults import RUN_OPTION_BLOCK_LABEL as block_label
 
 
 class _InFile:

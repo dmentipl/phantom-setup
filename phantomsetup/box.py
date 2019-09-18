@@ -9,7 +9,7 @@ from .boundary import Boundary
 from .particles import Particles
 
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-_HFACT_DEFAULT = defaults.run_options.config['hfact'].value
+_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
 
 
 class Box(Boundary, Particles):
@@ -79,7 +79,7 @@ class Box(Boundary, Particles):
         """
 
         if hfact is None:
-            hfact = defaults.run_options.config['hfact'].value
+            hfact = _HFACT_DEFAULT
 
         particle_spacing = (self.volume / number_of_particles) ** (1 / 3)
 

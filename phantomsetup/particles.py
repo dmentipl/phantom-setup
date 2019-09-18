@@ -6,9 +6,9 @@ import numpy as np
 
 from . import defaults
 
-IGAS = defaults.particle_type['igas']
-IDUST = defaults.particle_type['idust']
-IDUSTLAST = defaults.particle_type['idustlast']
+IGAS = defaults.PARTICLE_TYPE['igas']
+IDUST = defaults.PARTICLE_TYPE['idust']
+IDUSTLAST = defaults.PARTICLE_TYPE['idustlast']
 
 
 class Particles:

@@ -18,8 +18,8 @@ import phantomsetup
 # Set constants.
 
 #%%
-igas = phantomsetup.defaults.particle_type['igas']
-idust = phantomsetup.defaults.particle_type['idust']
+igas = phantomsetup.defaults.PARTICLE_TYPE['igas']
+idust = phantomsetup.defaults.PARTICLE_TYPE['idust']
 
 #%% [markdown]
 # ## Parameters

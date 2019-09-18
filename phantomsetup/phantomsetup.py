@@ -24,7 +24,7 @@ from .sinks import Sink
 
 FILEIDENT_LEN = 100
 
-IGAS = defaults.particle_type['igas']
+IGAS = defaults.PARTICLE_TYPE['igas']
 
 
 class Setup(Particles):
@@ -43,10 +43,10 @@ class Setup(Particles):
 
         self._prefix: str = None
 
-        self._header: Dict[str, Any] = copy.deepcopy(defaults.header)
-        self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.compile_options)
+        self._header: Dict[str, Any] = copy.deepcopy(defaults.HEADER)
+        self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.COMPILE_OPTIONS)
         self._run_options: phantomconfig.PhantomConfig = copy.deepcopy(
-            defaults.run_options
+            defaults.RUN_OPTIONS
         )
 
         self._sinks: List[Sink] = None
@@ -412,7 +412,7 @@ class Setup(Particles):
                 self.number_of_small_dust_species = grain_size.size
 
             if grain_density is None:
-                grain_density = defaults.get_run_option('graindens')
+                grain_density = self.get_run_option('graindens')
             self._grain_density = grain_density * np.ones_like(grain_size)
 
         else:
@@ -869,13 +869,13 @@ class Setup(Particles):
         # Number and mass of particles
 
         self._header['nparttot'] = self.total_number_of_particles
-        self._header['ntypes'] = defaults.maxtypes
+        self._header['ntypes'] = defaults.MAXTYPES
 
-        self._header['npartoftype'] = np.zeros(defaults.maxtypes, dtype=np.int)
+        self._header['npartoftype'] = np.zeros(defaults.MAXTYPES, dtype=np.int)
         for key, val in self.number_of_particles.items():
             self._header['npartoftype'][key - 1] = val
 
-        self._header['massoftype'] = np.zeros(defaults.maxtypes)
+        self._header['massoftype'] = np.zeros(defaults.MAXTYPES)
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
 
@@ -884,6 +884,10 @@ class Setup(Particles):
         self._header['alpha'] = self.get_run_option('alpha')
         self._header['alphaB'] = self.get_run_option('alphaB')
         self._header['alphau'] = self.get_run_option('alphau')
+
+        # hfact
+
+        self._header['hfact'] = self.get_run_option('hfact')
 
         # Sink particles
 

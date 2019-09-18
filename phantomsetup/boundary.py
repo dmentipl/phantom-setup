@@ -5,7 +5,7 @@ from typing import Tuple
 from . import defaults
 
 _AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-_HFACT_DEFAULT = defaults.run_options.config['hfact'].value
+_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
 
 
 class Boundary:

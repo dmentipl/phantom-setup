@@ -6,7 +6,7 @@ import phantomconfig
 PHANTOM_VERSION = '0.0.0'
 PHANTOM_GIT_HASH = 'xxxxxxx'
 
-compile_options = {
+COMPILE_OPTIONS = {
     'DISC_VISCOSITY': False,
     'DRIVING': False,
     'DUST': False,
@@ -16,6 +16,7 @@ compile_options = {
     'IND_TIMESTEPS': True,
     'INJECT_PARTICLES': False,
     'ISOTHERMAL': False,
+    'KERNEL': 'cubic',
     'LIGHTCURVE': False,
     'MAXDUSTSMALL': 11,
     'MAXDUSTLARGE': 11,
@@ -26,18 +27,27 @@ compile_options = {
     'PHOTO': False,
 }
 
-particle_type = {
+HFACT_KERNELS = {
+    'cubic': 1.2,
+    'quartic': 1.1,
+    'quintic': 1.0,
+    'WendlandC2': 1.3,
+    'WendlandC4': 1.5,
+    'WendlandC6': 1.6,
+}
+
+PARTICLE_TYPE = {
     'igas': 1,
     'iboundary': 3,
     'istar': 4,
     'idarkmatter': 5,
     'ibulge': 6,
     'idust': 7,
-    'idustlast': 7 + compile_options['MAXDUSTLARGE'] - 1,
+    'idustlast': 7 + COMPILE_OPTIONS['MAXDUSTLARGE'] - 1,
     'iunknown': 0,
 }
 
-external_forces = (
+EXTERNAL_FORCES = (
     'star',
     'corotate',
     'binary',
@@ -56,15 +66,15 @@ external_forces = (
     'corotating',
 )
 
-external_forces_comment = ''
-for idx, ext in enumerate(external_forces):
-    external_forces_comment += f'{idx}={ext[:4]},'
-external_forces_comment = external_forces_comment[:-1]
+_EXTERNAL_FORCES_COMMENT = ''
+for idx, ext in enumerate(EXTERNAL_FORCES):
+    _EXTERNAL_FORCES_COMMENT += f'{idx}={ext[:4]},'
+_EXTERNAL_FORCES_COMMENT = _EXTERNAL_FORCES_COMMENT[:-1]
 
-maxtypes = 7 + compile_options['MAXDUSTLARGE'] - 1
-maxdust = compile_options['MAXDUSTSMALL'] + compile_options['MAXDUSTLARGE']
+MAXTYPES = 7 + COMPILE_OPTIONS['MAXDUSTLARGE'] - 1
+MAXDUST = COMPILE_OPTIONS['MAXDUSTSMALL'] + COMPILE_OPTIONS['MAXDUSTLARGE']
 
-run_option_block_label = {
+RUN_OPTION_BLOCK_LABEL = {
     'accuracy': 'options controlling accuracy',
     'cooling': 'options controlling cooling',
     'damping': 'options controlling damping',
@@ -87,7 +97,7 @@ run_option_block_label = {
     'viscosity': 'options controlling physical viscosity',
 }
 
-_run_options = {
+_RUN_OPTIONS = {
     # ------------------------------------------------
     # job name
     'job name': {
@@ -272,7 +282,7 @@ _run_options = {
     # options relating to external forces
     # TODO: this is unfinished
     'options relating to external forces': {
-        'iexternalforce': (0, external_forces_comment)
+        'iexternalforce': (0, _EXTERNAL_FORCES_COMMENT)
     },
     # ------------------------------------------------
     # options controlling physical viscosity
@@ -335,42 +345,42 @@ _run_options = {
     # TODO
 }
 
-run_options = phantomconfig.read_dict(_run_options, 'nested')
+RUN_OPTIONS = phantomconfig.read_dict(_RUN_OPTIONS, 'nested')
 
-_run_options = dict(zip(run_options.variables, run_options.values))
+_RUN_OPTIONS = dict(zip(RUN_OPTIONS.variables, RUN_OPTIONS.values))
 
-header = {
+HEADER = {
     'Bextx': 0.0,
     'Bexty': 0.0,
     'Bextz': 0.0,
-    'C_cour': _run_options['C_cour'],
-    'C_force': _run_options['C_force'],
+    'C_cour': _RUN_OPTIONS['C_cour'],
+    'C_force': _RUN_OPTIONS['C_force'],
     'RK2': 1.5,
-    'alpha': _run_options['alpha'],
-    'alphaB': _run_options['alphaB'],
-    'alphau': _run_options['alphau'],
+    'alpha': _RUN_OPTIONS['alpha'],
+    'alphaB': _RUN_OPTIONS['alphaB'],
+    'alphau': _RUN_OPTIONS['alphau'],
     'angtot_in': 0.0,
-    'dtmax': _run_options['dtmax'],
+    'dtmax': _RUN_OPTIONS['dtmax'],
     'dum': 0.0,
     'etot_in': 0.0,
     'fileident': '',
     'gamma': 1.0,
     'get_conserv': 1.0,
-    'graindens': np.zeros(maxdust),
-    'grainsize': np.zeros(maxdust),
-    'hfact': _run_options['hfact'],
-    'idust': particle_type['idust'],
-    'ieos': _run_options['ieos'],
-    'iexternalforce': _run_options['iexternalforce'],
+    'graindens': np.zeros(MAXDUST),
+    'grainsize': np.zeros(MAXDUST),
+    'hfact': _RUN_OPTIONS['hfact'],
+    'idust': PARTICLE_TYPE['idust'],
+    'ieos': _RUN_OPTIONS['ieos'],
+    'iexternalforce': _RUN_OPTIONS['iexternalforce'],
     'isink': 0,
     'majorv': PHANTOM_VERSION.split('.')[0],
-    'massoftype': np.zeros(maxtypes),
+    'massoftype': np.zeros(MAXTYPES),
     'microv': PHANTOM_VERSION.split('.')[1],
     'minorv': PHANTOM_VERSION.split('.')[2],
-    'mdust_in': np.zeros(maxdust),
+    'mdust_in': np.zeros(MAXDUST),
     'ndustlarge': 0,
     'ndustsmall': 0,
-    'npartoftype': np.zeros(maxtypes, dtype=np.int),
+    'npartoftype': np.zeros(MAXTYPES, dtype=np.int),
     'nparttot': 0,
     'nptmass': 0,
     'ntypes': 0,
@@ -378,7 +388,7 @@ header = {
     'qfacdisc': 0.75,
     'rhozero': 1.0,
     'time': 0.0,
-    'tolh': _run_options['tolh'],
+    'tolh': _RUN_OPTIONS['tolh'],
     'totmom_in': 0.0,
     'udist': 1.0,
     'umass': 1.0,
