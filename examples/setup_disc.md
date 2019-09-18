@@ -244,15 +244,6 @@ setup.add_sink(
 )
 ```
 
-## Write to file
-
-Write the temporary dump file with the initial conditions and the Phantom in file.
-
-```python
-setup.write_dump_file()
-setup.write_in_file()
-```
-
 ## Plot
 
 Now we plot some quantities to see what we have set up.
@@ -287,4 +278,27 @@ fig, ax = plt.subplots()
 ax.plot(setup.R[::10], setup.vphi[::10], 'k.', ms=0.5)
 ax.set_xlabel('$R$')
 ax.set_ylabel('$v_{\phi}$')
+```
+
+## Write to file
+
+Now that we are happy with the setup, write the temporary dump file with the initial conditions and the Phantom in file.
+
+```python
+setup.write_dump_file()
+setup.write_in_file()
+```
+
+## Compile Phantom
+
+You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `generate_compile_command` method to show how Phantom would be compiled.
+
+```python
+print(setup.phantom_compile_command())
+```
+
+We use the `compile_phantom` method to compile Phantom.
+
+```python
+result = setup.compile_phantom(phantom_dir='~/repos/phantom')
 ```
