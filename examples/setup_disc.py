@@ -1,138 +1,127 @@
----
-jupyter:
-  jupytext:
-    formats: ipynb,md
-    text_representation:
-      extension: .md
-      format_name: markdown
-      format_version: '1.1'
-      jupytext_version: 1.2.3
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
----
-
+#%% [markdown]
 # Set up a disc
+#
+# In this tutorial we set up a protoplanetary disc around a star represented by a sink particle, and we add a planet. This notebook generates a Phantom "temporary" dump file that can be read by Phantom as an initial condition. It also generates a Phantom "in" file. Together, these files can start a Phantom simulation.
+#
+# ## Initialization
+#
+# First we import the required modules.
 
-In this tutorial we set up a protoplanetary disc around a star represented by a sink particle, and we add a planet. This notebook generates a Phantom "temporary" dump file that can be read by Phantom as an initial condition. It also generates a Phantom "in" file. Together, these files can start a Phantom simulation.
-
-## Initialization
-
-First we import the required modules.
-
-```python
+#%%
 import matplotlib.pyplot as plt
 import numpy as np
 import phantomsetup
-```
 
-Here we set some constants for convenience.
+#%% [markdown]
+# Here we set some constants for convenience.
 
-```python
+#%%
 igas = phantomsetup.defaults.particle_type['igas']
-```
 
-## Parameters
+#%% [markdown]
+# ## Parameters
+#
+# Now we set the parameters for the problem.
+#
+# First is the `prefix` which sets the file name for the dump file and Phantom in file.
 
-Now we set the parameters for the problem.
-
-First is the `prefix` which sets the file name for the dump file and Phantom in file.
-
-```python
+#%%
 prefix = 'disc'
-```
 
-### Resolution
+#%% [markdown]
+# ### Resolution
+#
+# We choose the resolution to be $10^6$ gas particles.
 
-We choose the resolution to be $10^6$ gas particles.
-
-```python
+#%%
 number_of_particles = 1_000_000
 particle_type = igas
-```
 
-### Viscosity
+#%% [markdown]
+# ### Viscosity
+#
+# The SPH $\alpha$ viscosity parameter is its minimal value of 0.1.
 
-The SPH $\alpha$ viscosity parameter is its minimal value of 0.1.
-
-```python
+#%%
 alpha_artificial = 0.1
-```
 
-### Units
+#%% [markdown]
+# ### Units
+#
+# We set the length and mass units to be au and solar masses, respectively. We will also set the time unit such that the gravitational constant is unity.
 
-We set the length and mass units to be au and solar masses, respectively. We will also set the time unit such that the gravitational constant is unity.
-
-```python
+#%%
 length_unit = phantomsetup.units.unit_string_to_cgs('au')
 mass_unit = phantomsetup.units.unit_string_to_cgs('solarm')
 gravitational_constant = 1.0
-```
 
-### Star
+#%% [markdown]
+# ### Star
+#
+# The star is of solar mass, at the origin, with a 5 au accretion radius.
 
-The star is of solar mass, at the origin, with a 5 au accretion radius.
-
-```python
+#%%
 stellar_mass = 1.0
 stellar_accretion_radius = 5.0
 stellar_position = (0.0, 0.0, 0.0)
 stellar_velocity = (0.0, 0.0, 0.0)
-```
 
-### Disc
+#%% [markdown]
+# ### Disc
+#
+# The disc has mass 0.01 solar masses, it extends from 10 au to 200 au.
 
-The disc has mass 0.01 solar masses, it extends from 10 au to 200 au.
-
-```python
+#%%
 radius_min = 10.0
 radius_max = 200.0
 
+#%%
 disc_mass = 0.01
-```
 
-### Equation of state
+#%% [markdown]
+# ### Equation of state
+#
+# The equation of state is locally isothermal. We set the aspect ratio H/R at a reference radius.
 
-The equation of state is locally isothermal. We set the aspect ratio H/R at a reference radius.
-
-```python
+#%%
 ieos = 3
 q_index = 0.75
 aspect_ratio = 0.05
 reference_radius = 10.0
-```
 
-### Planet
+#%% [markdown]
+# ### Planet
+#
+# We add a planet at 100 au.
 
-We add a planet at 100 au.
-
-```python
+#%%
 planet_mass = 0.001
 planet_position = (100.0, 0.0, 0.0)
 
+#%%
 orbital_radius = np.linalg.norm(planet_position)
 planet_velocity = np.sqrt(gravitational_constant * stellar_mass / orbital_radius)
-```
 
-We set the planet accretion radius as a fraction of the Hill sphere radius.
+#%% [markdown]
+# We set the planet accretion radius as a fraction of the Hill sphere radius.
 
-```python
+#%%
 planet_accretion_radius_fraction_hill_radius = 0.25
 
+#%%
 planet_hill_radius = phantomsetup.orbits.hill_sphere_radius(
     orbital_radius, planet_mass, stellar_mass
 )
 planet_accretion_radius = (
     planet_accretion_radius_fraction_hill_radius * planet_hill_radius
 )
-```
 
-### Surface density distribution
+#%% [markdown]
+# ### Surface density distribution
+#
+# For the surface density distribution we use the Lynden-Bell and Pringle (1974) self-similar solution, i.e. a power law with an exponential taper.
 
-For the surface density distribution we use the Lynden-Bell and Pringle (1974) self-similar solution, i.e. a power law with an exponential taper.
-
-```python
+#%%
 def density_distribution(radius, radius_critical, gamma):
     """Self-similar disc surface density distribution.
 
@@ -141,79 +130,80 @@ def density_distribution(radius, radius_critical, gamma):
     """
     return phantomsetup.disc.self_similar_accretion_disc(radius, radius_critical, gamma)
 
-
 radius_critical = 100.0
 gamma = 1.0
 
+#%%
 args = (radius_critical, gamma)
-```
 
-## Instantiate the `Setup` object
+#%% [markdown]
+# ## Instantiate the `Setup` object
+#
+# The following instantiates the `phantomsetup.Setup` object.
 
-The following instantiates the `phantomsetup.Setup` object.
-
-```python
+#%%
 setup = phantomsetup.Setup()
-```
 
-## Set attributes and add particles
+#%% [markdown]
+# ## Set attributes and add particles
+#
+# ### Prefix
+#
+# Set the prefix.
 
-### Prefix
-
-Set the prefix.
-
-```python
+#%%
 setup.prefix = prefix
-```
 
-### Units
+#%% [markdown]
+# ### Units
+#
+# Set units.
 
-Set units.
-
-```python
+#%%
 setup.set_units(
     length=length_unit, mass=mass_unit, gravitational_constant_is_unity=True
 )
-```
 
-### Equation of state
+#%% [markdown]
+# ### Equation of state
+#
+# Set the equation of state. We get `polyk` from the aspect ratio parametrization.
 
-Set the equation of state. We get `polyk` from the aspect ratio parametrization.
-
-```python
+#%%
 polyk = phantomsetup.eos.polyk_for_locally_isothermal_disc(
     q_index, reference_radius, aspect_ratio, stellar_mass, gravitational_constant
 )
 
+#%%
 setup.set_equation_of_state(ieos=ieos, polyk=polyk)
-```
 
-### Viscosity
+#%% [markdown]
+# ### Viscosity
+#
+# Set the numerical viscosity to Phantom disc viscosity.
 
-Set the numerical viscosity to Phantom disc viscosity.
-
-```python
+#%%
 setup.set_dissipation(disc_viscosity=True, alpha=alpha_artificial)
-```
 
-### Star
+#%% [markdown]
+# ### Star
+#
+# Add a star at the origin.
 
-Add a star at the origin.
-
-```python
+#%%
 setup.add_sink(
     mass=stellar_mass,
     accretion_radius=stellar_accretion_radius,
     position=stellar_position,
     velocity=stellar_velocity,
 )
-```
 
-### Disc
+#%% [markdown]
+# ### Disc
+#
+# Add the disc around the star.
 
-Add the disc around the star.
-
-```python
+#%%
 disc = phantomsetup.Disc()
 disc.add_particles(
     particle_type=particle_type,
@@ -229,28 +219,28 @@ disc.add_particles(
     args=(radius_critical, gamma),
 )
 setup.add_disc(disc)
-```
 
-### Planet
+#%% [markdown]
+# ### Planet
+#
+# Add a planet in orbit around the star.
 
-Add a planet in orbit around the star.
-
-```python
+#%%
 setup.add_sink(
     mass=planet_mass,
     accretion_radius=planet_accretion_radius,
     position=planet_position,
     velocity=planet_velocity,
 )
-```
 
-## Plot
+#%% [markdown]
+# ## Plot
+#
+# Now we plot some quantities to see what we have set up.
+#
+# First is the particles in the xy-plane. The sink particles are marked in red.
 
-Now we plot some quantities to see what we have set up.
-
-First is the particles in the xy-plane. The sink particles are marked in red.
-
-```python
+#%%
 fig, ax = plt.subplots()
 ax.plot(setup.x[::10], setup.y[::10], 'k.', ms=0.5)
 for sink in setup.sinks:
@@ -258,53 +248,51 @@ for sink in setup.sinks:
 ax.set_xlabel('$x$')
 ax.set_ylabel('$y$')
 ax.set_aspect('equal')
-```
 
-Next we plot the particles in the rz-plane.
+#%% [markdown]
+# Next we plot the particles in the rz-plane.
 
-```python
+#%%
 fig, ax = plt.subplots()
 ax.plot(setup.R[::10], setup.z[::10], 'k.', ms=0.5)
 ax.set_xlabel('$R$')
 ax.set_ylabel('$z$')
 ax.set_aspect('equal')
 ax.set_ylim(bottom=2 * setup.z.min(), top=2 * setup.z.max())
-```
 
-Finally, we plot $v_{\phi}$ as a function of radius.
+#%% [markdown]
+# Finally, we plot $v_{\phi}$ as a function of radius.
 
-```python
+#%%
 fig, ax = plt.subplots()
 ax.plot(setup.R[::10], setup.vphi[::10], 'k.', ms=0.5)
 ax.set_xlabel('$R$')
 ax.set_ylabel('$v_{\phi}$')
-```
 
-## Write to file
+#%% [markdown]
+# ## Write to file
+#
+# Now that we are happy with the setup, write the "temporary" dump file with the initial conditions and the Phantom "in" file.
+#
+# First we set a working directory for the simulation.
 
-Now that we are happy with the setup, write the "temporary" dump file with the initial conditions and the Phantom "in" file.
-
-First we set a working directory for the simulation.
-
-```python
+#%%
 working_dir = '~/runs/disc'
-```
 
-```python
+#%%
 setup.write_dump_file(directory=working_dir)
 setup.write_in_file(directory=working_dir)
-```
 
-## Compile Phantom
+#%% [markdown]
+# ## Compile Phantom
+#
+# You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `phantom_compile_command` method to show how Phantom would be compiled.
 
-You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `phantom_compile_command` method to show how Phantom would be compiled.
-
-```python
+#%%
 print(setup.phantom_compile_command())
-```
 
-We use the `compile_phantom` method to compile Phantom.
+#%% [markdown]
+# We use the `compile_phantom` method to compile Phantom.
 
-```python
+#%%
 result = setup.compile_phantom(phantom_dir='~/repos/phantom', working_dir=working_dir)
-```
