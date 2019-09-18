@@ -286,8 +286,8 @@ working_dir = '~/runs/dustybox'
 ```
 
 ```python
-setup.write_dump_file()
-setup.write_in_file()
+setup.write_dump_file(directory=working_dir)
+setup.write_in_file(directory=working_dir)
 ```
 
 ## Compile Phantom

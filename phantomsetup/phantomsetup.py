@@ -681,7 +681,7 @@ class Setup(Particles):
         else:
             filename = f'{self.prefix}.in'
 
-        phantomconfig.read_dict(self.infile).write_phantom(filename)
+        phantomconfig.read_dict(self.infile).write_phantom(directory / filename)
 
         return self
 
