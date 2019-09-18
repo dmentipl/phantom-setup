@@ -34,14 +34,6 @@ idust = phantomsetup.defaults.PARTICLE_TYPE['idust']
 prefix = 'dustybox'
 
 #%% [markdown]
-# ### `hfact`
-#
-# The smoothing length factor `hfact` should be 1.0 for the quintic kernel which is the appropriate kernel for calculations with dust.
-
-#%%
-hfact = 1.0
-
-#%% [markdown]
 # ### Equation of state
 #
 # An `ieos` of 1 sets the globally isothermal equation of state. The sound speed is the only free parameter.
