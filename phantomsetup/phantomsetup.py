@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import copy
 import datetime
+import pathlib
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Any, Collection, Dict, List, Tuple, Union
 
@@ -211,52 +214,6 @@ class Setup(Particles):
             return self._compile_options[option]
         else:
             raise ValueError(f'Compile time option={option} does not exist')
-
-    def generate_compile_command(
-        self, SYSTEM: str = None, HDF5ROOT: str = None
-    ) -> List[str]:
-        """
-        Generate the Phantom Makefile command for this setup.
-
-        Optional Parameters
-        -------------------
-        SYSTEM
-            The Phantom SYSTEM Makefile variable. Default is 'gfortran'.
-        HDF5ROOT
-            The root directory of your HDF5 library installation.
-            Default is '/usr/local/opt/hdf5'.
-
-        Returns
-        -------
-        list of str
-            A list of strings when joined together produce the Makefile
-            command to compile Phantom corresponding to this setup. E.g.
-            >>> ' '.join(setup.generate_compile_command())
-        """
-
-        if SYSTEM is None:
-            SYSTEM = 'gfortran'
-        if HDF5ROOT is None:
-            HDF5ROOT = '/usr/local/opt/hdf5'
-
-        phantom_compile_command = [
-            'make',
-            'SETUP=empty',
-            f'SYSTEM={SYSTEM}',
-            'HDF5=yes',
-            f'HDF5ROOT={HDF5ROOT}',
-        ]
-
-        for option, value in self.compile_options.items():
-            if isinstance(value, bool):
-                if value:
-                    phantom_compile_command.append(f'{option}=yes')
-                else:
-                    continue
-            elif isinstance(value, int):
-                phantom_compile_command.append(f'{option}={value}')
-
-        return phantom_compile_command
 
     def set_run_option(self, option: str, value: Any) -> None:
         """
@@ -717,6 +674,86 @@ class Setup(Particles):
 
         return self
 
+    def phantom_compile_command(self, system: str = None, hdf5root: str = None) -> str:
+        """
+        Generate the Phantom Makefile command for this setup.
+
+        Optional Parameters
+        -------------------
+        system
+            The Phantom SYSTEM Makefile variable. Default is 'gfortran'.
+        hdf5root
+            The root directory of your HDF5 library installation.
+            Default is '/usr/local/opt/hdf5'.
+
+        Returns
+        -------
+        str
+            The Phantom compile command as a string.
+        """
+
+        return ' '.join(
+            self._generate_phantom_compile_command(system=system, hdf5root=hdf5root)
+        )
+
+    def compile_phantom(
+        self,
+        phantom_dir: Union[str, Path],
+        system: str = None,
+        hdf5root: str = None,
+        working_dir: Union[str, Path] = None,
+    ) -> subprocess.CompletedProcess:
+        """
+        Compile Phantom for this setup.
+
+        Parameters
+        ----------
+        phantom_dir
+            The path to the Phantom repository directory.
+
+        Optional Parameters
+        -------------------
+        system
+            The Phantom SYSTEM Makefile variable. Default is 'gfortran'.
+        hdf5root
+            The root directory of your HDF5 library installation.
+            Default is '/usr/local/opt/hdf5'.
+        working_dir
+            The working directory for the setup. After a successful
+            build, the Phantom binary will be copied here.
+
+        Returns
+        -------
+        subprocess.CompletedProcess
+            A CompletedProcess object without output from the command,
+            and success/fail codes, etc.
+        """
+
+        phantom_dir = pathlib.Path(phantom_dir).expanduser().resolve()
+        if not phantom_dir.exists():
+            raise ValueError('phantom_dir does not exist')
+
+        if working_dir is None:
+            working_dir = pathlib.Path().cwd()
+        working_dir = pathlib.Path(working_dir).expanduser().resolve()
+        if not working_dir.exists():
+            raise ValueError('working_dir does not exist')
+
+        result = subprocess.run(
+            self._generate_phantom_compile_command(system=system, hdf5root=hdf5root),
+            cwd=phantom_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if result.returncode != 0:
+            print('Compilation failed.')
+        else:
+            print('Compilation successful.')
+            shutil.copy(phantom_dir / 'bin/phantom', working_dir)
+            shutil.copy(phantom_dir / 'bin/phantom_version', working_dir)
+
+        return result
+
     def _write_header(self, file_handle: h5py.File):
 
         self._update_header()
@@ -867,6 +904,52 @@ class Setup(Particles):
             self._header['udist'] = self._units['length']
             self._header['umass'] = self._units['mass']
             self._header['utime'] = self._units['time']
+
+    def _generate_phantom_compile_command(
+        self, system: str = None, hdf5root: str = None
+    ) -> List[str]:
+        """
+        Generate the Phantom Makefile command for this setup.
+
+        Optional Parameters
+        -------------------
+        system
+            The Phantom SYSTEM Makefile variable. Default is 'gfortran'.
+        hdf5root
+            The root directory of your HDF5 library installation.
+            Default is '/usr/local/opt/hdf5'.
+
+        Returns
+        -------
+        list of str
+            A list of strings when joined together produce the Makefile
+            command to compile Phantom corresponding to this setup. E.g.
+            >>> ' '.join(setup.generate_compile_command())
+        """
+
+        if system is None:
+            system = 'gfortran'
+        if hdf5root is None:
+            hdf5root = '/usr/local/opt/hdf5'
+
+        phantom_compile_command = [
+            'make',
+            'SETUP=empty',
+            f'SYSTEM={system}',
+            'HDF5=yes',
+            f'HDF5ROOT={hdf5root}',
+        ]
+
+        for option, value in self.compile_options.items():
+            if isinstance(value, bool):
+                if value:
+                    phantom_compile_command.append(f'{option}=yes')
+                else:
+                    continue
+            elif isinstance(value, int):
+                phantom_compile_command.append(f'{option}={value}')
+
+        return phantom_compile_command
 
     def __repr__(self) -> str:
         return f"PhantomSetup('{self.prefix}')"

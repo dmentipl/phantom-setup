@@ -284,4 +284,16 @@ setup.write_dump_file()
 setup.write_in_file()
 ```
 
-You can start a Phantom calculation from these two files.
+## Compile Phantom
+
+You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `generate_compile_command` method to show how Phantom would be compiled.
+
+```python
+print(setup.phantom_compile_command())
+```
+
+We use the `compile_phantom` method to compile Phantom.
+
+```python
+result = setup.compile_phantom(phantom_dir='~/repos/phantom')
+```
