@@ -29,4 +29,4 @@ clean:
 	jupytext --to py $<
 
 %.html: %.ipynb
-	jupyter nbconvert --to html --execute $<
+	jupyter nbconvert --to html --execute $< --ExecutePreprocessor.timeout=180
