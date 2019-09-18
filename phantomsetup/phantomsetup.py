@@ -646,6 +646,9 @@ class Setup(Particles):
             directory = pathlib.Path().cwd()
         directory = pathlib.Path(directory).expanduser().resolve()
 
+        if not directory.exists():
+            directory.mkdir(parents=True)
+
         if self.prefix is None:
             raise ValueError('No prefix set')
         else:
@@ -675,6 +678,9 @@ class Setup(Particles):
         if directory is None:
             directory = pathlib.Path().cwd()
         directory = pathlib.Path(directory).expanduser().resolve()
+
+        if not directory.exists():
+            directory.mkdir(parents=True)
 
         if self.prefix is None:
             raise ValueError('No prefix set')
