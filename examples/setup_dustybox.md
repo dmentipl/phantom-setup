@@ -275,9 +275,15 @@ alpha = np.zeros(setup.total_number_of_particles, dtype=np.single)
 setup.add_array_to_particles('alpha', alpha)
 ```
 
-## Write dump file and in file
+## Write to file
 
-We write the Phantom "temporary" dump file, `dustybox_00000.tmp.h5`, and the Phantom "in" file, `dustybox.in`.
+Now that we are happy with the setup, write the "temporary" dump file with the initial conditions and the Phantom "in" file.
+
+First we set a working directory for the simulation.
+
+```python
+working_dir = '~/runs/dustybox'
+```
 
 ```python
 setup.write_dump_file()
@@ -286,7 +292,7 @@ setup.write_in_file()
 
 ## Compile Phantom
 
-You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `generate_compile_command` method to show how Phantom would be compiled.
+You can start a Phantom calculation from these two files but you must compile Phantom with the correct Makefile variables. We can use the `phantom_compile_command` method to show how Phantom would be compiled.
 
 ```python
 print(setup.phantom_compile_command())
@@ -295,5 +301,5 @@ print(setup.phantom_compile_command())
 We use the `compile_phantom` method to compile Phantom.
 
 ```python
-result = setup.compile_phantom(phantom_dir='~/repos/phantom')
+result = setup.compile_phantom(phantom_dir='~/repos/phantom', working_dir=working_dir)
 ```

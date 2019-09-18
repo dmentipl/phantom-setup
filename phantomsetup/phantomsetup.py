@@ -631,23 +631,27 @@ class Setup(Particles):
 
         return self
 
-    def write_dump_file(self, filename: Union[str, Path] = None) -> Setup:
+    def write_dump_file(self, directory: Union[str, Path] = None) -> Setup:
         """
         Write Phantom temporary ('.tmp') dump file.
 
         Optional parameters
         -------------------
-        filename : str or Path
-            The name of the dump file. Default is 'prefix_00000.tmp.h5'.
+        directory
+            The path to a directory to write the file. Default is
+            current working directory.
         """
 
-        if filename is None:
-            if self.prefix is None:
-                raise ValueError('either choose a filename or set prefix value')
-            else:
-                filename = f'{self.prefix}_00000.tmp.h5'
+        if directory is None:
+            directory = pathlib.Path().cwd()
+        directory = pathlib.Path(directory).expanduser().resolve()
 
-        file_handle = h5py.File(filename, 'w')
+        if self.prefix is None:
+            raise ValueError('No prefix set')
+        else:
+            filename = f'{self.prefix}_00000.tmp.h5'
+
+        file_handle = h5py.File(directory / filename, 'w')
 
         self._write_header(file_handle)
         self._write_particle_arrays(file_handle)
@@ -657,17 +661,24 @@ class Setup(Particles):
 
         return self
 
-    def write_in_file(self, filename: Union[str, Path] = None) -> Setup:
+    def write_in_file(self, directory: Union[str, Path] = None) -> Setup:
         """
         Write Phantom 'in' file.
 
         Optional parameters
         -------------------
-        filename : str or Path
-            The name of the in file. Default is 'prefix.in'.
+        directory
+            The path to a directory to write the file. Default is
+            current working directory.
         """
 
-        if filename is None:
+        if directory is None:
+            directory = pathlib.Path().cwd()
+        directory = pathlib.Path(directory).expanduser().resolve()
+
+        if self.prefix is None:
+            raise ValueError('No prefix set')
+        else:
             filename = f'{self.prefix}.in'
 
         phantomconfig.read_dict(self.infile).write_phantom(filename)
@@ -676,7 +687,7 @@ class Setup(Particles):
 
     def phantom_compile_command(self, system: str = None, hdf5root: str = None) -> str:
         """
-        Generate the Phantom Makefile command for this setup.
+        Show the Phantom Makefile command for this setup.
 
         Optional Parameters
         -------------------
