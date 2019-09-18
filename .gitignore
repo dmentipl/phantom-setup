@@ -4,3 +4,4 @@ phantomsetup.egg-info/*
 .coverage
 htmlcov
 .mypy_cache
+_build

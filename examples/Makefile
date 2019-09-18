@@ -1,8 +1,8 @@
 #
 # Makefile for phantom-setup examples
 #
-# The Python "percent" formatted files can be converted to Jupyter notebooks,
-# reStructuredText for documentation, or static HTML pages.
+# The Python "percent" formatted files can be converted to Jupyter notebooks for
+# execution, reStructuredText for documentation, or static HTML pages.
 
 .PHONY: help all notebook rst html
 
@@ -11,7 +11,7 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
-all: notebook rst html ## Convert to all
+all: notebook rst html ## Convert to all formats
 
 notebook: $(patsubst %.py,%.ipynb,$(wildcard *.py)) ## Convert to Jupyter notebooks
 
