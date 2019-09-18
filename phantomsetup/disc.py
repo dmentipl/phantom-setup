@@ -9,8 +9,6 @@ from scipy import integrate, spatial, stats
 from . import constants, defaults
 from .particles import Particles
 
-_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
-
 
 class Disc(Particles):
     """
@@ -141,7 +139,6 @@ class Disc(Particles):
         centre_of_mass: Tuple[float, float, float] = None,
         rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
         rotation_angle: float = None,
-        hfact: float = None,
         args: tuple = None,
     ) -> Disc:
         """
@@ -174,8 +171,6 @@ class Disc(Particles):
             An axis around which to rotate the disc.
         rotation_angle
             The angle to rotate around the rotation_axis.
-        hfact
-            The smoothing length factor.
         args
             Extra arguments to pass to density_distribution.
         """
@@ -190,9 +185,6 @@ class Disc(Particles):
             raise ValueError(
                 'Must specify rotation_angle and rotation_axis to perform rotation'
             )
-
-        if hfact is None:
-            hfact = _HFACT_DEFAULT
 
         particle_mass = disc_mass / number_of_particles
         self._particle_mass = particle_mass
@@ -242,7 +234,7 @@ class Disc(Particles):
         sigma = normalization * density_distribution(r, *args)
 
         density = sigma * np.exp(-0.5 * (z / H) ** 2) / (H * np.sqrt(2 * np.pi))
-        self._smoothing_length = hfact * (particle_mass / density) ** (1 / 3)
+        self._smoothing_length = self.hfact * (particle_mass / density) ** (1 / 3)
 
         if rotation_axis is not None:
             xyz = rotation.apply(xyz)

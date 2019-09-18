@@ -424,6 +424,16 @@ class Setup(Particles):
                 self.number_of_small_dust_species = number_of_dust_species
 
         self.set_compile_option('DUST', True)
+        if dust_method == 'smallgrains':
+            self.set_compile_option('MAXDUSTSMALL', number_of_dust_species)
+            self.set_compile_option('MAXDUSTLARGE', 0)
+        elif dust_method == 'largegrains':
+            self.set_compile_option('MAXDUSTLARGE', number_of_dust_species)
+            self.set_compile_option('MAXDUSTSMALL', 0)
+
+        self.set_kernel(kernel='quintic')
+        self.set_compile_option('KERNEL', self.kernel)
+        self.set_run_option('hfact', self.hfact)
 
         return self
 
@@ -709,7 +719,7 @@ class Setup(Particles):
             The Phantom compile command as a string.
         """
 
-        return ' '.join(
+        return ' \\\n  '.join(
             self._generate_phantom_compile_command(system=system, hdf5root=hdf5root)
         )
 
@@ -967,8 +977,10 @@ class Setup(Particles):
                     phantom_compile_command.append(f'{option}=yes')
                 else:
                     continue
-            elif isinstance(value, int):
+            elif isinstance(value, (int, str)):
                 phantom_compile_command.append(f'{option}={value}')
+            else:
+                raise ValueError('Cannot determine Phantom compile command')
 
         return phantom_compile_command
 

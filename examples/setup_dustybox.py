@@ -223,7 +223,6 @@ box.add_particles(
     number_of_particles=number_of_particles_gas,
     density=density_gas,
     velocity_distribution=velocity_distribution,
-    hfact=hfact,
 )
 setup.add_box(box)
 
@@ -250,7 +249,6 @@ for idx in range(number_of_dust_species):
         number_of_particles=number_of_particles_dust,
         density=density_dust[idx],
         velocity_distribution=velocity_distribution,
-        hfact=hfact,
     )
     setup.add_box(box)
 

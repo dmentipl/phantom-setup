@@ -1,11 +1,4 @@
-from __future__ import annotations
-
 from typing import Tuple
-
-from . import defaults
-
-_AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
 
 
 class Boundary:

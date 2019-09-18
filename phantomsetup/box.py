@@ -4,12 +4,10 @@ from typing import Callable, Tuple
 
 import numpy as np
 
-from . import defaults
 from .boundary import Boundary
 from .particles import Particles
 
-_AVAILABLE_DISTRIBUTIONS = ('cubic', 'close packed')
-_HFACT_DEFAULT = defaults.RUN_OPTIONS.config['hfact'].value
+_LATTICES = ('cubic', 'close packed')
 
 
 class Box(Boundary, Particles):
@@ -52,7 +50,6 @@ class Box(Boundary, Particles):
         number_of_particles: int,
         density: float,
         velocity_distribution: Callable[[np.ndarray], np.ndarray],
-        hfact: float = None,
     ) -> Box:
         """
         Add uniform particle distribution with arbitrary velocity field.
@@ -71,20 +68,12 @@ class Box(Boundary, Particles):
             The initial velocity distribution as a function taking an
             array of positions with shape (N, 3) and returning an array
             of velocities with shape (N, 3).
-
-        Optional Parameters
-        -------------------
-        hfact
-            The smoothing length factor.
         """
-
-        if hfact is None:
-            hfact = _HFACT_DEFAULT
 
         particle_spacing = (self.volume / number_of_particles) ** (1 / 3)
 
         position, smoothing_length = uniform_distribution(
-            boundary=self.boundary, particle_spacing=particle_spacing, hfact=hfact
+            boundary=self.boundary, particle_spacing=particle_spacing, hfact=self.hfact
         )
 
         particle_mass = density * self.volume / number_of_particles
@@ -104,8 +93,8 @@ def uniform_distribution(
     *,
     boundary: Tuple[float, float, float, float, float, float],
     particle_spacing: float,
-    distribution: str = None,
-    hfact: float = None,
+    hfact: float,
+    lattice: str = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Generate a uniform particle distribution in a Cartesian box.
@@ -116,14 +105,14 @@ def uniform_distribution(
         The boundary as a tuple (xmin, xmax, ymin, ymax, zmin, zmax).
     particle_spacing
         The spacing between the particles.
+    hfact
+        The smoothing length factor.
 
     Optional parameters
     -------------------
-    distribution
-        The type of distribution. Options: 'cubic' or 'close packed'.
-        Default is 'close packed'.
-    hfact
-        The smoothing length factor. Default is 1.2.
+    lattice
+        The type of lattice. Options: 'cubic' or 'close packed'. Default
+        is 'close packed'.
 
     Returns
     -------
@@ -133,14 +122,11 @@ def uniform_distribution(
         The particle smoothing length.
     """
 
-    if distribution is not None and distribution not in _AVAILABLE_DISTRIBUTIONS:
-        raise ValueError('distribution not available')
+    if lattice is not None and lattice not in _LATTICES:
+        raise ValueError('lattice not available')
 
-    if distribution is None:
-        distribution = 'close packed'
-
-    if hfact is None:
-        hfact = _HFACT_DEFAULT
+    if lattice is None:
+        lattice = 'close packed'
 
     xmin, xmax, ymin, ymax, zmin, zmax = boundary
 
@@ -148,7 +134,7 @@ def uniform_distribution(
     ywidth = ymax - ymin
     zwidth = zmax - zmin
 
-    if distribution == 'cubic':
+    if lattice == 'cubic':
 
         nx = int(xwidth / particle_spacing)
         ny = int(ywidth / particle_spacing)
@@ -166,7 +152,7 @@ def uniform_distribution(
 
         position = np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T
 
-    if distribution == 'close packed':
+    if lattice == 'close packed':
 
         dx = particle_spacing
         dy = dx * np.sqrt(3) / 2

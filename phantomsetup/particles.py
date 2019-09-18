@@ -10,6 +10,9 @@ IGAS = defaults.PARTICLE_TYPE['igas']
 IDUST = defaults.PARTICLE_TYPE['idust']
 IDUSTLAST = defaults.PARTICLE_TYPE['idustlast']
 
+KERNELS = defaults.KERNELS
+KERNEL_HFACT = defaults.KERNEL_HFACT
+
 
 class Particles:
     """
@@ -26,6 +29,10 @@ class Particles:
 
         self._particle_type: np.ndarray = None
         self._particle_mass: Dict[int, float] = {}
+
+        self._kernel: str = 'cubic'
+        self._hfact: float = KERNEL_HFACT['cubic']
+
         self._position: np.ndarray = None
         self._smoothing_length: np.ndarray = None
         self._velocity: np.ndarray = None
@@ -57,6 +64,16 @@ class Particles:
     def total_number_of_particles(self) -> int:
         """Total number of particles of each type."""
         return sum(self.number_of_particles.values())
+
+    @property
+    def kernel(self) -> str:
+        """The SPH kernel."""
+        return self._kernel
+
+    @property
+    def hfact(self) -> str:
+        """The hfact for the SPH kernel."""
+        return self._hfact
 
     @property
     def position(self) -> np.ndarray:
@@ -133,6 +150,26 @@ class Particles:
             self._position[:, 0] * self._velocity[:, 1]
             - self._position[:, 1] * self._velocity[:, 0]
         ) / np.sqrt(self._position[:, 0] ** 2 + self._position[:, 1] ** 2)
+
+    def set_kernel(self, kernel: str, hfact: float = None) -> Particles:
+        """
+        Set the SPH kernel.
+
+        Parameters
+        ----------
+        kernel
+            The kernel as a string.
+        hfact
+            The kernel smoothing length factor.
+        """
+        if kernel not in KERNELS:
+            raise ValueError(f'kernel={kernel} not available')
+
+        if hfact is None:
+            hfact = KERNEL_HFACT[kernel]
+
+        self._kernel = kernel
+        self._hfact = hfact
 
     def add_particles(
         self,

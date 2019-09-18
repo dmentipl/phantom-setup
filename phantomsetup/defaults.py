@@ -27,7 +27,7 @@ COMPILE_OPTIONS = {
     'PHOTO': False,
 }
 
-HFACT_KERNELS = {
+KERNEL_HFACT = {
     'cubic': 1.2,
     'quartic': 1.1,
     'quintic': 1.0,
@@ -35,6 +35,8 @@ HFACT_KERNELS = {
     'WendlandC4': 1.5,
     'WendlandC6': 1.6,
 }
+
+KERNELS = KERNEL_HFACT.keys()
 
 PARTICLE_TYPE = {
     'igas': 1,
