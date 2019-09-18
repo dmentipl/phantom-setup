@@ -4,7 +4,8 @@
 # This notebook demonstrates setting up the dusty box test.
 #
 # The dust and gas are co-located in a box with uniform density. There is an initial uniform differential velocity between the dust and gas.
-#
+
+#%% [markdown]
 # ## Initialization
 #
 # Import required modules.

@@ -1,8 +1,9 @@
 #%% [markdown]
-# Set up a disc
+# # Accretion disc
 #
 # In this tutorial we set up a protoplanetary disc around a star represented by a sink particle, and we add a planet. This notebook generates a Phantom "temporary" dump file that can be read by Phantom as an initial condition. It also generates a Phantom "in" file. Together, these files can start a Phantom simulation.
-#
+
+#%% [markdown]
 # ## Initialization
 #
 # First we import the required modules.
