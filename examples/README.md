@@ -1,5 +1,5 @@
 Examples
---------
+========
 
 > Examples for using `phantom-setup`.
 
@@ -9,8 +9,8 @@ The requirements to do this are Jupyter and Jupytext. Both can be installed with
 
 There is a Makefile to facilitate converting to other file formats. To see what the Makefile can to type the following.
 
-```
+```bash
 make help
 ```
 
-See https://github.com/mwouts/jupytext for details on Jupytext.
+See <https://github.com/mwouts/jupytext> for details on Jupytext.

@@ -293,7 +293,11 @@ setup.write_in_file(directory=working_dir)
 print(setup.phantom_compile_command())
 
 #%% [markdown]
-# We use the `compile_phantom` method to compile Phantom.
-
-#%%
-result = setup.compile_phantom(phantom_dir='~/repos/phantom', working_dir=working_dir)
+# To compile Phantom we can use the `compile_phantom` method to compile Phantom. For example, the following will compile Phantom located in `phantom_dir` and copy the binary to `working_dir`.
+#
+# ```
+# result = setup.compile_phantom(
+#     phantom_dir='~/repos/phantom',
+#     working_dir=working_dir
+# )
+# ```
