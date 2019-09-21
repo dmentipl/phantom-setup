@@ -958,6 +958,8 @@ class Setup(Particles):
             >>> ' '.join(setup.generate_compile_command())
         """
 
+        COMPILE_OPTIONS_IFDEF = ('LIGHTCURVE',)
+
         if system is None:
             system = 'gfortran'
         if hdf5root is None:
@@ -976,7 +978,10 @@ class Setup(Particles):
                 if value:
                     phantom_compile_command.append(f'{option}=yes')
                 else:
-                    continue
+                    if not option in COMPILE_OPTIONS_IFDEF:
+                        phantom_compile_command.append(f'{option}=no')
+                    else:
+                        continue
             elif isinstance(value, (int, str)):
                 phantom_compile_command.append(f'{option}={value}')
             else:
