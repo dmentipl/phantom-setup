@@ -122,7 +122,7 @@ _RUN_OPTIONS = {
             datetime.timedelta(hours=12),
             'maximum wall time between dumps (hhh:mm, 000:00=ignore)',
         ),
-        'nfulldump': (1, 'full dump every n dumps'),
+        'nfulldump': (10, 'full dump every n dumps'),
         'iverbose': (
             0,
             'verboseness of log (-1=quiet 0=default 1=allsteps 2=debug 5=max)',
