@@ -592,6 +592,40 @@ class Setup(Particles):
 
         return self
 
+    def set_output(
+        self,
+        tmax: float = None,
+        dtmax: float = None,
+        ndumps: int = None,
+        nfulldump: int = None,
+    ) -> Setup:
+        """
+        Set the simulation run time and output frequency.
+
+        Parameters
+        ----------
+        tmax
+            The simulation run time.
+        dtmax
+            The time between dump files.
+        ndumps
+            Set 'dtmax' as 'tmax / ndumps'.
+        nfulldump
+            Write a full dump every 'nfulldump' dumps.
+        """
+        if dtmax is not None and ndumps is not None:
+            raise ValueError('Cannot set dtmax and ndumps at the same time')
+        if tmax is not None:
+            self.set_run_option('tmax', tmax)
+        if dtmax is not None:
+            self.set_run_option('dtmax', dtmax)
+        if  ndumps is not None:
+            dtmax = self.get_run_option('tmax') / ndumps
+            self.set_run_option('dtmax', dtmax)
+        if nfulldump is not None:
+            self.set_run_option('nfulldump', nfulldump)
+        return self
+
     def set_dissipation(
         self,
         *,

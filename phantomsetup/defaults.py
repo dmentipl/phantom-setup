@@ -109,8 +109,8 @@ _RUN_OPTIONS = {
     # ------------------------------------------------
     # options controlling run time and input/output
     'options controlling run time and input/output': {
-        'tmax': (0.1, 'end time'),
-        'dtmax': (0.001, 'time between dumps'),
+        'tmax': (10.0, 'end time'),
+        'dtmax': (1.0, 'time between dumps'),
         'nmax': (-1, 'maximum number of timesteps (0=just get derivs and stop)'),
         'nout': (-1, 'number of steps between dumps (-ve=ignore)'),
         'nmaxdumps': (-1, 'stop after n full dumps (-ve=ignore)'),
