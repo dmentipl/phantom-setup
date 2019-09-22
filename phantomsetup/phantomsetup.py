@@ -923,6 +923,9 @@ class Setup(Particles):
         for key, val in self.particle_mass.items():
             self._header['massoftype'][key - 1] = val
 
+        # dtmax
+        self._header['dtmax'] = self.get_run_option('dtmax')
+
         # Artificial dissipation
 
         self._header['alpha'] = self.get_run_option('alpha')
