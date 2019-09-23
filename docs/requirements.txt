@@ -1,5 +1,0 @@
-ipykernel
-jupytext
-nbsphinx
-git+https://github.com/dmentipl/phantom-config.git@master
-git+https://github.com/dmentipl/phantom-setup.git@master
