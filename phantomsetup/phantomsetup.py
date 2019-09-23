@@ -10,6 +10,7 @@ from typing import Any, Collection, Dict, List, Tuple, Union
 
 import h5py
 import numpy as np
+
 import phantomconfig
 from phantomconfig import PhantomConfig
 
@@ -619,7 +620,7 @@ class Setup(Particles):
             self.set_run_option('tmax', tmax)
         if dtmax is not None:
             self.set_run_option('dtmax', dtmax)
-        if  ndumps is not None:
+        if ndumps is not None:
             dtmax = self.get_run_option('tmax') / ndumps
             self.set_run_option('dtmax', dtmax)
         if nfulldump is not None:

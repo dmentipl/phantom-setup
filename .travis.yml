@@ -4,11 +4,11 @@ python:
   - "3.7"
 
 install:
-  - pip install black coverage coveralls isort mypy
+  - pip install black coverage coveralls isort mypy phantomconfig
 
 script:
   - python -m coverage run -m pytest
-  - isort --check-only -rc
+  - isort --check-only -rc phantomsetup tests
   - black --check --skip-string-normalization phantomsetup tests
   - mypy --no-strict-optional --ignore-missing-imports phantomsetup tests
 
