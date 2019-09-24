@@ -10,7 +10,6 @@ from typing import Any, Collection, Dict, List, Tuple, Union
 
 import h5py
 import numpy as np
-
 import phantomconfig
 from phantomconfig import PhantomConfig
 
