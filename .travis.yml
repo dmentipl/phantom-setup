@@ -10,7 +10,7 @@ script:
   - python -m coverage run -m pytest
   - isort --check-only -rc phantomsetup tests
   - black --check --skip-string-normalization phantomsetup tests
-  - mypy --no-strict-optional --ignore-missing-imports phantomsetup tests
+  # - mypy --no-strict-optional --ignore-missing-imports phantomsetup tests
 
 after_success:
   - coveralls
