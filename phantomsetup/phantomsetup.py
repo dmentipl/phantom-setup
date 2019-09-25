@@ -403,6 +403,7 @@ class Setup(Particles):
             self.set_run_option('icut_backreaction', 1)
 
         if grain_size is not None:
+            number_of_dust_species = len(grain_size)
             grain_size = np.array(grain_size)
             self._grain_size = grain_size
 
