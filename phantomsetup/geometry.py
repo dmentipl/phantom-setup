@@ -120,8 +120,9 @@ def stretch_map(
         )
         x_original = _positions[:, 0]
     else:
-        x_original = positions[:, 0]
+        _positions = np.copy(positions)
 
+    x_original = _positions[:, 0]
     x_min = coordinate_min
     x_max = coordinate_max
     x_guess = x_original
@@ -129,13 +130,14 @@ def stretch_map(
         func, x_guess, fprime=dfunc, args=(x_min, x_max, x_original)
     )
 
+    _positions[:, 0] = x_stretched
     if geometry in ('cylindrical', 'spherical'):
         _positions[:, 0] = x_stretched
         positions = coordinate_transform(
             _positions, geometry_from=geometry, geometry_to='cartesian'
         )
     else:
-        positions[:, 0] = x_stretched
+        positions = _positions
     return positions
 
 
