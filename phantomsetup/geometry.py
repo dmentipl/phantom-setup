@@ -146,7 +146,26 @@ def stretch_map(
 def coordinate_transform(
     position: ndarray, geometry_from: str, geometry_to: str
 ) -> ndarray:
-    # TODO: write docstring
+    """
+    Coordinate transformation.
+
+    Transform 3d coordinates from one system to another. Coordinate
+    systems supported: 'cartesian', 'cylindrical', 'spherical'.
+
+    Parameters
+    ----------
+    coordinates
+        The 3d coordinates to transform, as a (N, 3) ndarray.
+    geometry_from
+        The geometry that the coordinates are in.
+    geometry_to
+        The geometry to convert to.
+
+    Returns
+    -------
+    ndarray
+        The coordinates transformed to the new coordinate system.
+    """
 
     geometry_from = geometry_from.lower()
     geometry_to = geometry_to.lower()
