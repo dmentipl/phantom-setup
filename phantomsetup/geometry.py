@@ -73,8 +73,12 @@ def stretch_map(
     if coordinate not in ('x', 'y', 'z', 'r', 'phi', 'theta'):
         raise ValueError('"coordinate" must be in ("x", "y", "z", "r", "phi", "theta")')
     if geometry == 'spherical' and coordinate == 'r':
+        if coordinate_min < 0.0:
+            raise ValueError('"coordinate_min" < 0.0 for radius: not physical')
         i_area_element = 3
     elif geometry == 'cylindrical' and coordinate == 'r':
+        if coordinate_min < 0.0:
+            raise ValueError('"coordinate_min" < 0.0 for radius: not physical')
         i_area_element = 2
     else:
         i_area_element = 1
@@ -118,7 +122,6 @@ def stretch_map(
         _positions = coordinate_transform(
             positions, geometry_from='cartesian', geometry_to=geometry
         )
-        x_original = _positions[:, 0]
     else:
         _positions = np.copy(positions)
 
@@ -132,7 +135,6 @@ def stretch_map(
 
     _positions[:, 0] = x_stretched
     if geometry in ('cylindrical', 'spherical'):
-        _positions[:, 0] = x_stretched
         positions = coordinate_transform(
             _positions, geometry_from=geometry, geometry_to='cartesian'
         )
