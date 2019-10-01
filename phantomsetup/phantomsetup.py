@@ -516,7 +516,6 @@ class Setup(Particles):
         periodic
             Set to True for periodic boundary conditions.
         """
-        xmin, xmax, ymin, ymax, zmin, zmax = boundary
         self._boundary = Boundary(*boundary)
         if periodic:
             self.set_compile_option('PERIODIC', True)
