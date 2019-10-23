@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 import numba
 import numpy as np
@@ -144,8 +144,8 @@ def stretch_map(
 
 
 def coordinate_transform(
-    position: ndarray, geometry_from: str, geometry_to: str
-) -> ndarray:
+    position: ndarray, geometry_from: str, geometry_to: str, in_place: bool = False
+) -> Optional[ndarray]:
     """
     Coordinate transformation.
 
@@ -160,12 +160,17 @@ def coordinate_transform(
         The geometry that the coordinates are in.
     geometry_to
         The geometry to convert to.
+    in_place, optional
+        If True, the coordinate transformation operates on the the
+        array in place, and the function returns None. Default: False.
 
     Returns
     -------
-    ndarray
-        The coordinates transformed to the new coordinate system.
+    Optional[ndarray]
+        The coordinates transformed to the new coordinate system, if
+        in_place is False. Otherwise, return None.
     """
+    _GEOMETRIES = ('cartesian', 'cylindrical', 'spherical')
 
     geometry_from = geometry_from.lower()
     geometry_to = geometry_to.lower()
@@ -176,60 +181,74 @@ def coordinate_transform(
 
     if geometry_from == 'cartesian':
         if geometry_to == 'cylindrical':
-            return _cartesian_to_cylindrical(position)
+            return _cartesian_to_cylindrical(position, in_place)
         elif geometry_to == 'spherical':
-            return _cartesian_to_spherical(position)
+            return _cartesian_to_spherical(position, in_place)
     if geometry_from == 'spherical':
         if geometry_to == 'cartesian':
-            return _spherical_to_cartesian(position)
+            return _spherical_to_cartesian(position, in_place)
         else:
             raise ValueError('Can only convert spherical to cartesian')
     if geometry_from == 'cylindrical':
         if geometry_to == 'cartesian':
-            return _cylindrical_to_cartesian(position)
+            return _cylindrical_to_cartesian(position, in_place)
         else:
             raise ValueError('Can only convert cylindrical to cartesian')
     raise ValueError('Failed to perform coordinate transform')
 
 
-def _cartesian_to_cylindrical(position: ndarray) -> ndarray:
-    x = position[:, 0]
-    y = position[:, 1]
+def _cartesian_to_cylindrical(
+    position: ndarray, in_place: bool = False
+) -> Optional[ndarray]:
+    if in_place:
+        r = np.hypot(position[:, 0], position[:, 1])
+        phi = np.arctan2(position[:, 1], position[:, 0])
+        position[:, 0] = r
+        position[:, 1] = phi
+        return None
     _position = np.zeros(position.shape)
-    _position[:, 0] = np.sqrt(x ** 2 + y ** 2)
-    _position[:, 1] = np.arctan2(y, x)
+    _position[:, 0] = np.hypot(position[:, 0], position[:, 1])
+    _position[:, 1] = np.arctan2(position[:, 1], position[:, 0])
+    _position[:, 2] = position[:, 2]
     return _position
 
 
-def _cylindrical_to_cartesian(position: ndarray) -> ndarray:
-    r = position[:, 0]
-    phi = position[:, 1]
+def _cylindrical_to_cartesian(
+    position: ndarray, in_place: bool = False
+) -> Optional[ndarray]:
+    if in_place:
+        x = position[:, 0] * np.cos(position[:, 1])
+        y = position[:, 0] * np.sin(position[:, 1])
+        position[:, 0] = x
+        position[:, 1] = y
+        return None
     _position = np.zeros(position.shape)
-    _position[:, 0] = r * np.cos(phi)
-    _position[:, 1] = r * np.sin(phi)
+    _position[:, 0] = position[:, 0] * np.cos(position[:, 1])
+    _position[:, 1] = position[:, 0] * np.sin(position[:, 1])
+    _position[:, 2] = position[:, 2]
     return _position
 
 
-def _cartesian_to_spherical(position: ndarray) -> ndarray:
+def _cartesian_to_spherical(
+    position: ndarray, in_place: bool = False
+) -> Optional[ndarray]:
+    if in_place:
+        x = position[:, 0]
+        y = position[:, 1]
+        z = position[:, 2]
+        r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        theta = np.arccos(z / r)
+        phi = np.arctan2(y, x)
+        position[:, 0] = r
+        position[:, 1] = theta
+        position[:, 2] = phi
+        return None
     x = position[:, 0]
     y = position[:, 1]
     z = position[:, 2]
     r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-    theta = np.zeros(r.size)
-    theta[r > 0.0] = np.arccos(z[r > 0.0], r[r > 0.0])
     _position = np.zeros(position.shape)
     _position[:, 0] = r
-    _position[:, 1] = np.arctan2(y, x)
-    _position[:, 2] = theta
-    return _position
-
-
-def _spherical_to_cartesian(position: ndarray) -> ndarray:
-    r = position[:, 0]
-    phi = position[:, 1]
-    theta = position[:, 2]
-    _position = np.zeros(position.shape)
-    _position[:, 0] = r * np.sin(theta) * np.cos(phi)
-    _position[:, 1] = r * np.sin(theta) * np.sin(phi)
-    _position[:, 2] = r * np.cos(theta)
+    _position[:, 1] = np.arccos(z / r)
+    _position[:, 2] = np.arctan2(y, x)
     return _position
