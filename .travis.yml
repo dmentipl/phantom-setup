@@ -16,8 +16,7 @@ after_success:
   - coveralls
 
 notifications:
-    email:
-      recipients:
-      - d.mentiplay@gmail.com
-      on_success: change
-      on_failure: always
+  email:
+    recipients: d.mentiplay@gmail.com
+    on_success: change
+    on_failure: always
