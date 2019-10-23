@@ -57,14 +57,14 @@ def stretch_map(
     ...     return 1 + np.sin(x) ** 2
     """
 
-    if geometry is 'None':
+    if geometry == 'None':
         geometry = 'cartesian'
     geometry = geometry.lower()
     if geometry not in _GEOMETRIES:
         raise ValueError(
             '"geometry" must be in ("cartesian", "cylindrical", "spherical")'
         )
-    if coordinate is 'None':
+    if coordinate == 'None':
         if geometry == 'cartesian':
             coordinate = 'x'
         elif geometry in ('cylindrical', 'spherical'):
@@ -120,7 +120,7 @@ def stretch_map(
 
     if geometry in ('cylindrical', 'spherical'):
         _positions = coordinate_transform(
-            positions, geometry_from='cartesian', geometry_to=geometry
+            position=positions, geometry_from='cartesian', geometry_to=geometry
         )
     else:
         _positions = np.copy(positions)
@@ -136,7 +136,7 @@ def stretch_map(
     _positions[:, 0] = x_stretched
     if geometry in ('cylindrical', 'spherical'):
         positions = coordinate_transform(
-            _positions, geometry_from=geometry, geometry_to='cartesian'
+            position=_positions, geometry_from=geometry, geometry_to='cartesian'
         )
     else:
         positions = _positions
