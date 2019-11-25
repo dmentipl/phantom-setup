@@ -44,6 +44,11 @@ class Box(Boundary, Particles):
         self._particle_type: float
         self._particle_mass: float
 
+    @property
+    def particle_mass(self) -> float:
+        """Particle mass."""
+        return self._particle_mass
+
     def add_particles(
         self,
         particle_type: int,

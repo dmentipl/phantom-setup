@@ -1,3 +1,5 @@
+"""Accretion disc."""
+
 from __future__ import annotations
 
 import functools
@@ -6,13 +8,12 @@ from typing import Callable, Tuple, Union
 import numpy as np
 from scipy import integrate, spatial, stats
 
-from . import constants, defaults
+from . import constants
 from .particles import Particles
 
 
 class Disc(Particles):
-    """
-    Accretion disc.
+    """Accretion disc.
 
     TODO: add to description
 
@@ -24,9 +25,9 @@ class Disc(Particles):
     def __init__(self):
         super().__init__()
 
-        self._particle_type: float = None
-        self._particle_mass: float = None
-        self._disc_mass: float = None
+        self._particle_type: float
+        self._particle_mass: float
+        self._disc_mass: float
 
     @property
     def disc_mass(self) -> float:
@@ -49,11 +50,10 @@ class Disc(Particles):
         centre_of_mass: Tuple[float, float, float] = None,
         rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
         rotation_angle: float = None,
-        args: tuple = None,
+        extra_args: tuple = None,
         pressureless: bool = False,
     ) -> Disc:
-        """
-        Add particles to disc.
+        """Add particles to disc.
 
         This method sets the particle type, mass, positions, and
         velocities.
@@ -91,12 +91,11 @@ class Disc(Particles):
             An axis around which to rotate the disc.
         rotation_angle
             The angle to rotate around the rotation_axis.
-        args
+        extra_args
             Extra arguments to pass to density_distribution.
         pressureless
             Set to True if the particles are pressureless, i.e. dust.
         """
-
         self._particle_type = particle_type
 
         self._set_positions(
@@ -110,7 +109,7 @@ class Disc(Particles):
             centre_of_mass=centre_of_mass,
             rotation_axis=rotation_axis,
             rotation_angle=rotation_angle,
-            args=args,
+            extra_args=extra_args,
         )
 
         self._set_velocities(
@@ -139,10 +138,9 @@ class Disc(Particles):
         centre_of_mass: Tuple[float, float, float] = None,
         rotation_axis: Union[Tuple[float, float, float], np.ndarray] = None,
         rotation_angle: float = None,
-        args: tuple = None,
+        extra_args: tuple = None,
     ) -> Disc:
-        """
-        Set the disc particle positions.
+        """Set the disc particle positions.
 
         Parameters
         ----------
@@ -171,10 +169,9 @@ class Disc(Particles):
             An axis around which to rotate the disc.
         rotation_angle
             The angle to rotate around the rotation_axis.
-        args
+        extra_args
             Extra arguments to pass to density_distribution.
         """
-
         # TODO:
         # - set particle mass from disc mass, or toomre q, or something else
         # - add warps
@@ -207,8 +204,8 @@ class Disc(Particles):
         size = number_of_particles
 
         xi = np.sort(np.random.uniform(r_min, r_max, size))
-        if args is not None:
-            p = density_distribution(xi, *args)
+        if extra_args is not None:
+            p = density_distribution(xi, *extra_args)
         else:
             p = density_distribution(xi)
         p /= np.sum(p)
@@ -225,13 +222,13 @@ class Disc(Particles):
         xyz = np.array([r * np.cos(phi), r * np.sin(phi), z]).T
 
         integrated_mass = integrate.quad(
-            lambda x: 2 * np.pi * x * density_distribution(x, *args),
+            lambda x: 2 * np.pi * x * density_distribution(x, *extra_args),
             radius_range[0],
             radius_range[1],
         )[0]
 
         normalization = disc_mass / integrated_mass
-        sigma = normalization * density_distribution(r, *args)
+        sigma = normalization * density_distribution(r, *extra_args)
 
         density = sigma * np.exp(-0.5 * (z / H) ** 2) / (H * np.sqrt(2 * np.pi))
         self._smoothing_length = self.hfact * (particle_mass / density) ** (1 / 3)
@@ -257,8 +254,7 @@ class Disc(Particles):
         rotation_angle: float = None,
         pressureless: bool = False,
     ) -> Disc:
-        """
-        Set the disc particle velocities.
+        """Set the disc particle velocities.
 
         Parameters
         ----------
@@ -283,7 +279,6 @@ class Disc(Particles):
         pressureless
             Set to True if the particles are pressureless, i.e. dust.
         """
-
         if self._position is None:
             raise ValueError('Set positions first')
 
@@ -327,10 +322,9 @@ def smoothing_length_on_scale_height(
     reference_radius: float,
     aspect_ratio: float,
     q_index: float,
-    sample_number: float = None,
+    sample_number: int = None,
 ):
-    """
-    Calculate the average smoothing length on scale height.
+    """Calculate the average smoothing length on scale height.
 
     Parameters
     ----------
@@ -340,9 +334,6 @@ def smoothing_length_on_scale_height(
     -------
     TODO
     """
-
-    # TODO: docstring
-
     if sample_number is None:
         bins = 10
     else:
@@ -365,8 +356,7 @@ def keplerian_angular_velocity(
     mass: Union[float, np.ndarray],
     gravitational_constant: float = None,
 ) -> Union[float, np.ndarray]:
-    """
-    Keplerian angular velocity Omega.
+    """Keplerian angular velocity Omega.
 
     Parameters
     ----------
@@ -382,9 +372,10 @@ def keplerian_angular_velocity(
     return np.sqrt(gravitational_constant * mass / radius ** 3)
 
 
-def add_gap(orbital_radius: float, gap_width: float) -> callable:
-    """
-    Decorator to add a gap in a density distribution.
+def add_gap(
+    orbital_radius: float, gap_width: float
+) -> Callable[[Callable[..., float]], Callable[..., float]]:
+    """Decorate by adding a gap in a density distribution.
 
     The gap is a step function. I.e. the density is zero within the gap.
 
@@ -403,9 +394,9 @@ def add_gap(orbital_radius: float, gap_width: float) -> callable:
 
     def wrapper_outer(distribution):
         @functools.wraps(distribution)
-        def wrapper_inner(radius, *args):
+        def wrapper_inner(radius, *extra_args):
 
-            result = distribution(radius, *args)
+            result = distribution(radius, *extra_args)
             gap_radii = np.logical_and(
                 orbital_radius - 0.5 * gap_width < radius,
                 radius < orbital_radius + 0.5 * gap_width,
@@ -426,8 +417,7 @@ def add_gap(orbital_radius: float, gap_width: float) -> callable:
 def power_law(
     radius: Union[float, np.ndarray], reference_radius: float, p_index: float
 ) -> Union[float, np.ndarray]:
-    """
-    Power law distribution.
+    """Power law distribution.
 
     (R / R_ref)^(-p)
 
@@ -455,8 +445,7 @@ def power_law_with_zero_inner_boundary(
     reference_radius: float,
     p_index: float,
 ) -> Union[float, np.ndarray]:
-    """
-    Power law distribution with zero inner boundary condition.
+    """Power law distribution with zero inner boundary condition.
 
     (R / R_ref)^(-p) * [1 - sqrt(R_inner / R)]
 
@@ -483,8 +472,7 @@ def power_law_with_zero_inner_boundary(
 def self_similar_accretion_disc(
     radius: Union[float, np.ndarray], radius_critical: float, gamma: float
 ) -> Union[float, np.ndarray]:
-    """
-    Lynden-Bell and Pringle (1974) self-similar solution.
+    """Lynden-Bell and Pringle (1974) self-similar solution.
 
     (R / R_crit)^(-y) * exp[-(R / R_crit) ^ (2 - y)]
 
@@ -503,7 +491,7 @@ def self_similar_accretion_disc(
         The surface density at the specified radius.
     """
     rc, y = radius_critical, gamma
-    return (radius / rc) ** (-y) * np.exp(-(radius / rc) ** (2 - y))
+    return (radius / rc) ** (-y) * np.exp(-((radius / rc) ** (2 - y)))
 
 
 def self_similar_accretion_disc_with_zero_inner_boundary(
@@ -512,9 +500,7 @@ def self_similar_accretion_disc_with_zero_inner_boundary(
     radius_critical: float,
     gamma: float,
 ) -> Union[float, np.ndarray]:
-    """
-    Lynden-Bell and Pringle (1974) self-similar solution with a zero
-    innner boundary condition.
+    """Self-similar solution with a zero inner boundary condition.
 
     (R / R_crit)^(-y) * exp[-(R / R_crit) ^ (2 - y)]
 
@@ -537,6 +523,6 @@ def self_similar_accretion_disc_with_zero_inner_boundary(
     inner, rc, y = radius_inner, radius_critical, gamma
     return (
         (radius / rc) ** (-y)
-        * np.exp(-(radius / rc) ** (2 - y))
+        * np.exp(-((radius / rc) ** (2 - y)))
         * (1 - np.sqrt(inner / radius))
     )

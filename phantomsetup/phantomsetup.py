@@ -1,3 +1,8 @@
+"""Phantomsetup.
+
+Contains Setup class.
+"""
+
 from __future__ import annotations
 
 import copy
@@ -6,10 +11,11 @@ import pathlib
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Tuple, Union
+from typing import Any, Collection, Dict, List, Union
 
 import h5py
 import numpy as np
+
 import phantomconfig
 from phantomconfig import PhantomConfig
 
@@ -28,8 +34,7 @@ IGAS = defaults.PARTICLE_TYPE['igas']
 
 
 class Setup(Particles):
-    """
-    The initial conditions for a Phantom simulation.
+    """The initial conditions for a Phantom simulation.
 
     TODO: add to description
 
@@ -41,7 +46,7 @@ class Setup(Particles):
     def __init__(self) -> None:
         super().__init__()
 
-        self._prefix: str = None
+        self._prefix: str
 
         self._header: Dict[str, Any] = copy.deepcopy(defaults.HEADER)
         self._compile_options: Dict[str, Any] = copy.deepcopy(defaults.COMPILE_OPTIONS)
@@ -49,20 +54,20 @@ class Setup(Particles):
             defaults.RUN_OPTIONS
         )
 
-        self._sinks: List[Sink] = None
-        self._discs: List[Disc] = None
-        self._boxes: List[Box] = None
+        self._sinks: List[Sink] = list()
+        self._discs: List[Disc] = list()
+        self._boxes: List[Box] = list()
 
-        self._dust_method: str = None
-        self._dust_fraction: np.ndarray = None
+        self._dust_method: str = 'none'
+        self._dust_fraction: np.ndarray
         self._grain_size: np.ndarray = np.array([])
         self._grain_density: np.ndarray = np.array([])
         self._number_of_small_dust_species: int = 0
         self._number_of_large_dust_species: int = 0
 
-        self._eos: EquationOfState = None
-        self._units: Dict[str, float] = None
-        self._boundary = None
+        self._eos: EquationOfState
+        self._units: Dict[str, float]
+        self._boundary: Boundary
 
     @property
     def prefix(self) -> str:
@@ -77,12 +82,12 @@ class Setup(Particles):
 
     @property
     def dust_fraction(self) -> np.ndarray:
-        """The dust fraction for each dust species on the particles."""
+        """Dust fraction for each dust species on the particles."""
         return self._dust_fraction
 
     @property
     def dust_method(self) -> str:
-        """The dust method: either 'largegrains' or 'smallgrains'."""
+        """Dust method: either 'largegrains' or 'smallgrains'."""
         return self._dust_method
 
     @property
@@ -97,7 +102,7 @@ class Setup(Particles):
 
     @property
     def number_of_small_dust_species(self) -> int:
-        """Number of 'small' dust species."""
+        """Return number of 'small' dust species."""
         return self._number_of_small_dust_species
 
     @number_of_small_dust_species.setter
@@ -106,7 +111,7 @@ class Setup(Particles):
 
     @property
     def number_of_large_dust_species(self) -> int:
-        """Number of 'large' dust species."""
+        """Return number of 'large' dust species."""
         return self._number_of_large_dust_species
 
     @number_of_large_dust_species.setter
@@ -120,9 +125,8 @@ class Setup(Particles):
 
     @property
     def number_of_sinks(self) -> int:
-        if self._sinks is not None:
-            return len(self._sinks)
-        return 0
+        """Return number of sinks."""
+        return len(self._sinks)
 
     @property
     def boxes(self) -> List[Box]:
@@ -131,9 +135,8 @@ class Setup(Particles):
 
     @property
     def number_of_boxes(self) -> int:
-        if self._boxes is not None:
-            return len(self._boxes)
-        return 0
+        """Return number of boxes."""
+        return len(self._boxes)
 
     @property
     def discs(self) -> List[Disc]:
@@ -142,22 +145,22 @@ class Setup(Particles):
 
     @property
     def number_of_discs(self) -> int:
-        if self._discs is not None:
-            return len(self._discs)
-        return 0
+        """Return number of discs."""
+        return len(self._discs)
 
     @property
     def eos(self) -> EquationOfState:
-        """The equation of state."""
+        """Equation of state."""
         return self._eos
 
     @property
-    def boundary(self) -> Tuple[float, float, float, float, float, float]:
-        """Simulation boundary (xmin, xmax, ymin, ymax, zmin, zmax)."""
+    def boundary(self) -> Boundary:
+        """Boundary."""
         return self._boundary
 
     @property
     def units(self) -> Dict[str, float]:
+        """Physical units."""
         return self._units
 
     @property
@@ -167,6 +170,7 @@ class Setup(Particles):
 
     @property
     def infile(self) -> Dict[str, Any]:
+        """Phantom in file."""
         return generate_infile(self.compile_options, self.run_options, self._header)
 
     @property
@@ -178,12 +182,12 @@ class Setup(Particles):
     def run_options(self) -> PhantomConfig:
         """Phantom run time options.
 
-        This is a PhantomConfig object."""
+        This is a PhantomConfig object.
+        """
         return self._run_options
 
     def set_compile_option(self, option: str, value: Any) -> None:
-        """
-        Set a Phantom compile time option.
+        """Set a Phantom compile time option.
 
         Parameters
         ----------
@@ -198,8 +202,7 @@ class Setup(Particles):
             raise ValueError(f'Compile time option={option} does not exist')
 
     def get_compile_option(self, option: str) -> Any:
-        """
-        Get the value of a Phantom compile time option.
+        """Get the value of a Phantom compile time option.
 
         Parameters
         ----------
@@ -216,8 +219,7 @@ class Setup(Particles):
             raise ValueError(f'Compile time option={option} does not exist')
 
     def set_run_option(self, option: str, value: Any) -> None:
-        """
-        Set a Phantom run time option.
+        """Set a Phantom run time option.
 
         Parameters
         ----------
@@ -232,8 +234,7 @@ class Setup(Particles):
             raise ValueError(f'Run time option={option} does not exist')
 
     def get_run_option(self, option: str) -> Any:
-        """
-        Get the value of a Phantom run time option.
+        """Get the value of a Phantom run time option.
 
         Parameters
         ----------
@@ -257,8 +258,7 @@ class Setup(Particles):
         position: tuple = None,
         velocity: tuple = None,
     ) -> Setup:
-        """
-        Add a sink particle.
+        """Add a sink particle.
 
         Parameters
         ----------
@@ -271,9 +271,6 @@ class Setup(Particles):
         velocity : tuple
             The sink particle velocity.
         """
-
-        if self._sinks is None:
-            self._sinks = list()
         self._sinks.append(
             Sink(
                 mass=mass,
@@ -286,18 +283,13 @@ class Setup(Particles):
         return self
 
     def add_box(self, box: Box) -> Setup:
-        """
-        Add a box of particles to the set up.
+        """Add a box of particles to the set up.
 
         Parameters
         ----------
         box
             The Box object.
         """
-
-        if self._boxes is None:
-            self._boxes = list()
-
         self.add_particles(
             particle_type=box.particle_type,
             particle_mass=box.particle_mass,
@@ -311,18 +303,13 @@ class Setup(Particles):
         return self
 
     def add_disc(self, disc) -> Setup:
-        """
-        Add a disc to the setup.
+        """Add a disc to the setup.
 
         Parameters
         ----------
         disc
             The Disc object.
         """
-
-        if self._discs is None:
-            self._discs = list()
-
         self.add_particles(
             particle_type=disc.particle_type,
             particle_mass=disc.particle_mass,
@@ -346,8 +333,7 @@ class Setup(Particles):
         number_of_dust_species: int = None,
         cut_back_reaction: bool = None,
     ) -> Setup:
-        """
-        Set the dust method, grain sizes, and intrinsic grain density.
+        """Set the dust method, grain size, and intrinsic grain density.
 
         Parameters
         ----------
@@ -373,7 +359,6 @@ class Setup(Particles):
         --------
         set_dust_fraction : Set the dust fraction.
         """
-
         if dust_method not in ('largegrains', 'smallgrains'):
             raise ValueError('dust_method must be "largegrains" or "smallgrains"')
         if drag_method not in ('off', 'Epstein/Stokes', 'K_const', 'ts_const'):
@@ -386,6 +371,9 @@ class Setup(Particles):
             raise ValueError('Need to set number_of_dust_species for constant drag')
 
         self._dust_method = dust_method
+
+        if number_of_dust_species is not None:
+            ndust = number_of_dust_species
 
         if drag_method == 'off':
             self.set_run_option('idrag', 0)
@@ -403,7 +391,7 @@ class Setup(Particles):
             self.set_run_option('icut_backreaction', 1)
 
         if grain_size is not None:
-            number_of_dust_species = len(grain_size)
+            ndust = len(grain_size)
             grain_size = np.array(grain_size)
             self._grain_size = grain_size
 
@@ -417,19 +405,19 @@ class Setup(Particles):
             self._grain_density = grain_density * np.ones_like(grain_size)
 
         else:
-            self._grain_size = np.zeros(number_of_dust_species)
-            self._grain_density = np.zeros(number_of_dust_species)
+            self._grain_size = np.zeros(ndust)
+            self._grain_density = np.zeros(ndust)
             if dust_method == 'largegrains':
-                self.number_of_large_dust_species = number_of_dust_species
+                self.number_of_large_dust_species = ndust
             elif dust_method == 'smallgrains':
-                self.number_of_small_dust_species = number_of_dust_species
+                self.number_of_small_dust_species = ndust
 
         self.set_compile_option('DUST', True)
         if dust_method == 'smallgrains':
-            self.set_compile_option('MAXDUSTSMALL', number_of_dust_species)
+            self.set_compile_option('MAXDUSTSMALL', ndust)
             self.set_compile_option('MAXDUSTLARGE', 0)
         elif dust_method == 'largegrains':
-            self.set_compile_option('MAXDUSTLARGE', number_of_dust_species)
+            self.set_compile_option('MAXDUSTLARGE', ndust)
             self.set_compile_option('MAXDUSTSMALL', 0)
 
         self.set_kernel(kernel='quintic')
@@ -439,8 +427,7 @@ class Setup(Particles):
         return self
 
     def set_dust_fraction(self, dustfrac: np.ndarray) -> Setup:
-        """
-        Set the dust fraction on existing particles.
+        """Set the dust fraction on existing particles.
 
         Parameters
         ----------
@@ -454,7 +441,6 @@ class Setup(Particles):
         add_array_to_particles : Add an array to existing particles.
         set_dust : Set the dust method, grain sizes, and grain density.
         """
-
         if dustfrac.ndim > 2:
             raise ValueError('dustfrac has wrong shape')
         if dustfrac.shape[0] != self.number_of_particles[IGAS]:
@@ -479,8 +465,7 @@ class Setup(Particles):
         return self
 
     def set_equation_of_state(self, ieos: int, **kwargs) -> Setup:
-        """
-        Set the equation of state.
+        """Set the equation of state.
 
         Parameters
         ----------
@@ -502,8 +487,7 @@ class Setup(Particles):
         return self
 
     def set_boundary(self, boundary: tuple, periodic: bool = False) -> Setup:
-        """
-        Set the boundary as a Cartesian box.
+        """Set the boundary as a Cartesian box.
 
         Parameters
         ----------
@@ -528,8 +512,7 @@ class Setup(Particles):
         time: float = None,
         gravitational_constant_is_unity: bool = False,
     ) -> Setup:
-        """
-        Set code units for simulation.
+        """Set code units for simulation.
 
         Parameters
         ----------
@@ -543,7 +526,6 @@ class Setup(Particles):
             Only specify two units, and the third is set by the
             constraint that the gravitational constant is unity.
         """
-
         if gravitational_constant_is_unity:
 
             if length is not None and mass is not None and time is not None:
@@ -599,8 +581,7 @@ class Setup(Particles):
         ndumps: int = None,
         nfulldump: int = None,
     ) -> Setup:
-        """
-        Set the simulation run time and output frequency.
+        """Set the simulation run time and output frequency.
 
         Parameters
         ----------
@@ -637,8 +618,7 @@ class Setup(Particles):
         avdecayconst: float = None,
         disc_viscosity: bool = False,
     ) -> Setup:
-        """
-        Set the numerical dissipation parameters.
+        """Set the numerical dissipation parameters.
 
         Parameters
         ----------
@@ -657,7 +637,6 @@ class Setup(Particles):
         disc_viscosity
             Whether or not to use disc viscosity.
         """
-
         if alpha is not None:
             self.set_run_option('alpha', alpha)
         if alphamax is not None:
@@ -676,8 +655,7 @@ class Setup(Particles):
         return self
 
     def write_dump_file(self, directory: Union[str, Path] = None) -> Setup:
-        """
-        Write Phantom temporary ('.tmp') dump file.
+        """Write Phantom temporary ('.tmp') dump file.
 
         Optional parameters
         -------------------
@@ -685,7 +663,6 @@ class Setup(Particles):
             The path to a directory to write the file. Default is
             current working directory.
         """
-
         if directory is None:
             directory = pathlib.Path().cwd()
         directory = pathlib.Path(directory).expanduser().resolve()
@@ -709,8 +686,7 @@ class Setup(Particles):
         return self
 
     def write_in_file(self, directory: Union[str, Path] = None) -> Setup:
-        """
-        Write Phantom 'in' file.
+        """Write Phantom 'in' file.
 
         Optional parameters
         -------------------
@@ -718,7 +694,6 @@ class Setup(Particles):
             The path to a directory to write the file. Default is
             current working directory.
         """
-
         if directory is None:
             directory = pathlib.Path().cwd()
         directory = pathlib.Path(directory).expanduser().resolve()
@@ -735,9 +710,13 @@ class Setup(Particles):
 
         return self
 
-    def phantom_compile_command(self, system: str = None, hdf5root: str = None) -> str:
-        """
-        Show the Phantom Makefile command for this setup.
+    def phantom_compile_command(
+        self,
+        system: str = None,
+        hdf5root: str = None,
+        extra_compiler_arguments: Union[List[str]] = None,
+    ) -> str:
+        """Show the Phantom Makefile command for this setup.
 
         Optional Parameters
         -------------------
@@ -746,16 +725,21 @@ class Setup(Particles):
         hdf5root
             The root directory of your HDF5 library installation.
             Default is '/usr/local/opt/hdf5'.
+        extra_compiler_arguments
+            Extra compiler arguments as a list of strings.
 
         Returns
         -------
         str
             The Phantom compile command as a string.
         """
-
-        return ' \\\n  '.join(
-            self._generate_phantom_compile_command(system=system, hdf5root=hdf5root)
+        compile_command = self._generate_phantom_compile_command(
+            system=system, hdf5root=hdf5root
         )
+        if extra_compiler_arguments is not None:
+            for arg in extra_compiler_arguments:
+                compile_command.append(arg)
+        return ' \\\n  '.join(compile_command)
 
     def compile_phantom(
         self,
@@ -763,9 +747,9 @@ class Setup(Particles):
         system: str = None,
         hdf5root: str = None,
         working_dir: Union[str, Path] = None,
+        extra_compiler_arguments: Union[List[str]] = None,
     ) -> subprocess.CompletedProcess:
-        """
-        Compile Phantom for this setup.
+        """Compile Phantom for this setup.
 
         Parameters
         ----------
@@ -782,6 +766,8 @@ class Setup(Particles):
         working_dir
             The working directory for the setup. After a successful
             build, the Phantom binary will be copied here.
+        extra_compiler_arguments
+            Extra compiler arguments as a list of strings.
 
         Returns
         -------
@@ -789,7 +775,6 @@ class Setup(Particles):
             A CompletedProcess object without output from the command,
             and success/fail codes, etc.
         """
-
         phantom_dir = pathlib.Path(phantom_dir).expanduser().resolve()
         if not phantom_dir.exists():
             raise ValueError('phantom_dir does not exist')
@@ -800,14 +785,22 @@ class Setup(Particles):
         if not working_dir.exists():
             raise ValueError('working_dir does not exist')
 
+        compile_command = self._generate_phantom_compile_command(
+            system=system, hdf5root=hdf5root
+        )
+        if extra_compiler_arguments is not None:
+            for arg in extra_compiler_arguments:
+                compile_command.append(arg)
         result = subprocess.run(
-            self._generate_phantom_compile_command(system=system, hdf5root=hdf5root),
+            compile_command,
             cwd=phantom_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         if result.returncode != 0:
             print('Compilation failed.')
+            print(compile_command)
+            print(result.stderr.decode('utf-8'))
         else:
             print('Compilation successful.')
             shutil.copy(phantom_dir / 'bin/phantom', working_dir)
@@ -906,7 +899,6 @@ class Setup(Particles):
 
     def _update_header(self) -> None:
         """Update dump header for writing to file."""
-
         fileident = self.fileident.ljust(FILEIDENT_LEN).encode('ascii')
         self._header['fileident'] = fileident
 
@@ -976,8 +968,7 @@ class Setup(Particles):
     def _generate_phantom_compile_command(
         self, system: str = None, hdf5root: str = None
     ) -> List[str]:
-        """
-        Generate the Phantom Makefile command for this setup.
+        """Generate the Phantom Makefile command for this setup.
 
         Optional Parameters
         -------------------
@@ -994,7 +985,6 @@ class Setup(Particles):
             command to compile Phantom corresponding to this setup. E.g.
             >>> ' '.join(setup.generate_compile_command())
         """
-
         COMPILE_OPTIONS_IFDEF = ('LIGHTCURVE',)
 
         if system is None:
@@ -1015,7 +1005,7 @@ class Setup(Particles):
                 if value:
                     phantom_compile_command.append(f'{option}=yes')
                 else:
-                    if not option in COMPILE_OPTIONS_IFDEF:
+                    if option not in COMPILE_OPTIONS_IFDEF:
                         phantom_compile_command.append(f'{option}=no')
                     else:
                         continue
@@ -1027,4 +1017,5 @@ class Setup(Particles):
         return phantom_compile_command
 
     def __repr__(self) -> str:
+        """Repr."""
         return f"PhantomSetup('{self.prefix}')"

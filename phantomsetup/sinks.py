@@ -1,16 +1,20 @@
+"""Sink particles."""
+
+from typing import Tuple
+
+
 class Sink:
-    """
-    Sink particles.
+    """Sink particles.
 
     Parameters
     ----------
-    mass : float
+    mass
         The sink particle mass.
-    accretion_radius : float
+    accretion_radius
         The sink particle accretion radius.
-    position : tuple
+    position
         The sink particle position.
-    velocity : tuple
+    velocity
         The sink particle velocity.
     """
 
@@ -19,8 +23,8 @@ class Sink:
         *,
         mass: float,
         accretion_radius: float,
-        position: tuple = None,
-        velocity: tuple = None
+        position: Tuple[float, float, float] = None,
+        velocity: Tuple[float, float, float] = None
     ):
 
         self._mass = mass
@@ -47,11 +51,11 @@ class Sink:
         return self._accretion_radius
 
     @property
-    def position(self) -> float:
+    def position(self) -> Tuple[float, float, float]:
         """Sink particle position."""
         return self._position
 
     @property
-    def velocity(self) -> float:
+    def velocity(self) -> Tuple[float, float, float]:
         """Sink particle velocity."""
         return self._velocity
