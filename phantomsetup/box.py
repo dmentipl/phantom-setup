@@ -1,3 +1,4 @@
+"""Box of particles."""
 from __future__ import annotations
 
 from typing import Callable, Tuple
@@ -11,8 +12,7 @@ _LATTICES = ('cubic', 'close packed')
 
 
 class Box(Boundary, Particles):
-    """
-    A uniformly distributed box of particles.
+    """A uniformly distributed box of particles.
 
     Parameters
     ----------
@@ -41,15 +41,15 @@ class Box(Boundary, Particles):
     ) -> None:
         super().__init__(xmin, xmax, ymin, ymax, zmin, zmax)
 
-        self._particle_type: float = None
-        self._particle_mass: float = None
+        self._particle_type: float
+        self._particle_mass: float
 
     def add_particles(
         self,
         particle_type: int,
         number_of_particles: int,
         density: float,
-        velocity_distribution: Callable[[np.ndarray], np.ndarray],
+        velocity_distribution: Callable[[np.ndarray, np.ndarray, np.ndarray], Tuple],
     ) -> Box:
         """
         Add uniform particle distribution with arbitrary velocity field.
@@ -69,7 +69,6 @@ class Box(Boundary, Particles):
             array of positions with shape (N, 3) and returning an array
             of velocities with shape (N, 3).
         """
-
         particle_spacing = (self.volume / number_of_particles) ** (1 / 3)
 
         position, smoothing_length = uniform_distribution(
@@ -78,7 +77,10 @@ class Box(Boundary, Particles):
 
         particle_mass = density * self.volume / number_of_particles
 
-        velocity = velocity_distribution(position)
+        velocity = np.zeros(position.shape)
+        velocity[:, 0], velocity[:, 1], velocity[:, 2] = velocity_distribution(
+            position[:, 0], position[:, 1], position[:, 2]
+        )
 
         self._particle_mass = particle_mass
         self._particle_type = particle_type
@@ -96,8 +98,7 @@ def uniform_distribution(
     hfact: float,
     lattice: str = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Generate a uniform particle distribution in a Cartesian box.
+    """Generate a uniform particle distribution in a Cartesian box.
 
     Parameters
     ----------
@@ -121,7 +122,6 @@ def uniform_distribution(
     smoothing_length :(N,) np.ndarray
         The particle smoothing length.
     """
-
     if lattice is not None and lattice not in _LATTICES:
         raise ValueError('lattice not available')
 
