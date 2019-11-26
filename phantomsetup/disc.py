@@ -82,7 +82,7 @@ class Disc(Particles):
 
         particle_mass = disc_mass / number_of_particles
 
-        positions, smoothing_length = self._set_positions(
+        position, smoothing_length = self._set_positions(
             number_of_particles=number_of_particles,
             disc_mass=disc_mass,
             density_distribution=density_distribution,
@@ -96,8 +96,8 @@ class Disc(Particles):
             extra_args=extra_args,
         )
 
-        velocities = self._set_velocities(
-            position=positions,
+        velocity = self._set_velocities(
+            position=position,
             stellar_mass=stellar_mass,
             gravitational_constant=gravitational_constant,
             q_index=q_index,
@@ -111,8 +111,8 @@ class Disc(Particles):
         self.add_particles(
             particle_type=particle_type,
             particle_mass=particle_mass,
-            positions=positions,
-            velocities=velocities,
+            position=position,
+            velocity=velocity,
             smoothing_length=smoothing_length,
         )
 
@@ -253,6 +253,8 @@ class Disc(Particles):
 
         Parameters
         ----------
+        position
+            The particle positions.
         stellar_mass
             The mass of the central object the disc is orbiting.
         gravitational_constant

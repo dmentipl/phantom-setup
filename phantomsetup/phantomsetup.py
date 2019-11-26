@@ -11,7 +11,7 @@ import pathlib
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Union
+from typing import Any, Collection, Dict, List, Tuple, Union
 
 import h5py
 import numpy as np
@@ -25,15 +25,19 @@ from .box import Box
 from .disc import Disc
 from .eos import EquationOfState, ieos_isothermal
 from .infile import generate_infile
-from .particles import Particles
 from .sinks import Sink
 
 FILEIDENT_LEN = 100
 
 IGAS = defaults.PARTICLE_TYPE['igas']
 
+KERNELS = defaults.KERNELS
+KERNEL_HFACT = defaults.KERNEL_HFACT
 
-class Setup(Particles):
+Container = Union[Box, Disc]
+
+
+class Setup:
     """The initial conditions for a Phantom simulation.
 
     TODO: add to description
@@ -44,7 +48,6 @@ class Setup(Particles):
     """
 
     def __init__(self) -> None:
-        super().__init__()
 
         self._prefix: str
 
@@ -54,9 +57,12 @@ class Setup(Particles):
             defaults.RUN_OPTIONS
         )
 
+        self._kernel: str = 'cubic'
+        self._hfact: float = KERNEL_HFACT['cubic']
+
+        self._particle_containers: List[Any] = list()
+
         self._sinks: List[Sink] = list()
-        self._discs: List[Disc] = list()
-        self._boxes: List[Box] = list()
 
         self._dust_method: str = 'none'
         self._dust_fraction: np.ndarray
@@ -79,6 +85,30 @@ class Setup(Particles):
         self._prefix = prefix
         self.set_run_option('logfile', f'{prefix}01.log')
         self.set_run_option('dumpfile', f'{prefix}_00000.tmp')
+
+    @property
+    def number_of_particles_of_type(self) -> Dict[int, int]:
+        """Particle number of each type."""
+        d: Dict[int, int] = dict()
+        for container in self._particle_containers:
+            for key, value in container.number_of_particles_of_type.items():
+                if key in d.keys():
+                    d[key] += value
+                else:
+                    d[key] = value
+        return d
+
+    @property
+    def mass_of_particle_type(self) -> Dict[int, float]:
+        """Particle mass of each type."""
+        d: Dict[int, float] = dict()
+        for container in self._particle_containers:
+            for key, value in container.mass_of_particle_type.items():
+                if key in d.keys():
+                    d[key] += value
+                else:
+                    d[key] = value
+        return d
 
     @property
     def dust_fraction(self) -> np.ndarray:
@@ -131,22 +161,30 @@ class Setup(Particles):
     @property
     def boxes(self) -> List[Box]:
         """Boxes of particles."""
-        return self._boxes
+        return [
+            container
+            for container in self._particle_containers
+            if isinstance(container, Box)
+        ]
 
     @property
     def number_of_boxes(self) -> int:
         """Return number of boxes."""
-        return len(self._boxes)
+        return len(self.boxes)
 
     @property
     def discs(self) -> List[Disc]:
         """Accretion discs."""
-        return self._discs
+        return [
+            container
+            for container in self._particle_containers
+            if isinstance(container, Disc)
+        ]
 
     @property
     def number_of_discs(self) -> int:
         """Return number of discs."""
-        return len(self._discs)
+        return len(self.discs)
 
     @property
     def eos(self) -> EquationOfState:
@@ -250,25 +288,56 @@ class Setup(Particles):
         else:
             raise ValueError(f'Run time option={option} does not exist')
 
+    @property
+    def kernel(self) -> str:
+        """SPH kernel."""
+        return self._kernel
+
+    @property
+    def hfact(self) -> float:
+        """Smoothing length factor for the SPH kernel."""
+        return self._hfact
+
+    def set_kernel(self, kernel: str, hfact: float = None) -> Setup:
+        """Set the SPH kernel.
+
+        Parameters
+        ----------
+        kernel
+            The kernel as a string.
+        hfact
+            The kernel smoothing length factor.
+        """
+        if kernel not in KERNELS:
+            raise ValueError(f'kernel={kernel} not available')
+
+        if hfact is None:
+            hfact = KERNEL_HFACT[kernel]
+
+        self._kernel = kernel
+        self._hfact = hfact
+
+        return self
+
     def add_sink(
         self,
         *,
         mass: float,
         accretion_radius: float,
-        position: tuple = None,
-        velocity: tuple = None,
+        position: Tuple[float, float, float] = None,
+        velocity: Tuple[float, float, float] = None,
     ) -> Setup:
         """Add a sink particle.
 
         Parameters
         ----------
-        mass : float
+        mass
             The sink particle mass.
-        accretion_radius : float
+        accretion_radius
             The sink particle accretion radius.
-        position : tuple
+        position
             The sink particle position.
-        velocity : tuple
+        velocity
             The sink particle velocity.
         """
         self._sinks.append(
@@ -282,44 +351,15 @@ class Setup(Particles):
 
         return self
 
-    def add_box(self, box: Box) -> Setup:
-        """Add a box of particles to the set up.
+    def add_container(self, container: Container) -> Setup:
+        """Add a container of particles to the set up.
 
         Parameters
         ----------
-        box
-            The Box object.
+        container
+            The container object. Can be a Box or Disc, etc.
         """
-        self.add_particles(
-            particle_type=box.particle_type,
-            particle_mass=box.particle_mass,
-            positions=box.position,
-            velocities=box.velocity,
-            smoothing_length=box.smoothing_length,
-        )
-
-        self._boxes.append(box)
-
-        return self
-
-    def add_disc(self, disc) -> Setup:
-        """Add a disc to the setup.
-
-        Parameters
-        ----------
-        disc
-            The Disc object.
-        """
-        self.add_particles(
-            particle_type=disc.particle_type,
-            particle_mass=disc.particle_mass,
-            positions=disc.position,
-            velocities=disc.velocity,
-            smoothing_length=disc.smoothing_length,
-        )
-
-        self._discs.append(disc)
-
+        self._particle_containers.append(container)
         return self
 
     def set_dust(
@@ -443,7 +483,7 @@ class Setup(Particles):
         """
         if dustfrac.ndim > 2:
             raise ValueError('dustfrac has wrong shape')
-        if dustfrac.shape[0] != self.number_of_particles[IGAS]:
+        if dustfrac.shape[0] != self.number_of_particles_of_type[IGAS]:
             raise ValueError(
                 'dustfrac must have shape (N, M) where N is number of gas particles'
             )
@@ -820,20 +860,45 @@ class Setup(Particles):
             else:
                 group.create_dataset(name=key, data=val)
 
+    def _check_container_consistency(self):
+        arrays = set(self._particle_containers[0].arrays.keys())
+        for container in self._particle_containers:
+            if set(container.arrays.keys()) != arrays:
+                raise ValueError('Particle containers have inconsistent arrays')
+
+    def _name_mapper(self):
+        d = {
+            'position': 'xyz',
+            'velocity': 'vxyz',
+            'smoothing_length': 'h',
+            'particle_type': 'itype',
+            'particle_mass': None,
+        }
+        return d
+
     def _write_particle_arrays(self, file_handle: h5py.File):
 
         group = file_handle.create_group('particles')
 
-        group.create_dataset(name='xyz', data=self.position)
-        group.create_dataset(name='h', data=self.smoothing_length)
-        group.create_dataset(name='vxyz', data=self.velocity)
-        group.create_dataset(name='itype', data=self.particle_type, dtype='i1')
+        self._check_container_consistency()
+
+        containers = self._particle_containers
+        array_names = containers[0].arrays.keys()
+        for name in array_names:
+            if containers[0].arrays[name].ndim == 1:
+                data = np.hstack([container.arrays[name] for container in containers])
+            elif containers[0].arrays[name].ndim == 2:
+                data = np.vstack([container.arrays[name] for container in containers])
+            if name in self._name_mapper():
+                _name = self._name_mapper()[name]
+                if _name is None:
+                    continue
+            else:
+                _name = name
+            group.create_dataset(name=_name, data=data)
 
         if self._dust_fraction is not None:
             group.create_dataset(name='dustfrac', data=self.dust_fraction)
-
-        for name, array in self._extra_arrays.items():
-            group.create_dataset(name=name, data=array)
 
     def _write_sink_arrays(self, file_handle: h5py.File):
 
@@ -904,15 +969,15 @@ class Setup(Particles):
 
         # Number and mass of particles
 
-        self._header['nparttot'] = self.total_number_of_particles
+        self._header['nparttot'] = sum(self.number_of_particles_of_type.values())
         self._header['ntypes'] = defaults.MAXTYPES
 
         self._header['npartoftype'] = np.zeros(defaults.MAXTYPES, dtype=np.int)
-        for key, val in self.number_of_particles.items():
+        for key, val in self.number_of_particles_of_type.items():
             self._header['npartoftype'][key - 1] = val
 
         self._header['massoftype'] = np.zeros(defaults.MAXTYPES)
-        for key, val in self.particle_mass.items():
+        for key, val in self.mass_of_particle_type.items():
             self._header['massoftype'][key - 1] = val
 
         # dtmax

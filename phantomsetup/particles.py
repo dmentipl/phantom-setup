@@ -19,7 +19,6 @@ class Particles:
 
     _required_arrays = [
         'particle_type',
-        'particle_mass',
         'position',
         'velocity',
         'smoothing_length',
@@ -27,6 +26,7 @@ class Particles:
 
     def __init__(self):
         self.arrays: Dict[str, ndarray] = {arr: None for arr in self._required_arrays}
+        self._mass_of_particle_type: Dict[int, float] = dict()
 
     def __len__(self):
         """Total number of particles."""
@@ -42,6 +42,11 @@ class Particles:
         """Particle number of each type."""
         types, counts = np.unique(self.arrays['particle_type'], return_counts=True)
         return dict(zip(types, counts))
+
+    @property
+    def mass_of_particle_type(self) -> Dict[int, float]:
+        """Particle mass of each type."""
+        return self._mass_of_particle_type
 
     def add_particles(
         self,
@@ -101,17 +106,16 @@ class Particles:
                     f'{name} must have the same length as number of particles'
                 )
 
+        self._mass_of_particle_type[particle_type] = particle_mass
         _particle_type = particle_type * np.ones(position.shape[0], dtype=np.int8)
-        _particle_mass = particle_mass * np.ones(position.shape[0])
 
         names = [
             'particle_type',
-            'particle_mass',
             'position',
             'velocity',
             'smoothing_length',
         ]
-        arrays = [_particle_type, _particle_mass, position, velocity, smoothing_length]
+        arrays = [_particle_type, position, velocity, smoothing_length]
 
         for name, array in kwargs.items():
             names.append(name)
