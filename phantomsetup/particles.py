@@ -1,18 +1,10 @@
 """Particles."""
 from __future__ import annotations
 
-from typing import Any, Dict, Set
+from typing import Dict, Set
 
 import numpy as np
-
-from . import defaults
-
-IGAS = defaults.PARTICLE_TYPE['igas']
-IDUST = defaults.PARTICLE_TYPE['idust']
-IDUSTLAST = defaults.PARTICLE_TYPE['idustlast']
-
-KERNELS = defaults.KERNELS
-KERNEL_HFACT = defaults.KERNEL_HFACT
+from numpy import ndarray
 
 
 class Particles:
@@ -25,99 +17,40 @@ class Particles:
     TODO: add examples
     """
 
+    _required_arrays = [
+        'particle_type',
+        'particle_mass',
+        'position',
+        'velocity',
+        'smoothing_length',
+    ]
+
     def __init__(self):
+        self.arrays: Dict[str, ndarray] = {arr: None for arr in self._required_arrays}
 
-        self._particle_type: np.ndarray = None
-        self._particle_mass: Dict[int, float] = {}
-
-        self._kernel: str = 'cubic'
-        self._hfact: float = KERNEL_HFACT['cubic']
-
-        self._position: np.ndarray = None
-        self._smoothing_length: np.ndarray = None
-        self._velocity: np.ndarray = None
-
-        self._extra_arrays: Dict[str, Any] = {}
-
-    @property
-    def particle_type(self) -> np.ndarray:
-        """Integer type of each particle."""
-        return self._particle_type
+    def __len__(self):
+        """Total number of particles."""
+        return len(self.arrays['particle_type'])
 
     @property
     def particle_types(self) -> Set[int]:
         """Particle integer types as a set."""
-        return set(np.unique(self._particle_type, return_counts=True)[0])
+        return set(np.unique(self.arrays['particle_type'], return_counts=True)[0])
 
     @property
-    def particle_mass(self) -> Dict[int, float]:
-        """Particle mass per particle type."""
-        return self._particle_mass
-
-    @property
-    def number_of_particles(self) -> Dict[int, int]:
+    def number_of_particles_of_type(self) -> Dict[int, int]:
         """Particle number of each type."""
-        types, counts = np.unique(self._particle_type, return_counts=True)
+        types, counts = np.unique(self.arrays['particle_type'], return_counts=True)
         return dict(zip(types, counts))
-
-    @property
-    def total_number_of_particles(self) -> int:
-        """Total number of particles of each type."""
-        return sum(self.number_of_particles.values())
-
-    @property
-    def kernel(self) -> str:
-        """SPH kernel."""
-        return self._kernel
-
-    @property
-    def hfact(self) -> float:
-        """Smoothing length factor for the SPH kernel."""
-        return self._hfact
-
-    @property
-    def position(self) -> np.ndarray:
-        """Cartesian positions of particles."""
-        return self._position
-
-    @property
-    def smoothing_length(self) -> np.ndarray:
-        """Smoothing length of particles."""
-        return self._smoothing_length
-
-    @property
-    def velocity(self) -> np.ndarray:
-        """Cartesian velocities of particles."""
-        return self._velocity
-
-    def set_kernel(self, kernel: str, hfact: float = None) -> Particles:
-        """Set the SPH kernel.
-
-        Parameters
-        ----------
-        kernel
-            The kernel as a string.
-        hfact
-            The kernel smoothing length factor.
-        """
-        if kernel not in KERNELS:
-            raise ValueError(f'kernel={kernel} not available')
-
-        if hfact is None:
-            hfact = KERNEL_HFACT[kernel]
-
-        self._kernel = kernel
-        self._hfact = hfact
-
-        return self
 
     def add_particles(
         self,
         particle_type: int,
         particle_mass: float,
-        positions: np.ndarray,
-        velocities: np.ndarray,
-        smoothing_length: np.ndarray,
+        position: ndarray,
+        velocity: ndarray,
+        smoothing_length: ndarray,
+        **kwargs,
     ) -> Particles:
         """Add particles to initial conditions.
 
@@ -127,78 +60,79 @@ class Particles:
             The integer representing the particle type.
         particle_mass : float
             The particle mass.
-        positions : (N, 3) np.ndarray
-            The particle positions as N x 3 array, where the 2nd
-            component is the Cartesian position, i.e. x, y, z.
-        velocities : (N, 3) np.ndarray
-            The particle velocities as N x 3 array, where the 2nd
-            component is the Cartesian velocity, i.e. vx, vy, vz.
-        smoothing_length : (N,) np.ndarray
-            The particle smoothing length as N x 1 array.
+        position : (N, 3) ndarray
+            The particle positions in Cartesian coordinates.
+        velocity : (N, 3) ndarray
+            The particle velocities in Cartesian coordinates.
+        smoothing_length : (N,) ndarray
+            The particle smoothing lengths.
+
+        Optional Parameters
+        -------------------
+        kwargs
+            Any additional arrays as keyword arguments.
 
         See Also
         --------
-        add_array_to_particles : Add an array to existing particles.
+        set_array : Add an array to existing particles.
         """
-        if positions.ndim != 2:
-            raise ValueError('positions wrong shape, must be (N, 3)')
-        if velocities.ndim != 2:
-            raise ValueError('velocities wrong shape, must be (N, 3)')
+        if position.ndim != 2:
+            raise ValueError('position wrong shape, must be (N, 3)')
+        if velocity.ndim != 2:
+            raise ValueError('velocity wrong shape, must be (N, 3)')
         if smoothing_length.ndim != 1:
             raise ValueError('smoothing_length wrong shape, must be (N,)')
-        if positions.shape[1] != 3:
-            raise ValueError('positions wrong shape, must be (N, 3)')
-        if velocities.shape[1] != 3:
-            raise ValueError('velocities wrong shape, must be (N, 3)')
-        if (
-            positions.shape != velocities.shape
-            or positions.shape[0] != smoothing_length.size
-        ):
+        if position.shape[1] != 3:
+            raise ValueError('position wrong shape, must be (N, 3)')
+        if velocity.shape[1] != 3:
+            raise ValueError('velocity wrong shape, must be (N, 3)')
+        number_of_particles = smoothing_length.size
+        if position.shape[0] != number_of_particles:
             raise ValueError(
-                'positions, velocities, and smoothing_length must have the same'
-                ' number of particles'
+                'position and smoothing_length must have the same number of particles'
             )
-
-        if self._position is not None:
-            self._position = np.append(self._position, positions, axis=0)
-        else:
-            self._position = positions
-
-        if self._smoothing_length is not None:
-            self._smoothing_length = np.append(
-                self._smoothing_length, smoothing_length, axis=0
+        if velocity.shape[0] != number_of_particles:
+            raise ValueError(
+                'velocity and smoothing_length must have the same number of particles'
             )
-        else:
-            self._smoothing_length = smoothing_length
+        for name, array in kwargs.items():
+            if array.shape[0] != number_of_particles:
+                raise ValueError(
+                    f'{name} must have the same length as number of particles'
+                )
 
-        if self._velocity is not None:
-            self._velocity = np.append(self._velocity, velocities, axis=0)
-        else:
-            self._velocity = velocities
+        _particle_type = particle_type * np.ones(position.shape[0], dtype=np.int8)
+        _particle_mass = particle_mass * np.ones(position.shape[0])
 
-        if self._particle_type is not None:
-            self._particle_type = np.append(
-                self._particle_type,
-                particle_type * np.ones(positions.shape[0], dtype=np.int),
-                axis=0,
-            )
-        else:
-            self._particle_type = particle_type * np.ones(
-                positions.shape[0], dtype=np.int
-            )
+        names = [
+            'particle_type',
+            'particle_mass',
+            'position',
+            'velocity',
+            'smoothing_length',
+        ]
+        arrays = [_particle_type, _particle_mass, position, velocity, smoothing_length]
 
-        self._particle_mass.update({particle_type: particle_mass})
+        for name, array in kwargs.items():
+            names.append(name)
+            arrays.append(array)
+
+        for name, array in zip(names, arrays):
+            if self.arrays[name] is not None:
+                self.arrays[name] = np.append(self.arrays[name], array, axis=0)
+            else:
+                self.arrays[name] = array
 
         return self
 
-    def add_array_to_particles(self, name: str, array: np.ndarray) -> Particles:
-        """Add an array to existing particles.
+    def set_array(self, name: str, array: ndarray) -> Particles:
+        """Set an array on existing particles.
 
         Parameters
         ----------
         name : str
             The name of the array.
-        array : np.ndarray
+        array : ndarray
             The array, such that the first index is the particle index.
 
         See Also
@@ -210,7 +144,19 @@ class Particles:
         Adding an array 'alpha' of scalar quantities on the particles.
         >>> npart = setup.number_of_particles
         >>> alpha = np.random.rand(npart)
-        >>> setup.add_array_to_particles('alpha', alpha)
+        >>> setup.set_array('alpha', alpha)
         """
-        self._extra_arrays[name] = array
+        if array.shape[0] != len(self):
+            raise ValueError('Array shape incompatible with existing particles')
+        self.arrays[name] = array
         return self
+
+    def check_arrays(self) -> None:
+        """Check arrays for consistency."""
+        number_of_particles = len(self)
+        for name, array in self.arrays.items():
+            if array.shape[0] != number_of_particles:
+                raise ValueError(
+                    f'{name} does not have same length as number of particles'
+                )
+        return

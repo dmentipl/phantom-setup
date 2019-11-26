@@ -1,9 +1,10 @@
+"""Cartesian boundary box for simulations."""
+
 from typing import Tuple
 
 
 class Boundary:
-    """
-    Cartesian boundary box for simulations.
+    """Cartesian boundary box for simulations.
 
     Parameters
     ----------
@@ -59,26 +60,32 @@ class Boundary:
 
     @property
     def xmin(self) -> float:
+        """Minimum x."""
         return self._xmin
 
     @property
     def xmax(self) -> float:
+        """Maximum x."""
         return self._xmax
 
     @property
     def ymin(self) -> float:
+        """Minimum y."""
         return self._ymin
 
     @property
     def ymax(self) -> float:
+        """Maximum y."""
         return self._ymax
 
     @property
     def zmin(self) -> float:
+        """Minimum z."""
         return self._zmin
 
     @property
     def zmax(self) -> float:
+        """Maximum z."""
         return self._zmax
 
     @property

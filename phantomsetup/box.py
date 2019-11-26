@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Callable, Tuple
 
 import numpy as np
+from numpy import ndarray
 
 from .boundary import Boundary
 from .particles import Particles
@@ -11,98 +12,67 @@ from .particles import Particles
 _LATTICES = ('cubic', 'close packed')
 
 
-class Box(Boundary, Particles):
+class Box(Particles):
     """A uniformly distributed box of particles.
+
+    Add uniform particle distribution with arbitrary velocity field.
 
     Parameters
     ----------
-    xmin
-        Minimum x value.
-    xmax
-        Maximum x value.
-    ymin
-        Minimum y value.
-    ymax
-        Maximum y value.
-    zmin
-        Minimum z value.
-    zmax
-        Maximum x value.
+    box_boundary
+        Boundary box as (xmin, xmax, ymin, ymax, zmin, zmax).
+    particle_type
+        The particle type to add.
+    number_of_particles
+        The number of particles to add.
+    density
+        The initial uniform density.
+    velocity_distribution
+        The initial velocity distribution as a function taking an
+        array of position with shape (N, 3) and returning an array
+        of velocity with shape (N, 3).
     """
 
     def __init__(
         self,
-        xmin: float,
-        xmax: float,
-        ymin: float,
-        ymax: float,
-        zmin: float,
-        zmax: float,
-    ) -> None:
-        super().__init__(xmin, xmax, ymin, ymax, zmin, zmax)
-
-        self._particle_type: float
-        self._particle_mass: float
-
-    @property
-    def particle_mass(self) -> float:
-        """Particle mass."""
-        return self._particle_mass
-
-    def add_particles(
-        self,
+        box_boundary: Tuple[float, float, float, float, float, float],
         particle_type: int,
         number_of_particles: int,
         density: float,
-        velocity_distribution: Callable[[np.ndarray, np.ndarray, np.ndarray], Tuple],
-    ) -> Box:
-        """
-        Add uniform particle distribution with arbitrary velocity field.
+        velocity_distribution: Callable[[ndarray, ndarray, ndarray], Tuple],
+    ) -> None:
+        super().__init__()
 
-        Parameters
-        ----------
-        setup
-            The phantomsetup object representing the simulation.
-        particle_type
-            The particle type to add.
-        number_of_particles
-            The number of particles to add.
-        density
-            The initial uniform density.
-        velocity_distribution
-            The initial velocity distribution as a function taking an
-            array of positions with shape (N, 3) and returning an array
-            of velocities with shape (N, 3).
-        """
-        particle_spacing = (self.volume / number_of_particles) ** (1 / 3)
+        boundary = Boundary(*box_boundary)
+        particle_spacing = (boundary.volume / number_of_particles) ** (1 / 3)
 
         position, smoothing_length = uniform_distribution(
-            boundary=self.boundary, particle_spacing=particle_spacing, hfact=self.hfact
+            boundary=boundary.boundary, particle_spacing=particle_spacing,
         )
 
-        particle_mass = density * self.volume / number_of_particles
+        particle_mass = density * boundary.volume / number_of_particles
 
         velocity = np.zeros(position.shape)
         velocity[:, 0], velocity[:, 1], velocity[:, 2] = velocity_distribution(
             position[:, 0], position[:, 1], position[:, 2]
         )
 
-        self._particle_mass = particle_mass
-        self._particle_type = particle_type
-        self._position = position
-        self._velocity = velocity
-        self._smoothing_length = smoothing_length
-
-        return self
+        self.add_particles(
+            particle_type=particle_type,
+            particle_mass=particle_mass,
+            position=position,
+            velocity=velocity,
+            smoothing_length=smoothing_length,
+        )
 
 
 def uniform_distribution(
     *,
     boundary: Tuple[float, float, float, float, float, float],
     particle_spacing: float,
-    hfact: float,
+    hfact: float = 1.2,
     lattice: str = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[ndarray, ndarray]:
     """Generate a uniform particle distribution in a Cartesian box.
 
     Parameters
@@ -111,20 +81,20 @@ def uniform_distribution(
         The boundary as a tuple (xmin, xmax, ymin, ymax, zmin, zmax).
     particle_spacing
         The spacing between the particles.
-    hfact
-        The smoothing length factor.
 
     Optional parameters
     -------------------
+    hfact
+        The smoothing length factor. Default is 1.2.
     lattice
         The type of lattice. Options: 'cubic' or 'close packed'. Default
         is 'close packed'.
 
     Returns
     -------
-    position : (N, 3) np.ndarray
-        The particle Cartesian positions.
-    smoothing_length :(N,) np.ndarray
+    position : (N, 3) ndarray
+        The particle Cartesian position.
+    smoothing_length :(N,) ndarray
         The particle smoothing length.
     """
     if lattice is not None and lattice not in _LATTICES:
@@ -157,7 +127,7 @@ def uniform_distribution(
 
         position = np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T
 
-    if lattice == 'close packed':
+    elif lattice == 'close packed':
 
         dx = particle_spacing
         dy = dx * np.sqrt(3) / 2
@@ -177,12 +147,15 @@ def uniform_distribution(
         position[:, 1] += (ymin + ymax) / 2
         position[:, 2] += (zmin + zmax) / 2
 
+    else:
+        raise ValueError('Cannot determine lattice')
+
     smoothing_length = hfact * particle_spacing * np.ones(nx * ny * nz)
 
     return position, smoothing_length
 
 
-def _close_packed_lattice(nx: int, ny: int, nz: int) -> np.ndarray:
+def _close_packed_lattice(nx: int, ny: int, nz: int) -> ndarray:
 
     xyz = np.zeros((nx * ny * nz, 3))
 
