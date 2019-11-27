@@ -65,7 +65,7 @@ class Setup:
         self._sinks: List[Sink] = list()
 
         self._dust_method: str = 'none'
-        self._dust_fraction: np.ndarray
+        self._dust_fraction: np.ndarray = None
         self._grain_size: np.ndarray = np.array([])
         self._grain_density: np.ndarray = np.array([])
         self._number_of_small_dust_species: int = 0
@@ -85,6 +85,11 @@ class Setup:
         self._prefix = prefix
         self.set_run_option('logfile', f'{prefix}01.log')
         self.set_run_option('dumpfile', f'{prefix}_00000.tmp')
+
+    @property
+    def number_of_particles(self) -> int:
+        """Particle number."""
+        return sum(n for n in self.number_of_particles_of_type.values())
 
     @property
     def number_of_particles_of_type(self) -> Dict[int, int]:

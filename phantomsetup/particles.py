@@ -38,6 +38,11 @@ class Particles:
         return set(np.unique(self.arrays['particle_type'], return_counts=True)[0])
 
     @property
+    def number_of_particles(self) -> int:
+        """Particle number."""
+        return sum(n for n in self.number_of_particles_of_type.values())
+
+    @property
     def number_of_particles_of_type(self) -> Dict[int, int]:
         """Particle number of each type."""
         types, counts = np.unique(self.arrays['particle_type'], return_counts=True)

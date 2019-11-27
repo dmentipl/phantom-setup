@@ -31,6 +31,11 @@ class Box(Particles):
         The initial velocity distribution as a function taking an
         array of position with shape (N, 3) and returning an array
         of velocity with shape (N, 3).
+
+    Optional Parameters
+    -------------------
+    kwargs
+        Keyword arguments to pass to uniform_distribution.
     """
 
     def __init__(
@@ -40,6 +45,7 @@ class Box(Particles):
         number_of_particles: int,
         density: float,
         velocity_distribution: Callable[[ndarray, ndarray, ndarray], Tuple],
+        **kwargs,
     ) -> None:
         super().__init__()
 
@@ -47,7 +53,7 @@ class Box(Particles):
         particle_spacing = (boundary.volume / number_of_particles) ** (1 / 3)
 
         position, smoothing_length = uniform_distribution(
-            boundary=boundary.boundary, particle_spacing=particle_spacing,
+            boundary=boundary.boundary, particle_spacing=particle_spacing, **kwargs
         )
 
         particle_mass = density * boundary.volume / number_of_particles
