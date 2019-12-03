@@ -173,11 +173,6 @@ class Setup:
         ]
 
     @property
-    def number_of_boxes(self) -> int:
-        """Return number of boxes."""
-        return len(self.boxes)
-
-    @property
     def discs(self) -> List[Disc]:
         """Accretion discs."""
         return [
@@ -185,11 +180,6 @@ class Setup:
             for container in self._particle_containers
             if isinstance(container, Disc)
         ]
-
-    @property
-    def number_of_discs(self) -> int:
-        """Return number of discs."""
-        return len(self.discs)
 
     @property
     def eos(self) -> EquationOfState:
