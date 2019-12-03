@@ -23,8 +23,8 @@ class Box(Particles):
         Boundary box as (xmin, xmax, ymin, ymax, zmin, zmax).
     particle_type
         The particle type to add.
-    number_of_particles
-        The number of particles to add.
+    number_of_particles_in_x
+        The number of particles in the x-direction to add.
     density
         The initial uniform density.
     velocity_distribution
@@ -42,7 +42,7 @@ class Box(Particles):
         self,
         box_boundary: Tuple[float, float, float, float, float, float],
         particle_type: int,
-        number_of_particles: int,
+        number_of_particles_in_x: int,
         density: float,
         velocity_distribution: Callable[[ndarray, ndarray, ndarray], Tuple],
         **kwargs,
@@ -50,12 +50,13 @@ class Box(Particles):
         super().__init__()
 
         boundary = Boundary(*box_boundary)
-        particle_spacing = (boundary.volume / number_of_particles) ** (1 / 3)
+        particle_spacing = boundary.xwidth / number_of_particles_in_x
 
         position, smoothing_length = uniform_distribution(
             boundary=boundary.boundary, particle_spacing=particle_spacing, **kwargs
         )
 
+        number_of_particles = len(smoothing_length)
         particle_mass = density * boundary.volume / number_of_particles
 
         velocity = np.zeros(position.shape)
