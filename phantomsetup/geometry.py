@@ -1,3 +1,8 @@
+"""Geometry utilities.
+
+For example, stretch mapping and coordinate transformations.
+"""
+
 from typing import Callable, Optional
 
 import numba
@@ -17,8 +22,7 @@ def stretch_map(
     geometry: str = 'None',
     coordinate: str = 'None',
 ) -> ndarray:
-    """
-    Stretch mapping.
+    """Stretch mapping.
 
     Deform a uniform particle distribution in one dimension with an
     arbitrary scalar function.
@@ -56,7 +60,6 @@ def stretch_map(
     ... def my_func(x):
     ...     return 1 + np.sin(x) ** 2
     """
-
     if geometry == 'None':
         geometry = 'cartesian'
     geometry = geometry.lower()
@@ -119,7 +122,7 @@ def stretch_map(
         return df
 
     if geometry in ('cylindrical', 'spherical'):
-        _positions = coordinate_transform(
+        _positions: ndarray = coordinate_transform(
             position=positions, geometry_from='cartesian', geometry_to=geometry
         )
     else:
