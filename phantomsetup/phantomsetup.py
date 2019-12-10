@@ -11,12 +11,12 @@ import pathlib
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Tuple, Union
+from typing import Any, Collection, Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
-
 import phantomconfig
+from numpy import ndarray
 from phantomconfig import PhantomConfig
 
 from . import constants, defaults
@@ -65,15 +65,15 @@ class Setup:
         self._sinks: List[Sink] = list()
 
         self._dust_method: str = 'none'
-        self._dust_fraction: np.ndarray = None
-        self._grain_size: np.ndarray = np.array([])
-        self._grain_density: np.ndarray = np.array([])
+        self._dust_fraction: ndarray = None
+        self._grain_size: ndarray = np.array([])
+        self._grain_density: ndarray = np.array([])
         self._number_of_small_dust_species: int = 0
         self._number_of_large_dust_species: int = 0
 
         self._eos: EquationOfState
         self._units: Dict[str, float]
-        self._boundary: Boundary
+        self._boundary: Optional[Boundary] = None
 
     @property
     def prefix(self) -> str:
@@ -116,7 +116,7 @@ class Setup:
         return d
 
     @property
-    def dust_fraction(self) -> np.ndarray:
+    def dust_fraction(self) -> ndarray:
         """Dust fraction for each dust species on the particles."""
         return self._dust_fraction
 
@@ -187,7 +187,7 @@ class Setup:
         return self._eos
 
     @property
-    def boundary(self) -> Boundary:
+    def boundary(self) -> Optional[Boundary]:
         """Boundary."""
         return self._boundary
 
@@ -224,9 +224,9 @@ class Setup:
 
         Parameters
         ----------
-        option : str
+        option
             The compile time option to set.
-        value : Any
+        value
             The value to set the option to.
         """
         if option in self._compile_options:
@@ -256,9 +256,9 @@ class Setup:
 
         Parameters
         ----------
-        option : str
+        option
             The run time option to set.
-        value : Any
+        value
             The value to set the option to.
         """
         if option in self._run_options.config:
@@ -362,7 +362,7 @@ class Setup:
         *,
         dust_method: str,
         drag_method: str,
-        grain_size: Union[Collection, np.ndarray] = None,
+        grain_size: Union[Collection, ndarray] = None,
         grain_density: float = None,
         drag_constant: float = None,
         number_of_dust_species: int = None,
@@ -372,22 +372,22 @@ class Setup:
 
         Parameters
         ----------
-        dust_method : str
+        dust_method
             The dust method, either: 'largegrains' or 'smallgrains'. In
             Phantom, 'largegrains' corresponds to the two-fluid or
             multi-fluid method, and 'smallgrains' corresponds to the
             one-fluid or dustfrac method.
-        drag_method : str
+        drag_method
             The drag method: 'K_const', 'ts_const', 'Epstein/Stokes'.
-        grain_size : Union[Collection, np.ndarray]
+        grain_size
             The grain sizes of each dust species.
-        grain_density : float
+        grain_density
             The intrinsic dust grain density.
-        drag_constant : float
+        drag_constant
             The drag constant if constant drag is used.
-        number_of_dust_species : int
+        number_of_dust_species
             If constant drag, the number of dust species must be set.
-        cut_back_reaction : bool
+        cut_back_reaction
             Cut the drag on the gas phase from the dust.
 
         See Also
@@ -461,12 +461,12 @@ class Setup:
 
         return self
 
-    def set_dust_fraction(self, dustfrac: np.ndarray) -> Setup:
+    def set_dust_fraction(self, dustfrac: ndarray) -> Setup:
         """Set the dust fraction on existing particles.
 
         Parameters
         ----------
-        dustfrac : (N, M) np.ndarray
+        dustfrac
             The M dust fractions per dust species on N particles, where
             M is the number of dust species.
 
@@ -551,12 +551,15 @@ class Setup:
 
         Parameters
         ----------
-        length : float
+        length
             The length unit in cgs. Default is 1.0 cm.
-        mass : float
+        mass
             The mass unit in cgs. Default is 1.0 g.
-        time : float
+        time
             The time unit in cgs. Default is 1.0 s.
+
+        Optional Parameters
+        -------------------
         gravitational_constant_is_unity
             Only specify two units, and the third is set by the
             constraint that the gravitational constant is unity.
