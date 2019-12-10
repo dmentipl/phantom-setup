@@ -519,6 +519,12 @@ class Setup:
             self.set_compile_option('ISOTHERMAL', True)
         else:
             self.set_compile_option('ISOTHERMAL', False)
+        self.set_run_option('ieos', ieos)
+        for param, value in self._eos.parameters.items():
+            try:
+                self.set_run_option(param, value)
+            except ValueError:
+                pass
         return self
 
     def set_boundary(self, boundary: tuple, periodic: bool = False) -> Setup:

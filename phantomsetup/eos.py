@@ -23,6 +23,7 @@ ieos_label = {
 }
 
 ieos_has = {
+    'mu': (1, 2, 3, 6, 7, 8, 9, 10, 11, 14),
     'polyk': (1, 2, 3, 6, 7, 8, 9, 10, 11, 14),
     'gamma': (2, 8, 9),
     'qfacdisc': (3, 6, 7, 14),
@@ -50,10 +51,8 @@ class EquationOfState:
             14: 'locally isothermal binary disc'
     """
 
-    def __init__(self, ieos: int = None, **kwargs) -> None:
+    def __init__(self, ieos: int, **kwargs) -> None:
 
-        if ieos is None:
-            ieos = 1
         if ieos not in ieos_label:
             raise ValueError(f'ieos={ieos} does not exist')
         if ieos > 3:
@@ -61,23 +60,41 @@ class EquationOfState:
 
         self.ieos = ieos
 
-        self._parameters: Dict[str, Any] = {
-            key: None for key in ('polyk', 'gamma', 'qfacdisc')
+        self.parameters: Dict[str, Any] = {
+            key: None for key in ('mu', 'polyk', 'gamma', 'qfacdisc')
         }
 
-        for parameter in self._parameters.keys():
+        # Set defaults
+        for parameter in self.parameters.keys():
             if ieos in ieos_has[parameter]:  # type: ignore
                 if parameter == 'polyk':
-                    self._parameters[parameter] = 2 / 3 * defaults.HEADER['RK2']
+                    self.parameters[parameter] = 2 / 3 * defaults.HEADER['RK2']
                 else:
-                    self._parameters[parameter] = defaults.HEADER[parameter]
+                    try:
+                        self.parameters[parameter] = defaults.HEADER[parameter]
+                    except KeyError:
+                        self.parameters[parameter] = defaults.RUN_OPTIONS.config[
+                            parameter
+                        ].value
 
-        for parameter in self._parameters:
+        # Set values from kwargs
+        for parameter in self.parameters:
             if parameter in kwargs:
                 if ieos not in ieos_has[parameter]:  # type: ignore
                     raise ValueError(f'Cannot set {parameter} for ieos={ieos}')
                 else:
-                    self._parameters[parameter] = kwargs[parameter]
+                    self.parameters[parameter] = kwargs[parameter]
+
+    @property
+    def mu(self) -> float:
+        """'mu' is the mean molecular weight."""
+        return self.parameters['mu']
+
+    @mu.setter
+    def mu(self, value: float) -> None:
+        if self.ieos not in ieos_has['mu']:  # type: ignore
+            raise ValueError(f'ieos={self.ieos} not compatible with setting mu')
+        self.parameters['mu'] = value
 
     @property
     def polyk(self) -> float:
@@ -86,24 +103,24 @@ class EquationOfState:
         Isothermal eos: polyk = (sound speed)^2.
         Adiabatic/polytropic eos: polyk = pressure / rho^(gamma).
         """
-        return self._parameters['polyk']
+        return self.parameters['polyk']
 
     @polyk.setter
     def polyk(self, value: float) -> None:
-        if self.ieos is None:
-            raise ValueError('set ieos first')
-        self._polyk = value
+        if self.ieos not in ieos_has['polyk']:  # type: ignore
+            raise ValueError(f'ieos={self.ieos} not compatible with setting polyk')
+        self.parameters['polyk'] = value
 
     @property
     def gamma(self) -> float:
         """'gamma' is the adiabatic index."""
-        return self._parameters['gamma']
+        return self.parameters['gamma']
 
     @gamma.setter
     def gamma(self, value: float) -> None:
         if self.ieos not in ieos_has['gamma']:  # type: ignore
             raise ValueError(f'ieos={self.ieos} not compatible with setting gamma')
-        self._gamma = value
+        self.parameters['gamma'] = value
 
     @property
     def qfacdisc(self) -> float:
@@ -111,13 +128,13 @@ class EquationOfState:
 
         Sound speed is proportional to radius^(-q).
         """
-        return self._parameters['qfacdisc']
+        return self.parameters['qfacdisc']
 
     @qfacdisc.setter
     def qfacdisc(self, value: float) -> None:
         if self.ieos not in ieos_has['qfacdisc']:  # type: ignore
             raise ValueError(f'ieos={self.ieos} not compatible with setting qfacdisc')
-        self._qfacdisc = value
+        self.parameters['qfacdisc'] = value
 
 
 def polyk_for_locally_isothermal_disc(
