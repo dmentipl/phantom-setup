@@ -1,3 +1,5 @@
+"""Equation of state."""
+
 # The type ignore comments are due to the following bug:
 # https://github.com/python/mypy/issues/4975
 
@@ -30,8 +32,7 @@ ieos_isothermal = {1, 3, 6, 7, 11, 14}
 
 
 class EquationOfState:
-    """
-    Equation of state for gas.
+    """Equation of state for gas.
 
     Parameters
     ----------
@@ -80,8 +81,7 @@ class EquationOfState:
 
     @property
     def polyk(self) -> float:
-        """
-        'polyk' is a constant of proportionality in the eos.
+        """'polyk' is a constant of proportionality in the eos.
 
         Isothermal eos: polyk = (sound speed)^2.
         Adiabatic/polytropic eos: polyk = pressure / rho^(gamma).
@@ -96,9 +96,7 @@ class EquationOfState:
 
     @property
     def gamma(self) -> float:
-        """
-        'gamma' is the adiabatic index.
-        """
+        """'gamma' is the adiabatic index."""
         return self._parameters['gamma']
 
     @gamma.setter
@@ -109,8 +107,7 @@ class EquationOfState:
 
     @property
     def qfacdisc(self) -> float:
-        """
-        'qfacdisc' is the 'q' exponent of locally isothermal disc.
+        """'qfacdisc' is the 'q' exponent of locally isothermal disc.
 
         Sound speed is proportional to radius^(-q).
         """
@@ -130,8 +127,7 @@ def polyk_for_locally_isothermal_disc(
     stellar_mass: float,
     gravitational_constant: float,
 ) -> float:
-    """
-    Get polyk for a locally isothermal disc.
+    """Get polyk for a locally isothermal disc.
 
     Parameters
     ----------

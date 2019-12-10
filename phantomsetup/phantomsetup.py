@@ -1004,6 +1004,7 @@ class Setup:
 
         # Equation of state
 
+        self._header['ieos'] = self._eos.ieos
         if self._eos.polyk is not None:
             self._header['RK2'] = 3 / 2 * self._eos.polyk
         if self._eos.gamma is not None:

@@ -5,8 +5,7 @@ from .defaults import RUN_OPTION_BLOCK_LABEL as block_label
 
 
 class _InFile:
-    """
-    Phantom in file.
+    """Phantom in file.
 
     For internal use.
 
@@ -29,8 +28,7 @@ class _InFile:
         self._make_infile_dictionary()
 
     def get_compile_option(self, option: str) -> Any:
-        """
-        Get the value of a Phantom compile time option.
+        """Get the value of a Phantom compile time option.
 
         Parameters
         ----------
@@ -47,8 +45,7 @@ class _InFile:
             raise ValueError(f'Compile time option={option} does not exist')
 
     def get_run_option(self, option: str) -> Any:
-        """
-        Get the value of a Phantom run time option.
+        """Get the value of a Phantom run time option.
 
         Parameters
         ----------
@@ -81,8 +78,7 @@ class _InFile:
         return header, datetime_
 
     def _blocks_to_add(self):
-        """
-        Determine which run time blocks to add.
+        """Determine which run time blocks to add.
 
         This method and _get_required_values_from_block contain the
         logic of writing a Phantom in file which is contained in
@@ -92,7 +88,6 @@ class _InFile:
         --------
         _get_required_values_from_block
         """
-
         blocks_to_add = list()
         blocks_to_add.append(block_label['job'])
         blocks_to_add.append(block_label['io'])
@@ -142,8 +137,7 @@ class _InFile:
         return blocks_to_add
 
     def _get_required_values_from_block(self, block: str) -> Dict:
-        """
-        Determine which parameters within a block to add.
+        """Determine which parameters within a block to add.
 
         This method and _blocks_to_add contain the logic of writing a
         Phantom in file which is contained in readwrite_infile.F90 in
@@ -153,7 +147,6 @@ class _InFile:
         --------
         _blocks_to_add
         """
-
         # TODO: add more checks for
         #  - external_forces
         #  - driving by turbulence
@@ -267,8 +260,6 @@ class _InFile:
 
 
 def generate_infile(compile_options, run_options, header):
-    """
-    TODO: write docstring.
-    """
+    """TODO: write docstring."""
     infile = _InFile(compile_options, run_options, header)
     return infile.infile_dictionary

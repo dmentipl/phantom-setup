@@ -298,7 +298,7 @@ class Disc(Particles):
         omega = np.sqrt(gravitational_constant * stellar_mass / radius)
 
         if not pressureless:
-            h_over_r = aspect_ratio * (radius / reference_radius) ** (3 / 2 - q_index)
+            h_over_r = aspect_ratio * (radius / reference_radius) ** (1 / 2 - q_index)
             v_phi = omega * np.sqrt(1 - h_over_r ** 2)
         else:
             v_phi = omega
