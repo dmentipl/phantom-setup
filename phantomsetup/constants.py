@@ -1,8 +1,9 @@
-"""
-Constants in cgs.
+"""Constants in cgs.
+
+Values taken from Phantom.
 """
 
-G = gravitational_constant = 6.672041e-8  # This is the value from Phantom
+G = gravitational_constant = 6.672041e-8
 
 # Time units
 second = 1.0
@@ -21,8 +22,8 @@ ly = 9.4605e17
 pc = 3.086e18
 
 # Solar system
-solarm = 1.99e33
+solarm = 1.9891e33
 solarr = 6.959500e10
-earthm = 5.972e27
+earthm = 5.979e27
 earthr = 6.371315e8
-jupiterm = 1.898e30
+jupiterm = 1.89813e30
