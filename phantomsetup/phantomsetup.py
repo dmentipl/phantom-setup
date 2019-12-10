@@ -902,24 +902,24 @@ class Setup:
         if self.number_of_sinks > 0:
 
             n = self.number_of_sinks
-            m = np.zeros((1, n))
-            h = np.zeros((1, n))
-            xyz = np.zeros((3, n))
-            vxyz = np.zeros((3, n))
+            m = np.zeros(n)
+            h = np.zeros(n)
+            xyz = np.zeros((n, 3))
+            vxyz = np.zeros((n, 3))
 
             for idx, sink in enumerate(self.sinks):
-                m[:, idx] = sink.mass
-                h[:, idx] = sink.accretion_radius
-                xyz[:, idx] = sink.position
-                vxyz[:, idx] = sink.velocity
+                m[idx] = sink.mass
+                h[idx] = sink.accretion_radius
+                xyz[idx, :] = sink.position
+                vxyz[idx, :] = sink.velocity
 
             group.create_dataset(name='xyz', data=xyz)
             group.create_dataset(name='m', data=m)
             group.create_dataset(name='h', data=h)
-            group.create_dataset(name='hsoft', data=np.zeros((1, n)))
-            group.create_dataset(name='maccreted', data=np.zeros((1, n)))
-            group.create_dataset(name='spinxyz', data=np.zeros((3, n)))
-            group.create_dataset(name='tlast', data=np.zeros((1, n)))
+            group.create_dataset(name='hsoft', data=np.zeros(n))
+            group.create_dataset(name='maccreted', data=np.zeros(n))
+            group.create_dataset(name='spinxyz', data=np.zeros((n, 3)))
+            group.create_dataset(name='tlast', data=np.zeros(n))
             group.create_dataset(name='vxyz', data=vxyz)
 
     def _generate_fileident(self):
