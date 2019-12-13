@@ -11,7 +11,7 @@ import pathlib
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
@@ -362,11 +362,11 @@ class Setup:
         *,
         dust_method: str,
         drag_method: str,
-        grain_size: Union[Collection, ndarray] = None,
-        grain_density: float = None,
-        drag_constant: float = None,
-        number_of_dust_species: int = None,
-        cut_back_reaction: bool = None,
+        grain_size: Optional[Union[list, tuple, ndarray]] = None,
+        grain_density: Optional[float] = None,
+        drag_constant: Optional[Union[float, list, tuple, ndarray]] = None,
+        number_of_dust_species: Optional[int] = None,
+        cut_back_reaction: Optional[bool] = None,
     ) -> Setup:
         """Set the dust method, grain size, and intrinsic grain density.
 
@@ -384,7 +384,7 @@ class Setup:
         grain_density
             The intrinsic dust grain density.
         drag_constant
-            The drag constant if constant drag is used.
+            The drag constant(s) if constant drag is used.
         number_of_dust_species
             If constant drag, the number of dust species must be set.
         cut_back_reaction
@@ -420,7 +420,20 @@ class Setup:
             self.set_run_option('idrag', 3)
 
         if drag_constant is not None:
-            self.set_run_option('K_code', drag_constant)
+            if isinstance(drag_constant, float):
+                self.set_run_option('K_code', drag_constant)
+            elif isinstance(drag_constant, (tuple, list, ndarray)):
+                if len(drag_constant) == 1:
+                    self.set_run_option('K_code', drag_constant[0])
+                else:
+                    self._run_options.remove_variable('K_code')
+                    for idx, val in enumerate(drag_constant):
+                        self._run_options.add_variable(
+                            f'K_code{idx+1}',
+                            val,
+                            'drag constant when constant drag is used',
+                            'options controlling dust'
+                        )
 
         if cut_back_reaction:
             self.set_run_option('icut_backreaction', 1)
