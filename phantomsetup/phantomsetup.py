@@ -432,7 +432,7 @@ class Setup:
                             f'K_code{idx+1}',
                             val,
                             'drag constant when constant drag is used',
-                            'options controlling dust'
+                            'options controlling dust',
                         )
 
         if cut_back_reaction:
@@ -999,6 +999,12 @@ class Setup:
 
         # dtmax
         self._header['dtmax'] = self.get_run_option('dtmax')
+
+        # Numerical parameters
+
+        self._header['tolh'] = self.get_run_option('tolh')
+        self._header['C_cour'] = self.get_run_option('C_cour')
+        self._header['C_force'] = self.get_run_option('C_force')
 
         # Artificial dissipation
 
