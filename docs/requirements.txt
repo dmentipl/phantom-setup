@@ -1,0 +1,7 @@
+sphinx
+ipykernel
+jupytext
+nbsphinx
+numpy
+matplotlib
+git+https://github.com/dmentipl/phantom-setup.git@master
