@@ -1,7 +1,8 @@
+"""Default values for all Phantom values."""
+
 import datetime
 
 import numpy as np
-
 import phantomconfig
 
 PHANTOM_VERSION = '0.0.0'
