@@ -10,16 +10,9 @@ Phantom setup
 [![Coverage Status](https://coveralls.io/repos/github/dmentipl/phantom-setup/badge.svg?branch=master)](https://coveralls.io/github/dmentipl/phantom-setup?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/phantom-setup/badge/?version=latest)](https://phantom-setup.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/phantomsetup)](https://pypi.org/project/phantomsetup/)
-[![Anaconda Version](https://img.shields.io/conda/v/dmentipl/phantom-setup.svg)](https://anaconda.org/dmentipl/phantom-setup)
 
 Install
 -------
-
-Install via conda.
-
-```
-conda install phantomsetup --channel dmentipl
-```
 
 Install via pip.
 
@@ -43,4 +36,4 @@ Then run Phantom.
 Examples
 --------
 
-The `examples` folder contains examples that you can run as a Python script or Jupyter notebook.
+The `examples` folder contains examples in the form of Jupyter notebooks.
