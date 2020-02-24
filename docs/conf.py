@@ -4,10 +4,9 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import pathlib
-import shutil
+import sys
 
-import jupytext
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Path setup --------------------------------------------------------------
 
@@ -32,7 +31,14 @@ author = 'Daniel Mentiplay'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['nbsphinx', 'sphinx.ext.mathjax']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.githubpages',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,15 +54,8 @@ exclude_patterns = [
     'conf.py',
 ]
 
-# -- nbsphinx configuration --------------------------------------------------
-
-nbsphinx_timeout = 180
-nbsphinx_custom_formats = {'.py': lambda s: jupytext.reads(s, '.py')}
-
-example_scripts = (pathlib.Path(__file__).parent.parent / 'examples').glob('*.py')
-for example_script in example_scripts:
-    shutil.copy(example_script, '.')
-
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -69,3 +68,8 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# -- Extension configuration -------------------------------------------------
+
+napoleon_numpy_docstring = True

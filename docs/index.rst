@@ -16,13 +16,13 @@ Phantom setup: generate initial conditions for Phantom simulations.
 Overview
 ========
 
-phantom-setup is a Python package which leverages the HDF5 file format of Phantom to generate initial conditions for Phantom simulations.
+phantom-setup is a Python package which leverages the HDF5 file format of
+Phantom to generate initial conditions for Phantom simulations.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: User guide
+Usage
+=====
 
-   examples
+See the examples folder for example Jupyter notebooks.
 
 Contributors
 ============
@@ -36,4 +36,5 @@ License
 
 Copyright 2019 Daniel Mentiplay and contributors.
 
-phantom-setup is available under the MIT license. For details see the `LICENSE <https://github.com/dmentipl/phantom-setup/blob/master/LICENSE>`_ file.
+phantom-setup is available under the MIT license. For details see the
+`LICENSE <https://github.com/dmentipl/phantom-setup/blob/master/LICENSE>`_ file.
