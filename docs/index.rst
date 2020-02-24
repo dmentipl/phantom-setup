@@ -19,10 +19,11 @@ Overview
 phantom-setup is a Python package which leverages the HDF5 file format of
 Phantom to generate initial conditions for Phantom simulations.
 
-Usage
-=====
+.. toctree::
+    :maxdepth: 2
 
-See the examples folder for example Jupyter notebooks.
+    usage
+    api
 
 Contributors
 ============
