@@ -2,6 +2,7 @@ sphinx
 ipykernel
 jupytext
 nbsphinx
+numba
 numpy
 matplotlib
 git+https://github.com/dmentipl/phantom-setup.git@master
