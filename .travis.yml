@@ -4,7 +4,7 @@ python:
   - "3.7"
 
 install:
-  - pip install black coverage coveralls h5py isort mypy numpy phantomconfig scipy tomlkit
+  - pip install black coverage coveralls h5py isort mypy numba numpy phantomconfig scipy tomlkit
 
 script:
   - python -m coverage run -m pytest
