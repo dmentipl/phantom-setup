@@ -11,6 +11,8 @@ Phantom setup
 [![Documentation Status](https://readthedocs.org/projects/phantom-setup/badge/?version=latest)](https://phantom-setup.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/phantomsetup)](https://pypi.org/project/phantomsetup/)
 
+**⚠️ Warning: phantom-setup is under development. It may contain bugs. ⚠️**
+
 Install
 -------
 
