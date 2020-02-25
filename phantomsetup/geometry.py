@@ -54,8 +54,9 @@ def stretch_map(
     Notes
     -----
     To make a fast numba function, write a function as if for a scalar
-    value then decorate it with @numba.vectorize([float64(float64)]).
+    value then decorate it with `@numba.vectorize([float64(float64)])`.
     For example
+
     >>> @numba.vectorize([float64(float64)])
     ... def my_func(x):
     ...     return 1 + np.sin(x) ** 2

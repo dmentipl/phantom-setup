@@ -1,4 +1,4 @@
 Usage
 =====
 
-See the examples folder for example Jupyter notebooks.
+See the `examples <https://github.com/dmentipl/phantom-setup/tree/master/examples>`_ folder for example Jupyter notebooks.

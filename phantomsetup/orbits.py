@@ -10,8 +10,7 @@ def hill_sphere_radius(
     stellar_mass: float,
     eccentricity: float = None,
 ) -> float:
-    """
-    Calculate the Hill sphere radius.
+    """Calculate the Hill sphere radius.
 
     Parameters
     ----------
@@ -21,10 +20,7 @@ def hill_sphere_radius(
         The mass of the planet.
     stellar_mass
         The mass of the star.
-
-    Optional Parameters
-    -------------------
-    eccentricity
+    eccentricity : optional
         The orbital eccentricity.
 
     Returns
@@ -54,31 +50,27 @@ def binary_orbit(
     true_anomaly: float = None,
     use_degrees: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Set position and velocity of two bodies in an elliptic orbit.
+    """Set position and velocity of two bodies in an elliptic orbit.
 
     Parameters
     ----------
-    primary_mass (m1)
-        The mass of the primary.
-    secondary_mass (m2)
-        The mass of the secondary.
-    semi_major_axis (a)
-        The semi major axis.
-    eccentricity (e)
-        The orbital eccentricity.
-
-    Optional Parameters
-    -------------------
-    inclination (i)
-        The orbital inclination. Default is 0.0.
-    longitude_ascending_node (Omega)
-        The longitude of ascending node. Default is 0.0.
-    argument_periapsis (pomega)
-        The argument of periapsis. Default is 0.0.
-    true_anomaly (f)
-        The true anomaly. Default is 0.0.
-    use_degrees
+    primary_mass
+        The mass of the primary (m1).
+    secondary_mass
+        The mass of the secondary (m2).
+    semi_major_axis
+        The semi major axis (a).
+    eccentricity
+        The orbital eccentricity (e).
+    inclination : optional
+        The orbital inclination (i). Default is 0.0.
+    longitude_ascending_node : optional
+        The longitude of ascending node (Omega). Default is 0.0.
+    argument_periapsis : optional
+        The argument of periapsis (pomega). Default is 0.0.
+    true_anomaly : optional
+        The true anomaly (f). Default is 0.0.
+    use_degrees : optional
         If true, specify angles in degrees. Otherwise, use radians.
 
     Returns
@@ -168,8 +160,7 @@ def flyby_orbit(
     longitude_ascending_node: float = None,
     use_degrees: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Set position and velocity of two bodies in a parabolic orbit.
+    """Set position and velocity of two bodies in a parabolic orbit.
 
     The primary is set at the origin with zero initial velocity, and the
     secondary, or "perturber", is at some distance with non-zero initial
@@ -177,22 +168,19 @@ def flyby_orbit(
 
     Parameters
     ----------
-    primary_mass (m1)
-        The mass of the primary.
-    secondary_mass (m2)
-        The mass of the secondary.
-    periapsis_distance (rp)
-        The distance of closest approach. Half the semi-latus rectum.
-
-    Optional Parameters
-    -------------------
-    initial_distance_in_peri_units (n0)
-        The initial distance in units or periapsis. Default is 10.0.
-    inclination (i)
-        The orbital inclination. Default is 0.0.
-    longitude_ascending_node (Omega)
-        The longitude of ascending node. Default is 0.0.
-    use_degrees
+    primary_mass
+        The mass of the primary (m1).
+    secondary_mass
+        The mass of the secondary (m2).
+    periapsis_distance
+        The distance of closest approach (rp). Half the semi-latus rectum.
+    initial_distance_in_peri_units : optional
+        The initial distance in units or periapsis (n0). Default is 10.0.
+    inclination : optional
+        The orbital inclination (i). Default is 0.0.
+    longitude_ascending_node : optional
+        The longitude of ascending node (Omega). Default is 0.0.
+    use_degrees : optional
         If true, specify angles in degrees. Otherwise, use radians.
 
     Returns
@@ -277,27 +265,23 @@ def flyby_time(
     gravitational_constant: float,
     initial_distance_in_peri_units: float = None,
 ) -> float:
-    """
-    Calculate flyby time.
+    """Calculate flyby time.
 
     Determine the time from initial separation, to the equivalent
     separation past periastron using Barker's equation.
 
     Parameters
     ----------
-    primary_mass (m1)
-        The mass of the primary.
-    secondary_mass (m2)
-        The mass of the secondary.
-    periapsis_distance (rp)
-        The distance of closest approach. Half the semi-latus rectum.
-    gravitational_constant (G)
-        The gravitational constant.
-
-    Optional Parameters
-    -------------------
-    initial_distance_in_peri_units (n0)
-        The initial distance in units or periapsis. Default is 10.0.
+    primary_mass
+        The mass of the primary (m1).
+    secondary_mass
+        The mass of the secondary (m2).
+    periapsis_distance
+        The distance of closest approach (rp). Half the semi-latus rectum.
+    gravitational_constant
+        The gravitational constant (G).
+    initial_distance_in_peri_units : optional
+        The initial distance in units or periapsis (n0). Default is 10.0.
 
     Returns
     -------

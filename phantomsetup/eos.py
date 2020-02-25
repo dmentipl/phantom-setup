@@ -39,16 +39,17 @@ class EquationOfState:
     ----------
     ieos : int
         The equation of state as represented by the following integers:
-            1: 'isothermal'
-            2: 'adiabatic/polytropic'
-            3: 'locally isothermal disc'
-            6: 'locally isothermal disc centered on sink particle'
-            7: 'z-dependent locally isothermal eos'
-            8: 'barotropic'
-            9: 'piecewise polytrope'
-            10: 'MESA'
-            11: 'isothermal with zero pressure'
-            14: 'locally isothermal binary disc'
+
+        - 1: 'isothermal'
+        - 2: 'adiabatic/polytropic'
+        - 3: 'locally isothermal disc'
+        - 6: 'locally isothermal disc centered on sink particle'
+        - 7: 'z-dependent locally isothermal eos'
+        - 8: 'barotropic'
+        - 9: 'piecewise polytrope'
+        - 10: 'MESA'
+        - 11: 'isothermal with zero pressure'
+        - 14: 'locally isothermal binary disc'
     """
 
     def __init__(self, ieos: int, **kwargs) -> None:
@@ -150,7 +151,8 @@ def polyk_for_locally_isothermal_disc(
     ----------
     q_index
         The index in the sound speed power law such that
-            H ~ (R / R_reference) ^ (3/2 - q).
+
+        .. math:: H \sim (R / R_{\mathrm{reference}})^{3/2 - q}
     aspect_ratio
         The aspect ratio (H/R) at the reference radius.
     reference_radius
