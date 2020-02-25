@@ -21,5 +21,5 @@ setup(
     description='Phantom setup with Python and HDF5',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    install_requires=['h5py', 'numpy', 'phantomconfig', 'scipy', 'tomlkit'],
+    install_requires=['h5py', 'numba', 'numpy', 'phantomconfig', 'scipy', 'tomlkit'],
 )

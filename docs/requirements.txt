@@ -1,8 +1,6 @@
-sphinx
-ipykernel
-jupytext
-nbsphinx
+h5py
 numba
 numpy
-matplotlib
-git+https://github.com/dmentipl/phantom-setup.git@master
+phantomconfig
+scipy
+tomlkit
