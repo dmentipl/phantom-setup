@@ -11,6 +11,8 @@ version = re.search(
 
 long_description = (pathlib.Path(__file__).parent / 'README.md').read_text()
 
+install_requires = ['h5py', 'numba', 'numpy', 'phantomconfig', 'scipy', 'tomlkit']
+
 setup(
     name='phantomsetup',
     version=version,
@@ -21,5 +23,5 @@ setup(
     description='Phantom setup with Python and HDF5',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    install_requires=['h5py', 'numba', 'numpy', 'phantomconfig', 'scipy', 'tomlkit'],
+    install_requires=install_requires,
 )

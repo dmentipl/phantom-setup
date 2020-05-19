@@ -18,9 +18,14 @@ Install
 
 Install via pip.
 
-```
+```bash
 pip install phantomsetup
 ```
+
+Requirements
+------------
+
+Python 3.7+ with [h5py](https://www.h5py.org/), [numba](http://numba.pydata.org/), [numpy](https://numpy.org/), [phantomconfig](https://github.com/dmentipl/phantom-config), [scipy](https://www.scipy.org/), and [tomlkit](https://github.com/sdispater/tomlkit).
 
 Usage
 -----
