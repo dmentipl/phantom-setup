@@ -44,3 +44,14 @@ Examples
 --------
 
 The `examples` folder contains examples in the form of Jupyter notebooks.
+
+See also
+--------
+
+### phantom-build
+
+[phantom-build](https://github.com/dmentipl/phantom-build) is a Python package designed to make it easy to generate reproducible Phantom builds for writing reproducible papers. You can generate `.in` and `.setup` files with phantom-config and then, with phantom-build, you can compile Phantom and set up multiple runs, and schedule them via, for example, the Slurm job scheduler.
+
+### phantom-config
+
+[phantom-config](https://github.com/dmentipl/phantom-config) is a Pythoon package designed to parse, convert, modify, and generate Phantom config files. It also facilitates generating multiple files from dictionaries for parameter sweeps.
