@@ -1,7 +1,7 @@
 Phantom setup
 =============
 
-> phantom-setup: generate initial conditions for [Phantom](https://bitbucket.org/danielprice/phantom) simulations
+> phantom-setup: generate initial conditions for [Phantom](https://github.com/danieljprice/phantom) simulations
 
 + Docs: https://phantom-setup.readthedocs.io/
 + Repo: https://www.github.com/dmentipl/phantom-setup
