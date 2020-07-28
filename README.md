@@ -54,4 +54,4 @@ See also
 
 ### phantom-config
 
-[phantom-config](https://github.com/dmentipl/phantom-config) is a Pythoon package designed to parse, convert, modify, and generate Phantom config files. It also facilitates generating multiple files from dictionaries for parameter sweeps.
+[phantom-config](https://github.com/dmentipl/phantom-config) is a Python package designed to parse, convert, modify, and generate Phantom config files. It also facilitates generating multiple files from dictionaries for parameter sweeps.
