@@ -1,0 +1,36 @@
+name: Tests
+
+on: [pull_request, push]
+jobs:
+  Formatting:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+    - name: pip install
+      run: |
+        pip install black coverage coveralls h5py isort numba numpy phantomconfig scipy tomlkit
+        pip list
+    - name: isort
+      run: |
+        isort --check-only -rc phantomsetup tests
+    - name: black
+      run: |
+        black --check --skip-string-normalization phantomsetup tests
+  Tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+    - name: pip install
+      run: |
+        pip install black coverage coveralls h5py isort numba numpy phantomconfig scipy tomlkit
+        pip list
+    - name: pytest
+      run: |
+        python -m coverage run -m pytest
+        python -m coveralls --service=github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
