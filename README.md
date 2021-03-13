@@ -1,7 +1,9 @@
 Phantom setup
 =============
 
-> phantom-setup: generate initial conditions for [Phantom](https://github.com/danieljprice/phantom) simulations
+**⚠️ Warning: phantom-setup is experimental, and currently unmaintained. If you're interested in continuing development please raise an issue.⚠️**
+
+> phantom-setup: generate initial conditions for [Phantom](https://github.com/danieljprice/phantom) simulations in pure Python!
 
 + Docs: https://phantom-setup.readthedocs.io/
 + Repo: https://www.github.com/dmentipl/phantom-setup
@@ -10,8 +12,6 @@ Phantom setup
 [![Coverage Status](https://coveralls.io/repos/github/dmentipl/phantom-setup/badge.svg?branch=master)](https://coveralls.io/github/dmentipl/phantom-setup?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/phantom-setup/badge/?version=latest)](https://phantom-setup.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/phantomsetup)](https://pypi.org/project/phantomsetup/)
-
-**⚠️ Warning: phantom-setup is under development. It may contain bugs. ⚠️**
 
 Install
 -------
