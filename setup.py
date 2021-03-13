@@ -17,6 +17,7 @@ setup(
     name='phantomsetup',
     version=version,
     author='Daniel Mentiplay',
+    author_email='daniel.mentiplay@protonmail.com',
     packages=['phantomsetup'],
     url='http://github.com/dmentipl/phantom-setup',
     license='MIT',

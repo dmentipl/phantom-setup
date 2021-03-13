@@ -6,7 +6,7 @@ Phantom setup
 + Docs: https://phantom-setup.readthedocs.io/
 + Repo: https://www.github.com/dmentipl/phantom-setup
 
-[![Build Status](https://travis-ci.org/dmentipl/phantom-setup.svg?branch=master)](https://travis-ci.org/dmentipl/phantom-setup)
+[![Build Status](https://github.com/dmentipl/phantom-setup/actions/workflows/tests.yml/badge.svg)](https://github.com/dmentipl/phantom-setup/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dmentipl/phantom-setup/badge.svg?branch=master)](https://coveralls.io/github/dmentipl/phantom-setup?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/phantom-setup/badge/?version=latest)](https://phantom-setup.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/phantomsetup)](https://pypi.org/project/phantomsetup/)

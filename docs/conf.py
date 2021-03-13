@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'phantom-setup'
-copyright = '2019, Daniel Mentiplay'
+copyright = '2019-2021, Daniel Mentiplay'
 author = 'Daniel Mentiplay'
 
 

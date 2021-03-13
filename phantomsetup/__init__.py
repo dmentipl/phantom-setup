@@ -5,7 +5,7 @@ Phantom setup
 phantom-setup is a Python package for setting up Phantom calculations
 with Python and HDF5.
 
-Daniel Mentiplay, 2019.
+Daniel Mentiplay, 2019-2021.
 """
 
 from . import box, defaults, disc, eos, geometry, orbits, units

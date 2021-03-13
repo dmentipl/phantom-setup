@@ -35,7 +35,7 @@ Author:
 License
 =======
 
-Copyright 2019 Daniel Mentiplay and contributors.
+Copyright 2019-2021 Daniel Mentiplay and contributors.
 
 phantom-setup is available under the MIT license. For details see the
 `LICENSE <https://github.com/dmentipl/phantom-setup/blob/master/LICENSE>`_ file.
