@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: pip install
       run: |
-        pip install black coverage coveralls h5py isort numba numpy phantomconfig scipy tomlkit
+        pip install black coverage coveralls h5py isort numba numpy phantomconfig pytest scipy tomlkit
         pip list
     - name: isort
       run: |
@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: pip install
       run: |
-        pip install black coverage coveralls h5py isort numba numpy phantomconfig scipy tomlkit
+        pip install black coverage coveralls h5py isort numba numpy phantomconfig pytest scipy tomlkit
         pip list
     - name: pytest
       run: |
